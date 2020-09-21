@@ -166,7 +166,10 @@ CDisk::CDisk(CConfigurator *cfg, CSystem *sys, CDiskController *ctrl,
 /**
  * \brief Destructor.
  **/
-CDisk::~CDisk(void) { free(devid_string); }
+CDisk::~CDisk(void) {
+  free(devid_string);
+  devid_string = nullptr;
+}
 
 /**
  * \Calculate the number of cylinders to report.

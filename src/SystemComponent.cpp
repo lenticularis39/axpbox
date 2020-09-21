@@ -91,4 +91,7 @@ CSystemComponent::CSystemComponent(CConfigurator *cfg, CSystem *system) {
 /**
  * destructor.
  **/
-CSystemComponent::~CSystemComponent() { free(devid_string); }
+CSystemComponent::~CSystemComponent() {
+  free(devid_string);
+  devid_string = nullptr;
+}
