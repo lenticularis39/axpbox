@@ -88,7 +88,20 @@ check_symbol_exists(_stricasecmp "string.h" HAVE__STRICASECMP)
 check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
 
 # Features
-# TODO
+check_include_file("pcap.h" HAVE_PCAP)
+check_include_file("SDL/SDL.h" HAVE_SDL)
+check_include_file("X11/X.h" HAVE_X11)
+
+if(HAVE_PCAP)
+    target_link_libraries(axpbox pcap)
+endif()
+if(HAVE_SDL)
+    target_link_libraries(axpbox SDL)
+endif()
+if(HAVE_X11)
+    target_link_libraries(axpbox X11)
+endif()
+
 
 set(PACKAGE ${PROJECT_NAME})
 set(PACKAGE_BUGREPORT "tglozar@gmail.com")

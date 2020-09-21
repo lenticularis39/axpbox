@@ -253,6 +253,11 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #cmakedefine TM_IN_SYS_TIME
 
+/* Optional features */
+#cmakedefine HAVE_PCAP
+#cmakedefine HAVE_SDL
+#cmakedefine HAVE_X11
+
 /* Version number of package */
 #cmakedefine VERSION @PACKAGE_VERSION@
 

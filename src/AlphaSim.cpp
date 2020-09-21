@@ -202,7 +202,7 @@
 #include "lockstep.h"
 
 #if defined(HAVE_SDL)
-#include "SDL.h"
+#include "SDL/SDL.h"
 #endif
 
 /// "standard" locations for a configuration file.  This will be port specific.

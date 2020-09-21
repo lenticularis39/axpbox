@@ -92,9 +92,9 @@
 // is used to know when we are exporting symbols and when we are importing.
 #define BX_PLUGGABLE
 
-#include <SDL.h>
-#include <SDL_endian.h>
-#include <SDL_thread.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_endian.h>
+#include <SDL/SDL_thread.h>
 #include <stdlib.h>
 
 #include "sdl_fonts.h"
