@@ -663,6 +663,7 @@ void handle_debug_string(char *s);
 #define POST_F2_F3 POST_X64(state.f[FREG_3]);
 
 #else
+#ifndef NDEBUG
 #define UNKNOWN1                                                               \
   printf("Unknown opcode: %02x   \n", opcode);                                 \
   return;
@@ -670,6 +671,10 @@ void handle_debug_string(char *s);
 #define UNKNOWN2                                                               \
   printf("Unknown opcode: %02x.%02x   \n", opcode, function);                  \
   return;
+#else
+#define UNKNOWN1 return;
+#define UNKNOWN2 return;
+#endif
 #endif
 #if defined(IDB)
 
