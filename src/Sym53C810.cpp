@@ -620,6 +620,9 @@ CSym53C810::CSym53C810(CConfigurator *cfg, CSystem *c, int pcibus, int pcidev)
   // create scsi bus
   CSCSIBus *a = new CSCSIBus(cfg, c);
   scsi_register(0, a, 7); // scsi id 7 by default
+
+  // initialize state
+  memset(&state, 1, sizeof(struct SSym_state));
 }
 
 /**
@@ -673,11 +676,11 @@ void CSym53C810::stop_threads() {
 /**
  * Destructor.
  *
- * Kill thread if still running, and destroy the SCSI bus.
+ * Kill thread if still running.
+ * Note: SCSI bus is destroyed when destroying the System.
  **/
 CSym53C810::~CSym53C810() {
   stop_threads();
-  delete scsi_bus[0];
 }
 
 /**

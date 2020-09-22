@@ -326,10 +326,12 @@ static u32 cirrus_cfg_mask[64] = {
 /**
  * Constructor.
  *
- * Don't do anything, the real initialization is done by init()
  **/
 CCirrus::CCirrus(CConfigurator *cfg, CSystem *c, int pcibus, int pcidev)
-    : CVGA(cfg, c, pcibus, pcidev) {}
+    : CVGA(cfg, c, pcibus, pcidev) {
+  // initialize state
+  memset(&state, 1, sizeof(struct SCirrus_state));
+}
 
 /**
  * Initialize the Cirrus device.
