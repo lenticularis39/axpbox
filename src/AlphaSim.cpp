@@ -306,7 +306,7 @@ int main_sim(int argc, char *argv[]) {
     ch1 = (char *)calloc(ll1, 1);
     fseek(f, 0, SEEK_SET);
     ll1 = fread(ch1, 1, ll1, f);
-    CConfigurator *c = new CConfigurator(0, 0, 0, ch1, ll1);
+    new CConfigurator(0, 0, 0, ch1, ll1);
     fclose(f);
     free(ch1);
 

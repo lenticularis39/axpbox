@@ -47,7 +47,7 @@
  *      class.
  **/
 #if !defined(INCLUDED_ALIM1543C_USB_H_)
-#define INCLUDED_ALIM1543C_USB_H
+#define INCLUDED_ALIM1543C_USB_H_
 
 #include "PCIDevice.h"
 

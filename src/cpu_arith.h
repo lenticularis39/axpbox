@@ -99,8 +99,9 @@
     /* test for integer overflow */                                            \
     if (((~rav ^ rbv) & (rav ^ RCV)) & Q_SIGN) {                               \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("ADDQ_V %016" LL "x + %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("ADDQ_V %016" PRIu64 "x + %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }
 
@@ -117,8 +118,9 @@
     /* test for integer overflow */                                            \
     if (((~rav ^ rbv) & (rav ^ RCV)) & L_SIGN) {                               \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("ADDL_V %016" LL "x + %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("ADDL_V %016" PRIu64 "x + %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }
 
@@ -164,8 +166,9 @@
     RCV = sext_u64_32(sr);                                                     \
     if ((RCV ^ sr) & U64(0xffffffff00000000)) {                                \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("MULL_V %016" LL "x * %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("MULL_V %016" PRIu64 "x * %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }
 
@@ -183,8 +186,9 @@
       t64 -= rav;                                                              \
     if (Q_GETSIGN(RCV) ? (t64 != X64_QUAD) : (t64 != 0)) {                     \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("MULQ_V %016" LL "x * %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("MULQ_V %016" PRIu64 "x * %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }
 
@@ -204,8 +208,9 @@
     /* test for integer overflow */                                            \
     if (((rav ^ rbv) & (rav ^ RCV)) & Q_SIGN) {                                \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("SUBQ_V %016" LL "x - %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("SUBQ_V %016" PRIu64 "x - %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }
 
@@ -222,7 +227,8 @@
     /* test for integer overflow */                                            \
     if (((rav ^ rbv) & (rav ^ RCV)) & L_SIGN) {                                \
       ARITH_TRAP_I(TRAP_IOV, RC);                                              \
-      printf("SUBL_V %016" LL "x - %016" LL "x = %016" LL "x + TRAP.\n", rav,  \
-             rbv, RCV);                                                        \
+      printf("SUBL_V %016" PRIu64 "x - %016" PRIu64 "x = %016" PRIu64          \
+             "x + TRAP.\n",                                                    \
+             rav, rbv, RCV);                                                   \
     }                                                                          \
   }

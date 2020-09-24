@@ -401,7 +401,7 @@ CSystem::~CSystem() {
   printf("Freeing memory in use by system...\n");
 
   for (i = 0; i < iNumComponents; i++)
-      delete acComponents[i];
+    delete acComponents[i];
 
   for (i = 0; i < iNumMemories; i++)
     free(asMemories[i]);
@@ -470,19 +470,21 @@ int CSystem::RegisterMemory(CSystemComponent *component, int index, u64 base,
     // check for overlaps
     if (base >= asMemories[i]->base &&
         base <= (asMemories[i]->base + asMemories[i]->length - 1)) {
-      printf("WARNING: Start address for %s/%d (%016" LL "x-%016" LL "x)\n"
-             "  is within memory range of %s/%d (%016" LL "x-%016" LL "x).\n",
-             component->devid_string, index, base, base + length - 1,
-             asMemories[i]->component->devid_string, asMemories[i]->index,
-             asMemories[i]->base,
-             asMemories[i]->base + asMemories[i]->length - 1);
+      printf(
+          "WARNING: Start address for %s/%d (%016" PRIx64 "-%016" PRIx64 ")\n"
+          "  is within memory range of %s/%d (%016" PRIx64 "-%016" PRIx64
+          ").\n",
+          component->devid_string, index, base, base + length - 1,
+          asMemories[i]->component->devid_string, asMemories[i]->index,
+          asMemories[i]->base, asMemories[i]->base + asMemories[i]->length - 1);
     }
 
     if (base + length - 1 >= asMemories[i]->base &&
         base + length - 1 <=
             (asMemories[i]->base + asMemories[i]->length - 1)) {
-      printf("WARNING: End address for %s/%d (%016" LL "x-%016" LL "x)\n"
-             "  is within memory range of %s/%d (%016" LL "x-%016" LL "x).\n",
+      printf("WARNING: End address for %s/%d (%016" PRIx64 "-%016" PRIx64 ")\n"
+             "  is within memory range of %s/%d (%016" PRIx64 "-%016" PRIx64
+             ").\n",
              component->devid_string, index, base, base + length - 1,
              asMemories[i]->component->devid_string, asMemories[i]->index,
              asMemories[i]->base,
@@ -568,10 +570,7 @@ void CSystem::Run() {
  * some devices may be clocked.
  **/
 int CSystem::SingleStep() {
-  int i;
-  int result;
-
-  for (i = 0; i < iNumCPUs; i++)
+  for (int i = 0; i < iNumCPUs; i++)
     if (!acCPUs[i]->get_waiting())
       acCPUs[i]->execute();
 
@@ -1564,7 +1563,7 @@ void CSystem::pchip_csr_write(int num, u32 a, u64 data) {
     return;
 
   case 0x0c0:
-    state.pchip[num].wsba[3] = data & U64(0x00000080fff00001) | 2;
+    state.pchip[num].wsba[3] = (data & U64(0x00000080fff00001)) | 2;
     return;
 
   case 0x100:
@@ -1607,8 +1606,8 @@ void CSystem::pchip_csr_write(int num, u32 a, u64 data) {
     return;
 
   default:
-    printf("Unknown PCHIP %d CSR %07x write with %016" LL "x attempted.\n", num,
-           a, data);
+    printf("Unknown PCHIP %d CSR %07x write with %016" PRIx64 " attempted.\n",
+           num, a, data);
   }
 }
 
@@ -1623,7 +1622,7 @@ u64 CSystem::cchip_csr_read(u32 a, CSystemComponent *source) {
     //    printf("MISC: %016" LL "x from CPU %d (@%" LL "x) (other @ %" LL
     //    "x).\n",state.cchip.misc | cpu->get_cpuid(),cpu->get_cpuid(),
     //    cpu->get_pc()-4, acCPUs[1-cpu->get_cpuid()]->get_pc());
-    return state.cchip.misc | ((CAlphaCPU *)source)->get_cpuid();
+    return state.cchip.misc | cpu->get_cpuid();
 
   case 0x100:
 
@@ -1671,18 +1670,18 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
     state.cchip.misc &= ~(data & U64(0x0000000010000ff0)); // W1C
     if (data & U64(0x0000000001000000)) {
       state.cchip.misc &= ~U64(0x0000000000ff0000); // Arbitration Clear
-      printf("Arbitration clear from CPU %d (@%" LL "x).\n", cpu->get_cpuid(),
-             cpu->get_pc() - 4);
+      printf("Arbitration clear from CPU %d (@%" PRIx64 ").\n",
+             cpu->get_cpuid(), cpu->get_pc() - 4);
     }
 
     if (data & U64(0x00000000000f0000)) {
-      printf("Arbitration %016" LL "x from CPU %d (@%" LL "x)... ", data,
+      printf("Arbitration %016" PRIx64 " from CPU %d (@%" PRIx64 ")... ", data,
              cpu->get_cpuid(), cpu->get_pc() - 4);
       if (!(state.cchip.misc & U64(0x00000000000f0000))) {
         state.cchip.misc |= (data & U64(0x00000000000f0000)); // Arbitration won
-        printf("won  %016" LL "x\n", state.cchip.misc);
+        printf("won  %016" PRIx64 "\n", state.cchip.misc);
       } else
-        printf("lost %016" LL "x\n", state.cchip.misc);
+        printf("lost %016" PRIx64 "\n", state.cchip.misc);
     }
 
     // stop interval timer interrupt
@@ -1701,8 +1700,8 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
       for (int i = 0; i < iNumCPUs; i++) {
         if (data & (U64(0x100) << i)) {
           acCPUs[i]->irq_h(3, false, 0);
-          printf("*** IP interrupt cleared for CPU %d from CPU %d(@ %" LL
-                 "x).\n",
+          printf("*** IP interrupt cleared for CPU %d from CPU %d(@ %" PRIx64
+                 ").\n",
                  i, cpu->get_cpuid(), cpu->get_pc() - 4);
         }
       }
@@ -1714,8 +1713,8 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
         if (data & (U64(0x1000) << i)) {
           state.cchip.misc |= U64(0x100) << i;
           acCPUs[i]->irq_h(3, true, 0);
-          printf("*** IP interrupt set for CPU %d from CPU %d(@ %" LL "x)\n", i,
-                 cpu->get_cpuid(), cpu->get_pc() - 4);
+          printf("*** IP interrupt set for CPU %d from CPU %d(@ %" PRIx64 ")\n",
+                 i, cpu->get_cpuid(), cpu->get_pc() - 4);
 
           //          CThread::sleep(10);
         }
@@ -1732,7 +1731,7 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
     return;
 
   default:
-    printf("Unknown CCHIP CSR %07x write with %016" LL "x attempted.\n", a,
+    printf("Unknown CCHIP CSR %07x write with %016" PRIx64 " attempted.\n", a,
            data);
   }
 }
@@ -2543,7 +2542,7 @@ void CSystem::panic(char *message, int flags) {
     printf("\n==================== STATE OF CPU %d ====================\n",
            cpunum);
 
-    printf("PC: %016" LL "x\n", cpu->get_pc());
+    printf("PC: %016" PRIx64 "\n", cpu->get_pc());
 #ifdef IDB
     printf("Physical PC: %016" LL "x\n", cpu->get_current_pc_physical());
     printf("Instruction Count: %" LL "d\n", cpu->get_instruction_count());
@@ -2553,7 +2552,7 @@ void CSystem::panic(char *message, int flags) {
     for (i = 0; i < 32; i++) {
       if (i < 10)
         printf("R");
-      printf("%d:%016" LL "x", i, cpu->get_r(i, false));
+      printf("%d:%016" PRIx64, i, cpu->get_r(i, false));
       if (i % 4 == 3)
         printf("\n");
       else
@@ -2564,7 +2563,7 @@ void CSystem::panic(char *message, int flags) {
     for (i = 4; i < 8; i++) {
       if (i < 10)
         printf("S");
-      printf("%d:%016" LL "x", i, cpu->get_r(i + 32, false));
+      printf("%d:%016" PRIx64, i, cpu->get_r(i + 32, false));
       if (i % 4 == 3)
         printf("\n");
       else
@@ -2574,7 +2573,7 @@ void CSystem::panic(char *message, int flags) {
     for (i = 20; i < 24; i++) {
       if (i < 10)
         printf("S");
-      printf("%d:%016" LL "x", i, cpu->get_r(i + 32, false));
+      printf("%d:%016" PRIx64, i, cpu->get_r(i + 32, false));
       if (i % 4 == 3)
         printf("\n");
       else
@@ -2585,7 +2584,7 @@ void CSystem::panic(char *message, int flags) {
     for (i = 0; i < 32; i++) {
       if (i < 10)
         printf("F");
-      printf("%d:%016" LL "x", i, cpu->get_f(i));
+      printf("%d:%016" PRIx64, i, cpu->get_f(i));
       if (i % 4 == 3)
         printf("\n");
       else

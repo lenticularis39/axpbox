@@ -212,24 +212,16 @@ CSerial::CSerial(CConfigurator *cfg, CSystem *c, u16 number)
  **/
 void CSerial::init() {
   listenPort = (int)myCfg->get_num_value("port", false, 8000 + state.iNumber);
-
-  char s[1000];
-  char *nargv = s;
-  int i = 0;
-
   cSystem->RegisterMemory(this, 0,
                           U64(0x00000801fc0003f8) - (0x100 * state.iNumber), 8);
 
   // Start Telnet server
 #if defined(_WIN32)
-
   // Windows Sockets only work after calling WSAStartup.
   WSADATA wsa;
   WSAStartup(0x0101, &wsa);
 #endif // defined (_WIN32)
   struct sockaddr_in Address;
-
-  socklen_t nAddressSize = sizeof(struct sockaddr_in);
 
   listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0);
   if (listenSocket == INVALID_SOCKET) {
@@ -446,7 +438,7 @@ void CSerial::eval_interrupts() {
 }
 
 void CSerial::write(const char *s) {
-  int val = send(connectSocket, s, (int)strlen(s) + 1, 0);
+  send(connectSocket, s, (int)strlen(s) + 1, 0);
 }
 
 void CSerial::receive(const char *data) {

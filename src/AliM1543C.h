@@ -137,9 +137,11 @@
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
 #if !defined(INCLUDED_ALIM1543C_H_)
-#define INCLUDED_ALIM1543C_H
+#define INCLUDED_ALIM1543C_H_
 
 #include "PCIDevice.h"
+
+#define PIT_OFFSET_MAX 6
 
 /**
  * \brief Emulated ISA part of the ALi M1543C chipset.
@@ -159,8 +161,6 @@ public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
 
-  //    void instant_tick();
-  //    void interrupt(int number);
   virtual void run();
   virtual void check_state();
   virtual void WriteMem_Legacy(int index, u32 address, int dsize, u32 data);
@@ -220,8 +220,6 @@ private:
 
     // Timer/Counter
     u32 pit_counter[9];
-#define PIT_OFFSET_LATCH 3
-#define PIT_OFFSET_MAX 6
     u8 pit_status[4];
     u8 pit_mode[4];
 
@@ -242,4 +240,4 @@ private:
 };
 
 extern CAliM1543C *theAli;
-#endif // !defined(INCLUDED_ALIM1543C_H)
+#endif // !defined(INCLUDED_ALIM1543C_H_)

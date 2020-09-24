@@ -232,7 +232,7 @@
 #include "StdAfx.h"
 #include "System.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "gui/keymap.h"
 #include "gui/scancodes.h"
@@ -504,7 +504,7 @@ int CAliM1543C_ide::SaveState(FILE *f) {
   long ss = sizeof(state);
   int res;
 
-  if (res = CPCIDevice::SaveState(f))
+  if ((res = CPCIDevice::SaveState(f)))
     return res;
 
   fwrite(&ide_magic1, sizeof(u32), 1, f);
@@ -525,7 +525,7 @@ int CAliM1543C_ide::RestoreState(FILE *f) {
   int res;
   size_t r;
 
-  if (res = CPCIDevice::RestoreState(f))
+  if ((res = CPCIDevice::RestoreState(f)))
     return res;
 
   r = fread(&m1, sizeof(u32), 1, f);
@@ -1832,9 +1832,8 @@ void CAliM1543C_ide::execute(int index) {
                 printf("Sending ATAPI data back via DMA.\n");
 #endif
 
-                u8 status =
-                    do_dma_transfer(index, (u8 *)(&CONTROLLER(index).data[0]),
-                                    SEL_REGISTERS(index).BYTE_COUNT, false);
+                do_dma_transfer(index, (u8 *)(&CONTROLLER(index).data[0]),
+                                SEL_REGISTERS(index).BYTE_COUNT, false);
                 if (scsi_get_phase(index) != SCSI_PHASE_STATUS)
                   FAILURE(IllegalState, "SCSI status phase expected");
                 scsi_xfer_ptr(index, scsi_expected_xfer(index));
@@ -2181,8 +2180,8 @@ void CAliM1543C_ide::execute(int index) {
                                      SEL_REGISTERS(index).sector_count);
 
         u8 *ptr = (u8 *)(&CONTROLLER(index).data[0]);
-        u8 status = do_dma_transfer(
-            index, ptr, SEL_REGISTERS(index).sector_count * 512, false);
+        do_dma_transfer(index, ptr, SEL_REGISTERS(index).sector_count * 512,
+                        false);
         SEL_COMMAND(index).command_in_progress = false;
         SEL_STATUS(index).drive_ready = true;
         SEL_STATUS(index).seek_complete = true;
@@ -2214,8 +2213,8 @@ void CAliM1543C_ide::execute(int index) {
 #endif
 
           u8 *ptr = (u8 *)(&CONTROLLER(index).data[0]);
-          u8 status = do_dma_transfer(
-              index, ptr, SEL_REGISTERS(index).sector_count * 512, true);
+          do_dma_transfer(index, ptr, SEL_REGISTERS(index).sector_count * 512,
+                          true);
           u32 lba = (SEL_REGISTERS(index).head_no << 24) |
                     (SEL_REGISTERS(index).cylinder_no << 8) |
                     SEL_REGISTERS(index).sector_no;

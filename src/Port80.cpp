@@ -109,7 +109,7 @@ int CPort80::SaveState(FILE *f) {
   fwrite(&ss, sizeof(long), 1, f);
   fwrite(&state, sizeof(state), 1, f);
   fwrite(&p80_magic2, sizeof(u32), 1, f);
-  printf("%s: %d bytes saved.\n", devid_string, ss);
+  printf("%s: %ld bytes saved.\n", devid_string, ss);
   return 0;
 }
 
@@ -161,6 +161,6 @@ int CPort80::RestoreState(FILE *f) {
     return -1;
   }
 
-  printf("%s: %d bytes restored.\n", devid_string, ss);
+  printf("%s: %ld bytes restored.\n", devid_string, ss);
   return 0;
 }

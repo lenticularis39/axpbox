@@ -91,7 +91,7 @@
  *      Initial version for ES40 emulator.
  **/
 #if !defined(INCLUDED_DEC21143_H_)
-#define INCLUDED_DEC21143_H
+#define INCLUDED_DEC21143_H_
 
 #include "DEC21143_mii.h"
 #include "DEC21143_tulipreg.h"
@@ -116,9 +116,7 @@ class CDEC21143 : public CPCIDevice, public CRunnable {
 public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
-  void instant_tick();
 
-  //    void interrupt(int number);
   virtual void check_state();
   virtual void WriteMem_Bar(int func, int bar, u32 address, int dsize,
                             u32 data);

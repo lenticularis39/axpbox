@@ -190,7 +190,7 @@ void CPCIDevice::config_write(int func, u32 address, int dsize, u32 data) {
     data = endian_8(data);
     old_data = (*x) & 0xff;
     mask = (*y) & 0xff;
-    new_data = (old_data & ~mask) | data & mask;
+    new_data = (old_data & ~mask) | (data & mask);
     *x = (u8)new_data;
     break;
 
@@ -198,7 +198,7 @@ void CPCIDevice::config_write(int func, u32 address, int dsize, u32 data) {
     data = endian_16(data);
     old_data = (*((u16 *)x)) & 0xffff;
     mask = (*((u16 *)y)) & 0xffff;
-    new_data = (old_data & ~mask) | data & mask;
+    new_data = (old_data & ~mask) | (data & mask);
     *((u16 *)x) = (u16)new_data;
     break;
 
@@ -206,7 +206,7 @@ void CPCIDevice::config_write(int func, u32 address, int dsize, u32 data) {
     data = endian_32(data);
     old_data = (*((u32 *)x));
     mask = (*((u32 *)y));
-    new_data = (old_data & ~mask) | data & mask;
+    new_data = (old_data & ~mask) | (data & mask);
     *((u32 *)x) = new_data;
     break;
   }
@@ -233,9 +233,7 @@ void CPCIDevice::config_write(int func, u32 address, int dsize, u32 data) {
 }
 
 void CPCIDevice::register_bar(int func, int bar, u32 data, u32 mask) {
-  int id = PCI_RANGE_BASE + (func * 8) + bar;
   u32 length = ((~mask) | 1) + 1;
-  u64 t;
 
   if ((data & 1) && bar != 6) {
 
@@ -243,7 +241,7 @@ void CPCIDevice::register_bar(int func, int bar, u32 data, u32 mask) {
     pci_range_is_io[func][bar] = true;
 
     cSystem->RegisterMemory(this, PCI_RANGE_BASE + (func * 8) + bar,
-                            t = U64(0x00000801fc000000) +
+                            U64(0x00000801fc000000) +
                                 (U64(0x0000000200000000) * myPCIBus) +
                                 (data & ~0x3),
                             length);
@@ -257,7 +255,7 @@ void CPCIDevice::register_bar(int func, int bar, u32 data, u32 mask) {
     pci_range_is_io[func][bar] = true;
 
     cSystem->RegisterMemory(this, PCI_RANGE_BASE + (func * 8) + bar,
-                            t = U64(0x0000080000000000) +
+                            U64(0x0000080000000000) +
                                 (U64(0x0000000200000000) * myPCIBus) +
                                 (data & ~0xf),
                             length);
@@ -310,7 +308,7 @@ u64 CPCIDevice::ReadMem(int index, u64 address, int dsize) {
 
   if (dsize != 8 && dsize != 16 && dsize != 32) {
     FAILURE_5(InvalidArgument,
-              "ReadMem: %s(%s) Unsupported dsize %d. (%d, %" LL "x)\n",
+              "ReadMem: %s(%s) Unsupported dsize %d. (%d, %" PRIx64 ")\n",
               myCfg->get_myName(), myCfg->get_myValue(), dsize, index, address);
   }
 
@@ -374,10 +372,10 @@ void CPCIDevice::WriteMem(int index, u64 address, int dsize, u64 data) {
   }
 
   if (dsize != 8 && dsize != 16 && dsize != 32) {
-    FAILURE_6(InvalidArgument,
-              "WriteMem: %s(%s) Unsupported dsize %d. (%d,%" LL "x,%" LL "x)\n",
-              myCfg->get_myName(), myCfg->get_myValue(), dsize, index, address,
-              data);
+    FAILURE_6(
+        InvalidArgument,
+        "WriteMem: %s(%s) Unsupported dsize %d. (%d,%" PRIx64 ",%" PRIx64 ")\n",
+        myCfg->get_myName(), myCfg->get_myValue(), dsize, index, address, data);
   }
 
   if (index < PCI_RANGE_BASE) {

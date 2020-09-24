@@ -877,9 +877,9 @@ u64 CAlphaCPU::ieee_rpack(UFP *r, u32 ins, u32 dp) {
 void CAlphaCPU::ieee_trap(u64 trap, u32 instenb, u64 fpcrdsb, u32 ins) {
   u64 real_trap = U64(0x0);
 
-  if (!state.fpcr & (trap << 51)) // trap bit not set in FPCR
-    real_trap |= trap << 41;      // SET trap bit in EXC_SUM
-  if ((instenb != 0)              /* not enabled in inst? ignore */
+  if (!(state.fpcr & (trap << 51))) // trap bit not set in FPCR
+    real_trap |= trap << 41;        // SET trap bit in EXC_SUM
+  if ((instenb != 0)                /* not enabled in inst? ignore */
       && !((ins & I_FTRP_S) &&
            (state.fpcr & fpcrdsb))) /* /S and disabled? ignore */
     real_trap |= trap;              // trap bit in EXC_SUM

@@ -162,7 +162,7 @@ void CFloppyController::WriteMem(int index, u64 address, int dsize, u64 data) {
   switch (address) {
   case FDC_REG_STATUS_A:
   case FDC_REG_STATUS_B:
-    printf("FDC: Read only register %d written.\n", address);
+    printf("FDC: Read only register %" PRId64 " written.\n", address);
     break;
 
   case FDC_REG_DOR:
@@ -184,7 +184,7 @@ void CFloppyController::WriteMem(int index, u64 address, int dsize, u64 data) {
     break;
 
   case FDC_REG_TAPE:
-    printf("FDC: Tape register written with %x\n", data);
+    printf("FDC: Tape register written with %" PRIx64 "\n", data);
     break;
 
   case FDC_REG_STATUS: // write = data rate selector
@@ -378,7 +378,7 @@ u64 CFloppyController::ReadMem(int index, u64 address, int dsize) {
 
   case FDC_REG_DOR:
   case FDC_REG_TAPE:
-    printf("FDC: Write only register %d read.", address);
+    printf("FDC: Write only register %" PRId64 " read.", address);
     break;
 
   case FDC_REG_STATUS:
@@ -406,7 +406,7 @@ u64 CFloppyController::ReadMem(int index, u64 address, int dsize) {
     break;
   }
 
-  printf("FDC: Read register %d, value: %x\n", address, data);
+  printf("FDC: Read register %" PRId64 ", value: %" PRIx64 "\n", address, data);
 
   return data;
 }
@@ -421,7 +421,7 @@ int CFloppyController::SaveState(FILE *f) {
   fwrite(&ss, sizeof(long), 1, f);
   fwrite(&state, sizeof(state), 1, f);
   fwrite(&fdc_magic2, sizeof(u32), 1, f);
-  printf("fdc: %d bytes saved.\n", ss);
+  printf("fdc: %ld bytes saved.\n", ss);
   return 0;
 }
 
@@ -470,7 +470,7 @@ int CFloppyController::RestoreState(FILE *f) {
     return -1;
   }
 
-  printf("fdc: %d bytes restored.\n", ss);
+  printf("fdc: %ld bytes restored.\n", ss);
   return 0;
 }
 

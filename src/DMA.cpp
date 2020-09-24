@@ -112,7 +112,7 @@ const char *dma_index_names[] = {
 
 u64 CDMA::ReadMem(int index, u64 address, int dsize) {
   u64 ret;
-  u8 data;
+  u8 data = 0;
   int num;
   // printf("dma: Readmem %s, %" LL "x, %x\n",DMA_INDEX(index),address, dsize);
   switch (dsize) {
@@ -170,7 +170,8 @@ u64 CDMA::ReadMem(int index, u64 address, int dsize) {
     }
 
 #if defined(DEBUG_DMA)
-    printf("dma: read %s,%02x: %02x.   \n", DMA_INDEX(index), address, data);
+    printf("dma: read %s,%" PRIx64 ": %" PRIx8 ".   \n", DMA_INDEX(index),
+           address, data);
 #endif
   }
 
@@ -236,7 +237,8 @@ void CDMA::WriteMem(int index, u64 address, int dsize, u64 data) {
     case DMA0_IO_MAIN:
       switch (address) {
       case 0: // command
-        printf("dma: command register %d written with %x\n", num, data);
+        printf("dma: command register %d written with %" PRIx64 "\n", num,
+               data);
         state.controller[num].command = data;
         break;
 
@@ -245,7 +247,7 @@ void CDMA::WriteMem(int index, u64 address, int dsize, u64 data) {
         break;
 
       case 2: // single mask
-        printf("dma: mask single on %d : %d %s\n", num, data & 0x03,
+        printf("dma: mask single on %d : %" PRIx64 " %s\n", num, data & 0x03,
                data & 0x4 ? "Masked" : "Unmasked");
         state.controller[num].mask =
             (state.controller[num].mask & ~(1 << (data & 0x03))) |
@@ -255,8 +257,9 @@ void CDMA::WriteMem(int index, u64 address, int dsize, u64 data) {
         break;
 
       case 3: // mode register
-        printf("dma: mode register %d for channel %d written with %x\n", num,
-               (num * 4) + (data & 0x03), data);
+        printf("dma: mode register %d for channel %" PRIx64
+               " written with %" PRIx64 "\n",
+               num, (num * 4) + (data & 0x03), data);
         printf("    Mode: %s, Address %s, Autoinit %s, Command: %s\n",
                (data & 0x80 ? (data & 0x40 ? "Cascade" : "Block")
                             : (data & 0x40 ? "Single" : "Demand")),
@@ -298,7 +301,7 @@ void CDMA::WriteMem(int index, u64 address, int dsize, u64 data) {
     case DMA_IO_LPAGE:
     case DMA_IO_HPAGE:
       if (channelmap[address] == 0xff) {
-        printf("dma: unknown page register %x\n", address);
+        printf("dma: unknown page register %" PRIx64 "\n", address);
         return;
       }
       num = channelmap[address];
@@ -318,7 +321,7 @@ void CDMA::WriteMem(int index, u64 address, int dsize, u64 data) {
 
     case DMA0_IO_EXT:
     case DMA1_IO_EXT:
-      printf("dma: extended mode register %d written: %02x\n",
+      printf("dma: extended mode register %d written: %" PRIx64 "\n",
              index - DMA0_IO_EXT, data);
       break;
 
@@ -343,7 +346,7 @@ int CDMA::SaveState(FILE *f) {
   fwrite(&ss, sizeof(long), 1, f);
   fwrite(&state, sizeof(state), 1, f);
   fwrite(&dma_magic2, sizeof(u32), 1, f);
-  printf("dma: %d bytes saved.\n", ss);
+  printf("dma: %ld bytes saved.\n", ss);
   return 0;
 }
 
@@ -395,7 +398,7 @@ int CDMA::RestoreState(FILE *f) {
     return -1;
   }
 
-  printf("dma: %d bytes restored.\n", ss);
+  printf("dma: %ld bytes restored.\n", ss);
   return 0;
 }
 
@@ -418,7 +421,8 @@ void CDMA::set_request(int num, int channel, int data) {
  **/
 void CDMA::do_dma() {
   for (int ctrlr = 0; ctrlr < 2; ctrlr++) {
-    if (state.controller[ctrlr].command & 0x04 == 0) // controller not disabled.
+    if ((state.controller[ctrlr].command & 0x04) ==
+        0) // controller not disabled.
     {
       for (int chnl = 0; chnl < 4; chnl++) {
         if ((state.controller[ctrlr].mask & (1 << chnl)) ==
@@ -446,7 +450,7 @@ void CDMA::send_data(int channel, void *data) {
           (state.channel[channel].pagebase << 16) + state.channel[channel].base;
       int count = get_count(channel);
 
-      printf("DMA send_data:  %x @ %16" LL "x\n  ", count, addr);
+      printf("DMA send_data:  %x @ %16" PRIx64 "x\n  ", count, addr);
       for (int i = 0; i < count; i++) {
         printf("%02x ", *((char *)data + i) & 0xff);
         if (i % 16 == 15)

@@ -340,8 +340,6 @@ void CCirrus::init() {
   // Register PCI device
   add_function(0, cirrus_cfg_data, cirrus_cfg_mask);
 
-  int i;
-
   // Initialize all state variables to 0
   memset((void *)&state, 0, sizeof(state));
 
@@ -591,7 +589,7 @@ int CCirrus::SaveState(FILE *f) {
   long ss = sizeof(state);
   int res;
 
-  if (res = CPCIDevice::SaveState(f))
+  if ((res = CPCIDevice::SaveState(f)))
     return res;
 
   fwrite(&cirrus_magic1, sizeof(u32), 1, f);
@@ -612,7 +610,7 @@ int CCirrus::RestoreState(FILE *f) {
   int res;
   size_t r;
 
-  if (res = CPCIDevice::RestoreState(f))
+  if ((res = CPCIDevice::RestoreState(f)))
     return res;
 
   r = fread(&m1, sizeof(u32), 1, f);
@@ -757,8 +755,8 @@ u32 CCirrus::rom_read(u32 address, int dsize) {
     // printf("cirrus: rom read: %" LL "x, %d, %" LL "x\n", address,
     // dsize,data);
   } else {
-    printf("cirrus: (BAD) rom read: %" LL "x, %d, %" LL "x\n", address, dsize,
-           data);
+    printf("cirrus: (BAD) rom read: %" PRIu32 "x, %d, %" PRIu32 "x\n", address,
+           dsize, data);
   }
 
   return data;
@@ -3448,17 +3446,7 @@ u8 CCirrus::vga_mem_read(u32 addr) {
   plane3 = &state.memory[3 << 16];
 
   /* addr between 0xA0000 and 0xAFFFF */
-  switch (state.graphics_ctrl.read_mode) {
-  case 0: /* read mode 0 */
-    state.graphics_ctrl.latch[0] = plane0[offset];
-    state.graphics_ctrl.latch[1] = plane1[offset];
-    state.graphics_ctrl.latch[2] = plane2[offset];
-    state.graphics_ctrl.latch[3] = plane3[offset];
-    retval = state.graphics_ctrl.latch[state.graphics_ctrl.read_map_select];
-    break;
-
-  case 1: /* read mode 1 */
-  {
+  if (state.graphics_ctrl.read_mode) {
     u8 color_compare;
 
     u8 color_dont_care;
@@ -3485,7 +3473,12 @@ u8 CCirrus::vga_mem_read(u32 addr) {
     latch3 &= ccdat[color_dont_care][3];
 
     retval = ~(latch0 | latch1 | latch2 | latch3);
-  } break;
+  } else {
+    state.graphics_ctrl.latch[0] = plane0[offset];
+    state.graphics_ctrl.latch[1] = plane1[offset];
+    state.graphics_ctrl.latch[2] = plane2[offset];
+    state.graphics_ctrl.latch[3] = plane3[offset];
+    retval = state.graphics_ctrl.latch[state.graphics_ctrl.read_map_select];
   }
 
   return retval;

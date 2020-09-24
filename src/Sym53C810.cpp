@@ -679,9 +679,7 @@ void CSym53C810::stop_threads() {
  * Kill thread if still running.
  * Note: SCSI bus is destroyed when destroying the System.
  **/
-CSym53C810::~CSym53C810() {
-  stop_threads();
-}
+CSym53C810::~CSym53C810() { stop_threads(); }
 
 /**
  * Reset the chipset.
@@ -727,7 +725,7 @@ int CSym53C810::SaveState(FILE *f) {
   long ss = sizeof(state);
   int res;
 
-  if (res = CPCIDevice::SaveState(f))
+  if ((res = CPCIDevice::SaveState(f)))
     return res;
 
   fwrite(&sym_magic1, sizeof(u32), 1, f);
@@ -748,7 +746,7 @@ int CSym53C810::RestoreState(FILE *f) {
   int res;
   size_t r;
 
-  if (res = CPCIDevice::RestoreState(f))
+  if ((res = CPCIDevice::RestoreState(f)))
     return res;
 
   r = fread(&m1, sizeof(u32), 1, f);
@@ -1111,9 +1109,11 @@ u32 CSym53C810::ReadMem_Bar(int func, int bar, u32 address, int dsize) {
         break;
 
       default:
-        FAILURE_2(NotImplemented,
-                  "SYM: Attempt to read from unknown register at %02x\n", dsize,
-                  address);
+        FAILURE_2(
+            NotImplemented,
+            "SYM: Attempt to read %d bytes from unknown register at %" PRIx32
+            "\n",
+            dsize, address);
       }
 
       MUTEX_UNLOCK(myRegLock);
@@ -1222,8 +1222,6 @@ void CSym53C810::write_b_scntl0(u8 value) {
  * \todo: Implement real reset of the SCSI bus.
  **/
 void CSym53C810::write_b_scntl1(u8 value) {
-  bool old_iarb = TB_R8(SCNTL1, IARB);
-  bool old_con = TB_R8(SCNTL1, CON);
   bool old_rst = TB_R8(SCNTL1, RST);
 
   R8(SCNTL1) = value;
@@ -1262,8 +1260,6 @@ void CSym53C810::write_b_scntl1(u8 value) {
  **/
 void CSym53C810::write_b_istat(u8 value) {
   bool old_srst = TB_R8(ISTAT, SRST);
-  bool old_sem = TB_R8(ISTAT, SEM);
-  bool old_sigp = TB_R8(ISTAT, SIGP);
 
   WRMW1C_R8(ISTAT, value);
 
@@ -1632,7 +1628,6 @@ int CSym53C810::check_phase(int chk_phase) {
 void CSym53C810::execute_bm_op() {
   bool indirect = (R8(DCMD) >> 5) & 1;
   bool table_indirect = (R8(DCMD) >> 4) & 1;
-  int opcode = (R8(DCMD) >> 3) & 1;
   int scsi_phase = (R8(DCMD) >> 0) & 7;
 
 #if defined(DEBUG_SYM_SCRIPTS)
@@ -1792,7 +1787,6 @@ void CSym53C810::execute_io_op() {
   int opcode = (R8(DCMD) >> 3) & 7;
   bool relative = (R8(DCMD) >> 2) & 1;
   bool table_indirect = (R8(DCMD) >> 1) & 1;
-  bool atn = (R8(DCMD) >> 0) & 1;
   int destination = (GET_DBC() >> 16) & 0x0f;
   bool sc_carry = (GET_DBC() >> 10) & 1;
   bool sc_target = (GET_DBC() >> 9) & 1;
@@ -2319,7 +2313,6 @@ void CSym53C810::execute_tc_op() {
  **/
 void CSym53C810::execute_ls_op() {
   bool is_load = (R8(DCMD) >> 0) & 1;
-  bool no_flush = (R8(DCMD) >> 1) & 1;
   bool dsa_relative = (R8(DCMD) >> 4) & 1;
   int regaddr = (GET_DBC() >> 16) & 0x7f;
   int byte_count = (GET_DBC() >> 0) & 7;

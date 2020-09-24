@@ -826,7 +826,7 @@ int CSym53C895::SaveState(FILE *f) {
   long ss = sizeof(state);
   int res;
 
-  if (res = CPCIDevice::SaveState(f))
+  if ((res = CPCIDevice::SaveState(f)))
     return res;
 
   fwrite(&sym_magic1, sizeof(u32), 1, f);
@@ -847,7 +847,7 @@ int CSym53C895::RestoreState(FILE *f) {
   int res;
   size_t r;
 
-  if (res = CPCIDevice::RestoreState(f))
+  if ((res = CPCIDevice::RestoreState(f)))
     return res;
 
   r = fread(&m1, sizeof(u32), 1, f);
@@ -1217,9 +1217,11 @@ u32 CSym53C895::ReadMem_Bar(int func, int bar, u32 address, int dsize) {
         break;
 
       default:
-        FAILURE_2(NotImplemented,
-                  "SYM: Attempt to read from unknown register at %02x\n", dsize,
-                  address);
+        FAILURE_2(
+            NotImplemented,
+            "SYM: Attempt to read %d bytes from unknown register at %" PRIx32
+            "\n",
+            dsize, address);
       }
 
       MUTEX_UNLOCK(myRegLock);
@@ -1328,14 +1330,10 @@ void CSym53C895::write_b_scntl0(u8 value) {
  * \todo: Implement real reset of the SCSI bus.
  **/
 void CSym53C895::write_b_scntl1(u8 value) {
-  bool old_iarb = TB_R8(SCNTL1, IARB);
-  bool old_con = TB_R8(SCNTL1, CON);
   bool old_rst = TB_R8(SCNTL1, RST);
 
   R8(SCNTL1) = value;
 
-  //  if (TB_R8(SCNTL1,CON) != old_con)
-  //    printf("SYM: Don't know how to forcibly connect or disconnect\n");
   if (TB_R8(SCNTL1, RST) != old_rst) {
     SB_R8(SSTAT0, SDP0, false);
     SB_R8(SSTAT1, SDP1, false);
@@ -1383,8 +1381,6 @@ void CSym53C895::write_b_scntl3(u8 value) {
  **/
 void CSym53C895::write_b_istat(u8 value) {
   bool old_srst = TB_R8(ISTAT, SRST);
-  bool old_sem = TB_R8(ISTAT, SEM);
-  bool old_sigp = TB_R8(ISTAT, SIGP);
 
   WRMW1C_R8(ISTAT, value);
 
@@ -1400,13 +1396,8 @@ void CSym53C895::write_b_istat(u8 value) {
     chip_reset();
   }
 
-  //  if (TB_R8(ISTAT,SEM) != old_sem)
-  //    printf("SYM: SEM %s.\n",old_sem?"reset":"set");
-  //  if (TB_R8(ISTAT,SIGP) != old_sigp)
-  //    printf("SYM: SIGP %s.\n",old_sigp?"reset":"set");
   if (TB_R8(ISTAT, SIGP)) {
     if (state.wait_reselect) {
-
       //      printf("SYM: SIGP while wait_reselect. Jumping...\n");
       R32(DSP) = state.wait_jump;
       state.wait_reselect = false;
@@ -1785,7 +1776,6 @@ int CSym53C895::check_phase(int chk_phase) {
 void CSym53C895::execute_bm_op() {
   bool indirect = (R8(DCMD) >> 5) & 1;
   bool table_indirect = (R8(DCMD) >> 4) & 1;
-  int opcode = (R8(DCMD) >> 3) & 1;
   int scsi_phase = (R8(DCMD) >> 0) & 7;
 
 #if defined(DEBUG_SYM_SCRIPTS)
@@ -1945,7 +1935,6 @@ void CSym53C895::execute_io_op() {
   int opcode = (R8(DCMD) >> 3) & 7;
   bool relative = (R8(DCMD) >> 2) & 1;
   bool table_indirect = (R8(DCMD) >> 1) & 1;
-  bool atn = (R8(DCMD) >> 0) & 1;
   int destination = (GET_DBC() >> 16) & 0x0f;
   bool sc_carry = (GET_DBC() >> 10) & 1;
   bool sc_target = (GET_DBC() >> 9) & 1;
@@ -2472,7 +2461,6 @@ void CSym53C895::execute_tc_op() {
  **/
 void CSym53C895::execute_ls_op() {
   bool is_load = (R8(DCMD) >> 0) & 1;
-  bool no_flush = (R8(DCMD) >> 1) & 1;
   bool dsa_relative = (R8(DCMD) >> 4) & 1;
   int regaddr = (GET_DBC() >> 16) & 0x7f;
   int byte_count = (GET_DBC() >> 0) & 7;
