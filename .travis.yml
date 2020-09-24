@@ -1,0 +1,10 @@
+language: cpp
+dist: focal
+compiler: clang
+
+install: sudo apt-get install cmake libpcap-dev libsdl-dev
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
+  - make
