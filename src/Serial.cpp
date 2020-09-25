@@ -212,6 +212,9 @@ CSerial::CSerial(CConfigurator *cfg, CSystem *c, u16 number)
  **/
 void CSerial::init() {
   listenPort = (int)myCfg->get_num_value("port", false, 8000 + state.iNumber);
+  if (!(listenAddress = myCfg->get_text_value("address"))) {
+    listenAddress = "0.0.0.0";
+  }
   cSystem->RegisterMemory(this, 0,
                           U64(0x00000801fc0003f8) - (0x100 * state.iNumber), 8);
 
@@ -228,7 +231,7 @@ void CSerial::init() {
     printf("Could not open socket to listen on!\n");
   }
 
-  Address.sin_addr.s_addr = INADDR_ANY;
+  inet_aton(listenAddress, (in_addr *) &Address.sin_addr.s_addr);
   Address.sin_port = htons((u16)(listenPort));
   Address.sin_family = AF_INET;
 

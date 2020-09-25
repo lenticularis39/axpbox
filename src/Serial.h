@@ -155,6 +155,7 @@ private:
     bool irq_active;
   } state;
   int listenPort;
+  const char *listenAddress;
   int listenSocket;
   int connectSocket;
 #if defined(IDB) && defined(LS_MASTER)

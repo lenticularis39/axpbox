@@ -7,8 +7,11 @@ wget 'http://80.211.96.38/s/inc/downloads/es40-srmon/cl67srmrom.exe'
 ../../build/axpbox run &
 AXPBOX_PID=$!
 
+# Wait for AXPbox to start
+sleep 3
+
 # Connect to terminal
-nc -t 127.0.0.1 21000 | tee axp.log &
+ncat -t 127.0.0.1 21000 | tee axp.log &
 NETCAT_PID=$!
 
 # Wait for the last line of log to become P00>>>
@@ -18,7 +21,7 @@ do
   if [ $timeout -eq 0 ]
   then
     echo "waiting for SRM prompt timed out" >&2
-    return 1
+    exit 1
   fi
 
   if [ "$(tail -n 1 axp.log | tr -d '\0')" == "P00>>>"  ]

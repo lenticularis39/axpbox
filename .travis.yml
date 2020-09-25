@@ -2,7 +2,7 @@ language: cpp
 dist: focal
 compiler: clang
 
-before_install: sudo apt-get install cmake libpcap-dev libsdl-dev
+before_install: sudo apt-get install cmake libpcap-dev libsdl-dev ncat
 install:
   - mkdir build
   - cd build
