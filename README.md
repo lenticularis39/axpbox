@@ -1,6 +1,6 @@
 # AXPbox Alpha emulator
 
-AXPbox is a fork of the discontinued es40 emulator. It can be used for running any operating system that runs on the Tru64 PALcode (e.g. OpenVMS, Tru64 UNIX, Linux, NetBSD).
+AXPbox is a fork of the discontinued es40 emulator. It could theoretically used for running any operating system that runs on the OpenVMS or Tru64 PALcode (e.g. OpenVMS, Tru64 UNIX, Linux, NetBSD), however as of now only OpenVMS works.
 
 The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and VGA graphics (using SDL).
 
@@ -21,3 +21,4 @@ axpbox run
 - CMake is used for compilation instead of autotools
 - OpenVMS host support was dropped
 - es40 and es40_cfg were merged into one executable (axpbox)
+- The code was cleaned to compile without warnings on most compilers
