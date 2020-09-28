@@ -309,7 +309,7 @@ public:
   virtual void stop_threads();
 
 private:
-  CThread *myThread;
+  CThread *myThread = nullptr;
   CSemaphore mySemaphore;
   bool StopThread;
 

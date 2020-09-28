@@ -178,7 +178,7 @@ public:
   void stop_threads();
 
 private:
-  CThread *myThread;
+  CThread *myThread = nullptr;
   CMutex *myRegLock;
   bool StopThread;
 

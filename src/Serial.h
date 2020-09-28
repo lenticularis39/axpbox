@@ -127,8 +127,7 @@ public:
 
 private:
   void serial_menu();
-
-  CThread *myThread;
+  CThread *myThread = nullptr;
   bool StopThread;
   bool breakHit;
 

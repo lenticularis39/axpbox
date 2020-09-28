@@ -173,7 +173,7 @@ private:
   void set_interrupt(int reg, u8 interrupt);
   void chip_reset();
 
-  CThread *myThread;
+  CThread *myThread = nullptr;
   CSemaphore mySemaphore;
   CMutex *myRegLock;
   bool StopThread;

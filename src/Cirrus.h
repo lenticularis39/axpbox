@@ -164,7 +164,7 @@ private:
   void vga_mem_write(u32 addr, u8 value);
   u8 vga_mem_read(u32 addr);
 
-  CThread *myThread;
+  CThread *myThread = nullptr;
   bool StopThread;
 
   /// The state structure contains all elements that need to be saved to the
