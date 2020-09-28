@@ -89,7 +89,7 @@ public:
   virtual void stop_threads();
 
 private:
-  CThread *myThread;
+  CThread *myThread = nullptr;
   bool StopThread;
 
   u8 read_60();

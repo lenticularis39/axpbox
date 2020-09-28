@@ -136,7 +136,7 @@ public:
 private:
   static int nic_num;
 
-  CThread *myThread;
+  CThread *myThread = nullptr;
   bool StopThread;
 
   u32 nic_read(u32 address, int dsize);
