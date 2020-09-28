@@ -292,7 +292,9 @@ void CSerial::stop_threads() {
   StopThread = true;
   if (myThread) {
     printf(" %s", myThread->getName().c_str());
-    myThread->join();
+    if (!acceptingSocket) {
+      myThread->join();
+    }
     delete myThread;
     myThread = 0;
   }
@@ -787,8 +789,10 @@ void CSerial::WaitForConnection() {
   //  Wait until we have a connection
   connectSocket = INVALID_SOCKET;
   while (connectSocket == INVALID_SOCKET) {
+    acceptingSocket = true;
     connectSocket =
         (int)accept(listenSocket, (struct sockaddr *)&Address, &nAddressSize);
+    acceptingSocket = false;
   }
 
   state.serial_cycles = 0;

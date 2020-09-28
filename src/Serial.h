@@ -128,7 +128,8 @@ public:
 private:
   void serial_menu();
   CThread *myThread = nullptr;
-  bool StopThread;
+  bool StopThread = false;
+  bool acceptingSocket = false;
   bool breakHit;
 
   /// The state structure contains all elements that need to be saved to the
