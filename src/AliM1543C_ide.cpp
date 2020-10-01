@@ -425,7 +425,9 @@ void CAliM1543C_ide::init() {
 
   for (int i = 0; i < 2; i++) {
     semController[i] = new CSemaphore(0, 1); // disk controller
+    semControllerReady[i] = new CSemaphore(0, 1); // disk controller ready
     semBusMaster[i] = new CSemaphore(0, 1);  // bus master
+    semControllerReady[i]->set();
     thrController[i] = 0;
   }
 
@@ -723,6 +725,7 @@ u32 CAliM1543C_ide::ide_command_read(int index, u32 address, int dsize) {
         SEL_STATUS(index).busy = true;
         SEL_STATUS(index).drive_ready = false;
         UPDATE_ALT_STATUS(index);
+        semControllerReady[index]->wait();
         semController[index]->set(); // wake up the controller.
 #if defined(DEBUG_IDE_MULTIPLE) || defined(DEBUG_IDE_PACKET)
         printf("Command still in progress, waking up controller.\n");
@@ -827,6 +830,7 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
       SEL_STATUS(index).drq = false;
       SEL_STATUS(index).busy = true;
       UPDATE_ALT_STATUS(index);
+      semControllerReady[index]->wait();
       semController[index]->set(); // wake the controller up.
     }
 
@@ -912,6 +916,7 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
       UPDATE_ALT_STATUS(index);
       SEL_COMMAND(index).command_in_progress = true;
       SEL_COMMAND(index).packet_phase = PACKET_NONE;
+      semControllerReady[index]->wait();
       semController[index]->set(); // wake up the controller.
     } else {
 
@@ -2481,6 +2486,7 @@ void CAliM1543C_ide::run() {
         }
 #endif
       }
+      semControllerReady[index]->set();
     }
   }
 
