@@ -217,11 +217,12 @@ private:
 
   void execute(int index);
 
-  CThread *thrController[2];    // one thread for each controller chip
-  CSemaphore *semController[2]; // controller start/stop
-  CSemaphore *semBusMaster[2];  // bus master start/stop
-  CRWLock *mtRegisters[2];      // main registers
-  CRWLock *mtBusMaster[2];      // busmaster registers
+  CThread *thrController[2];          // one thread for each controller chip
+  CSemaphore *semController[2];       // controller start/stop
+  CSemaphore *semControllerReady[2];  // controller ready
+  CSemaphore *semBusMaster[2];        // bus master start/stop
+  CRWLock *mtRegisters[2];            // main registers
+  CRWLock *mtBusMaster[2];            // busmaster registers
   bool StopThread;
 
   bool usedma;
