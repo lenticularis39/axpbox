@@ -469,7 +469,7 @@ void CSerial::run() {
       if (StopThread)
         return;
       execute();
-      CThread::sleep(20);
+      CThread::sleep(5);
     }
   }
 
