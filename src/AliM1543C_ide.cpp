@@ -427,7 +427,9 @@ void CAliM1543C_ide::init() {
     semController[i] = new CSemaphore(0, 1); // disk controller
     semControllerReady[i] = new CSemaphore(0, 1); // disk controller ready
     semBusMaster[i] = new CSemaphore(0, 1);  // bus master
+    semBusMasterReady[i] = new CSemaphore(0, 1);  // bus master ready
     semControllerReady[i]->set();
+    semBusMasterReady[i]->set();
     thrController[i] = 0;
   }
 
@@ -1093,6 +1095,7 @@ void CAliM1543C_ide::ide_busmaster_write(int index, u32 address, u32 data,
 
       // set the status register
       CONTROLLER(index).busmaster[2] |= 0x01;
+      semBusMasterReady[index]->wait();
       semBusMaster[index]->set(); // wake up the controller for busmastering
     } else {
 
@@ -2392,7 +2395,6 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
            xfer);
 #endif
     if (xfersize + size > buffersize) {
-
       // only copy as much data as we have from the disk.
       size = buffersize - xfersize;
       status = 2;
@@ -2423,7 +2425,6 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
     }
 
     if (buffersize == xfersize && xfer != 0x80) {
-
       // we're done, but there's more prd nodes.
       status = 2;
     }
@@ -2454,6 +2455,7 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
     break;
   }
 
+  semBusMasterReady[index]->set();
   return status;
 }
 
