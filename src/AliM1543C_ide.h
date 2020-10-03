@@ -221,6 +221,7 @@ private:
   CSemaphore *semController[2];       // controller start/stop
   CSemaphore *semControllerReady[2];  // controller ready
   CSemaphore *semBusMaster[2];        // bus master start/stop
+  CSemaphore *semBusMasterReady[2];   // bus master ready
   CRWLock *mtRegisters[2];            // main registers
   CRWLock *mtBusMaster[2];            // busmaster registers
   bool StopThread;
