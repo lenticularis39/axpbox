@@ -15,6 +15,8 @@ This creates a file named es40.cfg, which you can now modify (the generator UI d
 axpbox run
 ```
 
+Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wiki/OpenVMS-installation-guide) for information to get OpenVMS installed in the emulator.
+
 ## Changes in comparison with es40
 
 - Renamed from es40 to AXPbox to avoid confusion with the physical machine (AlphaServer ES40)
