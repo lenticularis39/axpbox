@@ -2,7 +2,7 @@
 
 AXPbox is a fork of the discontinued es40 emulator. It could theoretically used for running any operating system that runs on the OpenVMS or Tru64 PALcode (e.g. OpenVMS, Tru64 UNIX, Linux, NetBSD), however as of now only OpenVMS can be installed (for more details see [Guest support](https://github.com/lenticularis39/axpbox/wiki/Guest-support)).
 
-The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and VGA graphics (using SDL).
+The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and [VGA graphics](https://github.com/lenticularis39/axpbox/wiki/VGA) (using SDL).
 
 ## Usage
 
