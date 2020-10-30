@@ -111,6 +111,14 @@ else()
     message(WARNING "x11 not found. Building without x11 graphics support")
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -ggdb")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -ggdb")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -DNDEBUG")
+endif()
+
 set(PACKAGE ${PROJECT_NAME})
 set(PACKAGE_BUGREPORT "tglozar@gmail.com")
 set(PACKAGE_NAME string(TOLOWER ${PROJECT_NAME}))
@@ -128,3 +136,7 @@ set(STDC_HEADERS 1)
 check_include_files("time.h;sys/time.h" TIME_WITH_SYS_TIME)
 
 configure_file(src/config.h.in src/config.h)
+
+message(STATUS "C++ compiler flags  : ${CMAKE_CXX_FLAGS}")
+message(STATUS "C compiler flags    : ${CMAKE_C_FLAGS}")
+message(STATUS "Linker flags        : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_STATIC_LINKER_FLAGS}")
