@@ -129,6 +129,6 @@ check_include_files("time.h;sys/time.h" TIME_WITH_SYS_TIME)
 
 configure_file(src/config.h.in src/config.h)
 
-message(STATUS "CXXFlags  : ${CMAKE_CXX_FLAGS}")
-message(STATUS "CFlags    : ${CMAKE_C_FLAGS}")
-message(STATUS "Link Flags: ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_STATIC_LINKER_FLAGS}")
+message(STATUS "C++ compiler flags  : ${CMAKE_CXX_FLAGS}")
+message(STATUS "C compiler flags    : ${CMAKE_C_FLAGS}")
+message(STATUS "Linker flags        : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_STATIC_LINKER_FLAGS}")
