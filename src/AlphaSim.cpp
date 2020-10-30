@@ -288,11 +288,13 @@ int main_sim(int argc, char *argv[]) {
     } else {
       for (int i = 0; path[i]; i++) {
         filename = path[i];
-        f = fopen(path[i], "r");
+        f = fopen(filename, "r");
         if (f != NULL) {
           fclose(f);
           filename = path[i];
           break;
+        } else {
+          filename = NULL;
         }
       }
       if (filename == NULL)
@@ -301,6 +303,8 @@ int main_sim(int argc, char *argv[]) {
     char *ch1;
     size_t ll1;
     f = fopen(filename, "rb");
+    if (f == NULL)
+      FAILURE(File, "configuration file");
     fseek(f, 0, SEEK_END);
     ll1 = ftell(f);
     ch1 = (char *)calloc(ll1, 1);
