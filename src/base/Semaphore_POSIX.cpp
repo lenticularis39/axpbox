@@ -109,7 +109,7 @@ CSemaphoreImpl::CSemaphoreImpl(int n, int max) : _n(n), _max(max) {
 #else
   if (pthread_cond_init(&_cond, NULL)) {
     pthread_mutex_destroy(&_mutex);
-    throw SystemException("cannot create semaphore (condition)");
+    throw CSystemException("cannot create semaphore (condition)");
   }
 #endif
 }
