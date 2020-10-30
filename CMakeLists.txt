@@ -102,6 +102,18 @@ if(HAVE_X11)
     target_link_libraries(axpbox X11)
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -ggdb")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
+endif()
+
+message(STATUS "CXXFlags  : ${CMAKE_CXX_FLAGS}")
+message(STATUS "CFlags    : ${CMAKE_C_FLAGS}")
+message(STATUS "Link Flags: ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_STATIC_LINKER_FLAGS}")
+
 
 set(PACKAGE ${PROJECT_NAME})
 set(PACKAGE_BUGREPORT "tglozar@gmail.com")
