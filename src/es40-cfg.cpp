@@ -444,6 +444,23 @@ int main_cfg(int argc, char *argv[]) {
 
   icache_q.ask();
 
+  MultipleChoiceQuestion skip_memtest_hack_q;
+
+  skip_memtest_hack_q.setQuestion("Do you want to skip memtest on SRM start?");
+  skip_memtest_hack_q.setExplanation(
+      "This makes startup significantly faster, but may not work with some "
+      "versions of the firmware.");
+  skip_memtest_hack_q.setDefault("no");
+  skip_memtest_hack_q.addAnswer(
+      "yes", "true",
+      "Skip memtest hack enabled. CPU detects the instruction pointer where "
+      "the memtest starts and skips it.");
+  skip_memtest_hack_q.addAnswer("no", "false",
+                                "Skip memtest hack disabled. Firmware checks "
+                                "all available memory on startup.");
+
+  skip_memtest_hack_q.ask();
+
   NumberQuestion mhz_q;
 
   mhz_q.setQuestion("What should the reported speed of the CPU's be in MHz?");
@@ -462,6 +479,8 @@ int main_cfg(int argc, char *argv[]) {
     os << "  {\n";
     os << "    speed = " << mhz_q.getAnswer() << "M;\n";
     os << "    icache = " << icache_q.getAnswer() << ";\n";
+    os << "    skip_memtest_hack = " << skip_memtest_hack_q.getAnswer()
+       << ";\n";
     os << "  }\n\n";
   }
 
