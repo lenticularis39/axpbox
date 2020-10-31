@@ -786,7 +786,7 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
     }
 
     toy_handle_periodic_interrupt(data);
-
+    break;
   case 1:
     if (state.toy_access_ports[0] == 0x0b &&
         data & 0x040) // If we're writing to register B, we make register C look
