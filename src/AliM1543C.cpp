@@ -806,6 +806,37 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
       //#
     }
 
+    {
+      /*
+        See sys/dev/ic/mc146818reg.h and sys/arch/alpha/alpha/mcclock.c
+      */
+      static clock_t last_fire = 0;
+      clock_t now = clock();
+      double  timedelta = (now - last_fire) / (double)CLOCKS_PER_SEC;
+      int     rate_pow = state.toy_stored_data[0x0a] & 0x0f;
+      double  period = (1 << rate_pow)/65536.0;
+    #define MC_BASE_32_KHz  0x20
+    #define RTC_PF 0x40
+
+      if (state.toy_stored_data[0x0a] & MC_BASE_32_KHz)
+      {
+          if (rate_pow == 0x1)
+          {
+              period = 1/256.0;
+          }
+          else if (rate_pow == 0x2)
+          {
+              period = 1/128.0;
+          }
+      }
+
+      if (rate_pow && (timedelta >= period))
+      {
+          state.toy_stored_data[0x0c] |= RTC_PF;
+          last_fire = now;
+      }
+    }
+
     state.toy_access_ports[1] = state.toy_stored_data[data & 0x7f];
 
     // register C is cleared after a read, and we don't care if its a write
