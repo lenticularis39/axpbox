@@ -1222,7 +1222,7 @@ void CAliM1543C::pic_deassert(int index, int intno) {
     return;
 
   //  printf("De-asserting %d,%d\n",index,intno);
-  state.pic_asserted[index] &= !(1 << intno);
+  state.pic_asserted[index] &= ~(1 << intno);
   if (index == 1 && state.pic_asserted[1] == 0)
     pic_deassert(0, 2); // cascade
   if (index == 0 && state.pic_asserted[0] == 0)
