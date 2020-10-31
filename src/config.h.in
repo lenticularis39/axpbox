@@ -334,3 +334,9 @@
 
 /* Define as `fork' if `vfork' does not work. */
 #cmakedefine vfork
+
+/* Define if system is little endian */
+#cmakedefine ES40_LITTLE_ENDIAN
+
+/* Define if system is big endian */
+#cmakedefine ES40_BIG_ENDIAN
