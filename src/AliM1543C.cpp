@@ -446,6 +446,8 @@ void CAliM1543C::init() {
     state.toy_stored_data[0x17] = 0;
   }
 
+  state.toy_pi_last_fire = 0;
+
   ResetPCI();
 
   // PIT Setup
@@ -760,7 +762,6 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
       //  periodic interrupt rate divisor of 32 = interrupt every 976.562 ms
       //  (1024Hz clock)
       if (state.toy_stored_data[0x0a] & 0x80) {
-
         // Once the UIP line goes high, we have to stay high for 2228us.
         hold_count--;
         if (hold_count == 0) {
@@ -782,36 +783,9 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
               (2228 / (IPus * 3)) + 1; // .876 @ 847IPus, so we add one.
         }
       }
-
-      //# /****************************************************/
-      //# #define RTC_CONTROL RTC_REG_B
-      //# # define RTC_SET 0x80 /* disable updates for clock setting */
-      //# # define RTC_PIE 0x40 /* periodic interrupt enable */
-      //# # define RTC_AIE 0x20 /* alarm interrupt enable */
-      //# # define RTC_UIE 0x10 /* update-finished interrupt enable */
-      //# # define RTC_SQWE 0x08 /* enable square-wave output */
-      //# # define RTC_DM_BINARY 0x04 /* all time/date values are BCD if clear
-      //*/ # # define RTC_24H 0x02 /* 24 hour mode - else hours bit 7 means pm
-      //*/ # # define RTC_DST_EN 0x01 /* auto switch DST - works f. USA only */
-      //#
-      // this is set (by the srm?) to 0x0e = SQWE | DM_BINARY | 24H
-      // linux sets the PIE bit later.
-      //# /***********************************************************/
-      //# #define RTC_INTR_FLAGS RTC_REG_C
-      //# /* caution - cleared by read */
-      //# # define RTC_IRQF 0x80 /* any of the following 3 is active */
-      //# # define RTC_PF 0x40
-      //# # define RTC_AF 0x20
-      //# # define RTC_UF 0x10
-      //#
     }
 
-    state.toy_access_ports[1] = state.toy_stored_data[data & 0x7f];
-
-    // register C is cleared after a read, and we don't care if its a write
-    if (data == 0x0c)
-      state.toy_stored_data[data & 0x7f] = 0;
-    break;
+    toy_handle_periodic_interrupt(data);
 
   case 1:
     if (state.toy_access_ports[0] == 0x0b &&
@@ -829,6 +803,39 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
     state.toy_stored_data[0x80 + (state.toy_access_ports[2] & 0x7f)] = (u8)data;
     break;
   }
+}
+
+/**
+ * Handle RTC periodic interrupt.
+ **/
+void CAliM1543C::toy_handle_periodic_interrupt(u8 data) {
+  /*
+   See sys/dev/ic/mc146818reg.h and sys/arch/alpha/alpha/mcclock.c in NetBSD and
+   the RTC datasheet: https://www.nxp.com/docs/en/data-sheet/MC146818.pdf.
+  */
+  clock_t now = clock();
+  double timedelta = (now - state.toy_pi_last_fire) / (double)CLOCKS_PER_SEC;
+  int rate_pow = state.toy_stored_data[0x0a] & 0x0f;
+  double period = (1 << rate_pow) / 65536.0;
+
+  if (state.toy_stored_data[0x0a] & MC_BASE_32_KHz) {
+    if (rate_pow == 0x1) {
+      period = 1 / 256.0;
+    } else if (rate_pow == 0x2) {
+      period = 1 / 128.0;
+    }
+  }
+
+  if (rate_pow && (timedelta >= period)) {
+    state.toy_stored_data[0x0c] |= RTC_PF;
+    state.toy_pi_last_fire = now;
+  }
+
+  state.toy_access_ports[1] = state.toy_stored_data[data & 0x7f];
+
+  // register C is cleared after a read, and we don't care if it's a write
+  if (data == 0x0c)
+    state.toy_stored_data[data & 0x7f] = 0;
 }
 
 /**
@@ -929,7 +936,6 @@ void CAliM1543C::pit_write(u32 address, u8 data) {
 void CAliM1543C::pit_clock() {
   int i;
   for (i = 0; i < 3; i++) {
-
     // decrement the counter.
     if (state.pit_status[i] & 0x40)
       continue;
@@ -1222,7 +1228,7 @@ void CAliM1543C::pic_deassert(int index, int intno) {
     return;
 
   //  printf("De-asserting %d,%d\n",index,intno);
-  state.pic_asserted[index] &= !(1 << intno);
+  state.pic_asserted[index] &= ~(1 << intno);
   if (index == 1 && state.pic_asserted[1] == 0)
     pic_deassert(0, 2); // cascade
   if (index == 0 && state.pic_asserted[0] == 0)

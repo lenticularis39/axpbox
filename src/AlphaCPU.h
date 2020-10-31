@@ -423,6 +423,7 @@ private:
   int vmspal_int_initiate_interrupt();
 
   bool icache_enabled;
+  bool skip_memtest_hack;
 
   // ... ... ...
   u64 cc_large;
@@ -564,6 +565,8 @@ private:
   u64 last_read_loc;
   u64 last_write_loc;
 #endif
+
+  void skip_memtest();
 };
 
 /** Translate raw register (0..31) number to a number that takes PALshadow

@@ -427,7 +427,7 @@ void CDEC21143::init() {
 #else
   if ((fp = pcap_open_live(cfg, 65536 /*snaplen: capture entire packets */,
                            1 /*promiscuous */, 1 /*read timeout: 1ms. */,
-                           errbuf)) == NULL) // connect to pcap...
+                           errbuf)) == nullptr) // connect to pcap...
 #endif
     FAILURE_2(Runtime, "Error opening adapter %s:\n %s", cfg, errbuf);
 
