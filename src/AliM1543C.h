@@ -143,6 +143,9 @@
 
 #define PIT_OFFSET_MAX 6
 
+#define MC_BASE_32_KHz 0x20
+#define RTC_PF 0x40
+
 /**
  * \brief Emulated ISA part of the ALi M1543C chipset.
  *
@@ -189,6 +192,7 @@ private:
   // REGISTERS 70 - 73: TOY
   u8 toy_read(u32 address);
   void toy_write(u32 address, u8 data);
+  void toy_handle_periodic_interrupt(u8 data);
 
   // Timer/Counter
   u8 pit_read(u32 address);
@@ -210,13 +214,15 @@ private:
   /// The state structure contains all elements that need to be saved to the
   /// statefile.
   struct SAli_state {
-
     // REGISTER 61 (NMI)
     u8 reg_61;
 
     // REGISTERS 70 - 73: TOY
     u8 toy_stored_data[256];
     u8 toy_access_ports[4];
+
+    // TOY periodic interrupt last fire
+    clock_t toy_pi_last_fire;
 
     // Timer/Counter
     u32 pit_counter[9];
