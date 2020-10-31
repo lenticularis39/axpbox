@@ -426,7 +426,7 @@ void CDEC21143::init() {
                       errbuf)) == NULL) // connect to pcap...
 #else
   if ((fp = pcap_open_live(cfg, 65536 /*snaplen: capture entire packets */,
-                           1 /*promiscuous */, 1 /*read timeout: 1ms. */,
+                           1 /*promiscuous */, 10 /*read timeout: 10ms. */,
                            errbuf)) == nullptr) // connect to pcap...
 #endif
     throw std::runtime_error("Error opening adapter " + std::string(cfg) + " : " + errbuf);
