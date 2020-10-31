@@ -370,7 +370,7 @@ void CDEC21143::init() {
   if (!cfg) {
     printf("\n%s: Choose a network adapter to connect to:\n", devid_string);
     if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-      FAILURE_1(Runtime, "Error in pcap_findalldevs_ex: %s", errbuf);
+      throw std::runtime_error("Error in pcap_findalldevs_ex: " + std::string(errbuf));
     }
 
     /* Print the list */
@@ -383,7 +383,7 @@ void CDEC21143::init() {
     }
 
     if (i == 0)
-      FAILURE(Runtime, "No network interfaces found");
+        throw std::runtime_error("No network interfaces found");
 
     if (i == 1)
       inum = 1;
@@ -426,14 +426,13 @@ void CDEC21143::init() {
                       errbuf)) == NULL) // connect to pcap...
 #else
   if ((fp = pcap_open_live(cfg, 65536 /*snaplen: capture entire packets */,
-                           1 /*promiscuous */, 1 /*read timeout: 1ms. */,
-                           errbuf)) == NULL) // connect to pcap...
+                           1 /*promiscuous */, 10 /*read timeout: 10ms. */,
+                           errbuf)) == nullptr) // connect to pcap...
 #endif
-    FAILURE_2(Runtime, "Error opening adapter %s:\n %s", cfg, errbuf);
+    throw std::runtime_error("Error opening adapter " + std::string(cfg) + " : " + errbuf);
 
   if (pcap_setnonblock(fp, 1, errbuf) == PCAP_ERROR)
-    FAILURE_2(Runtime, "Error setting adapter %s non-blocking:\n %s", cfg,
-              errbuf);
+    throw std::runtime_error("Error setting adapter " + std::string(cfg) + " non-blocking: " + errbuf);
 
   // set default mac = Digital ethernet prefix: 08-00-2B + hexified "ES40" + nic
   // number
