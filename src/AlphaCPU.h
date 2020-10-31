@@ -564,6 +564,8 @@ private:
   u64 last_read_loc;
   u64 last_write_loc;
 #endif
+
+    void skip_memtest();
 };
 
 /** Translate raw register (0..31) number to a number that takes PALshadow

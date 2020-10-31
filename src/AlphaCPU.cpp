@@ -560,58 +560,12 @@ void CAlphaCPU::check_state() {
   return;
 }
 
-/**
- * \brief Called each clock-cycle.
- *
- * This is where the actual CPU emulation takes place. Each clocktick, one
- *instruction is processed by the processor. The instruction pipeline is not
- *emulated, things are complicated enough as it is. The one exception is the
- *instruction cache, which is implemented, to accomodate self-modifying code.
- *The instruction cache can be disabled if self-modifying code is not expected.
- **/
-void CAlphaCPU::execute() {
-  u32 ins;
-  int i;
-  u64 phys_address;
-  u64 temp_64;
-  u64 temp_64_1;
-  u64 temp_64_2;
-
-  bool pbc;
-
-  int opcode;
-  int function;
-
-#if defined(MIPS_ESTIMATE)
-
-  // Calculate simulated performance statistics
-  if (++count >= MIPS_INTERVAL) {
-    time_t current;
-    time(&current);
-    if (saved > 0) {
-      double secs = difftime(current, saved);
-      double ips = MIPS_INTERVAL / secs;
-      double mips = ips / 1000000.0;
-      if (max_mips < mips)
-        max_mips = mips;
-      if (min_mips > mips)
-        min_mips = mips;
-      printf("ES40 MIPS (%3.1f sec):: current: %5.3f, min: %5.3f, max: %5.3f\n",
-             secs, mips, min_mips, max_mips);
+inline void CAlphaCPU::skip_memtest()
+{
+    if (!(state.current_pc & U64(0x8b000)))
+    {
+        return;
     }
-
-    saved = current;
-    count = 0;
-  }
-#endif
-#if defined(IDB)
-  char *funcname = 0;
-  dbg_string[0] = '\0';
-#if !defined(LS_MASTER) && !defined(LS_SLAVE)
-  dbg_strptr = dbg_string;
-#endif
-#endif
-  state.current_pc = state.pc;
 
     if (state.current_pc == U64(0x8bb90))
     {
@@ -672,6 +626,63 @@ void CAlphaCPU::execute() {
             state.r[3] = state.r[4];
         }
     }
+}
+
+
+/**
+ * \brief Called each clock-cycle.
+ *
+ * This is where the actual CPU emulation takes place. Each clocktick, one
+ *instruction is processed by the processor. The instruction pipeline is not
+ *emulated, things are complicated enough as it is. The one exception is the
+ *instruction cache, which is implemented, to accomodate self-modifying code.
+ *The instruction cache can be disabled if self-modifying code is not expected.
+ **/
+void CAlphaCPU::execute() {
+  u32 ins;
+  int i;
+  u64 phys_address;
+  u64 temp_64;
+  u64 temp_64_1;
+  u64 temp_64_2;
+
+  bool pbc;
+
+  int opcode;
+  int function;
+
+#if defined(MIPS_ESTIMATE)
+
+  // Calculate simulated performance statistics
+  if (++count >= MIPS_INTERVAL) {
+    time_t current;
+    time(&current);
+    if (saved > 0) {
+      double secs = difftime(current, saved);
+      double ips = MIPS_INTERVAL / secs;
+      double mips = ips / 1000000.0;
+      if (max_mips < mips)
+        max_mips = mips;
+      if (min_mips > mips)
+        min_mips = mips;
+      printf("ES40 MIPS (%3.1f sec):: current: %5.3f, min: %5.3f, max: %5.3f\n",
+             secs, mips, min_mips, max_mips);
+    }
+
+    saved = current;
+    count = 0;
+  }
+#endif
+#if defined(IDB)
+  char *funcname = 0;
+  dbg_string[0] = '\0';
+#if !defined(LS_MASTER) && !defined(LS_SLAVE)
+  dbg_strptr = dbg_string;
+#endif
+#endif
+  state.current_pc = state.pc;
+
+  skip_memtest();
 
   // Service interrupts
   if (DO_ACTION) {
