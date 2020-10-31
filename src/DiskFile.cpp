@@ -109,10 +109,12 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     FAILURE_1(Configuration, "%s: Disk has no file attached!\n", devid_string);
   }
 
-  if (read_only)
-    handle = fopen(filename, "rb");
-  else
-    handle = fopen_large(filename, "rb+");
+#ifdef HAVE_FOPEN64
+    handle = fopen64(filename, read_only ? "rb" : "rb+");
+#else
+    handle = fopen(filename, read_only ? "rb" : "rb+");
+#endif
+
   if (!handle) {
     printf("%s: Could not open file %s!\n", devid_string, filename);
 
