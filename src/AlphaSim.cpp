@@ -332,6 +332,8 @@ int main_sim(int argc, char *argv[]) {
     }
 #endif
 #if defined(IDB)
+    theSystem->start_threads();
+
     if (argc > 1 && argc < 4 && argv[argc - 1][0] == '@')
       trc->run_script(argv[argc - 1] + 1);
     else

@@ -2377,8 +2377,15 @@ void CSystem::start_threads() {
   int i;
 
   printf("Start threads:");
-  for (i = 0; i < iNumComponents; i++)
+  for (i = 0; i < iNumComponents; i++) {
+#ifdef IDB
+    // When running with IDB, the trace engine takes care of managing the CPU,
+    // so its thread shouldn't be started.
+    if (dynamic_cast<CAlphaCPU *>(acComponents[i]))
+      continue;
+#endif
     acComponents[i]->start_threads();
+  }
   printf("\n");
 
   for (i = 0; i < iNumCPUs; i++)
