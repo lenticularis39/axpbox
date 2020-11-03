@@ -143,8 +143,32 @@
 
 #define PIT_OFFSET_MAX 6
 
+// RTC register A (MC_BASE_32_KHz is a divider bits configuration)
+#define RTC_REG_A 0x0a
+#define RTC_UIP 0x80
 #define MC_BASE_32_KHz 0x20
+
+// RTC register B (here most options reside; 0x08 is the unused square wave
+// enable pin)
+#define RTC_REG_B 0x0b
+#define RTC_SET 0x80
+#define RTC_PIE 0x40
+#define RTC_AIE 0x20
+#define RTC_UIE 0x10
+#define RTC_DM 0x04
+#define RTC_2412 0x02
+#define RTC_DSE 0x01
+
+// RTC register C (rest of register is always zero)
+#define RTC_REG_C 0x0c
+#define RTC_IRQF 0x80
 #define RTC_PF 0x40
+#define RTC_AF 0x20
+#define RTC_UF 0x10
+
+// RTC register D (rest of register is always zero)
+#define RTC_REG_D 0x0d
+#define RTC_VRT 0x80
 
 /**
  * \brief Emulated ISA part of the ALi M1543C chipset.
@@ -155,6 +179,8 @@
  * Documentation consulted:
  *  - Ali M1543C B1 South Bridge Version 1.20
  *(http://mds.gotdns.com/sensors/docs/ali/1543dScb1-120.pdf)
+ *  - MC146818 RTC
+ *(https://www.nxp.com/docs/en/data-sheet/MC146818.pdf)
  *  - Keyboard Scancodes, by Andries Brouwer
  *(http://www.win.tue.nl/~aeb/linux/kbd/scancodes.html)
  *  .
@@ -193,6 +219,7 @@ private:
   u8 toy_read(u32 address);
   void toy_write(u32 address, u8 data);
   void toy_handle_periodic_interrupt(u8 data);
+  void toy_update_irqf();
 
   // Timer/Counter
   u8 pit_read(u32 address);
