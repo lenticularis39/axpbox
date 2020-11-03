@@ -815,6 +815,9 @@ void CAliM1543C::toy_handle_periodic_interrupt(u8 data) {
   */
   clock_t now = clock();
   double timedelta = (now - state.toy_pi_last_fire) / (double)CLOCKS_PER_SEC;
+
+  // For the meaning of the period calculation see the table on page 14 of the
+  // aforementioned datasheet
   int rate_pow = state.toy_stored_data[0x0a] & 0x0f;
   double period = (1 << rate_pow) / 65536.0;
 
@@ -827,6 +830,9 @@ void CAliM1543C::toy_handle_periodic_interrupt(u8 data) {
   }
 
   if (rate_pow && (timedelta >= period)) {
+    // Elapsed time since last check is equal or greater than the specified
+    // period - fire the interrupt by setting the PF flag in register C
+    // (see page 16 in the datasheet).
     state.toy_stored_data[0x0c] |= RTC_PF;
     state.toy_pi_last_fire = now;
   }
