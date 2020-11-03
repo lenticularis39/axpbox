@@ -670,7 +670,6 @@ void CAliM1543C::reg_61_write(u8 data) {
  * Read time-of-year clock ports (70h-73h).
  **/
 u8 CAliM1543C::toy_read(u32 address) {
-
   // printf("%%ALI-I-READTOY: read port %02x: 0x%02x\n", (u32)(0x70 + address),
   // state.toy_access_ports[address]);
   return (u8)state.toy_access_ports[address];
@@ -678,7 +677,7 @@ u8 CAliM1543C::toy_read(u32 address) {
 
 /**
  * Write time-of-year clock ports (70h-73h). On a write to port 0, recalculate
- *clock values.
+ * clock values.
  **/
 void CAliM1543C::toy_write(u32 address, u8 data) {
   time_t ltime;
@@ -693,17 +692,17 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
   switch (address) {
   case 0:
     if ((data & 0x7f) < 14) {
-      state.toy_stored_data[0x0d] = 0x80; // data is geldig!
+      // Assign VRT (valid RAM and time) bit
+      state.toy_stored_data[RTC_REG_D] = RTC_VRT;
 
-      // update clock.......
+      // Update time
       time(&ltime);
       gmtime_s(&stime, &ltime);
-      if (state.toy_stored_data[0x0b] & 4) {
-
+      if (state.toy_stored_data[RTC_REG_B] & RTC_DM) {
         // binary
         state.toy_stored_data[0] = (u8)(stime.tm_sec);
         state.toy_stored_data[2] = (u8)(stime.tm_min);
-        if (state.toy_stored_data[0x0b] & 2) // 24-hour
+        if (state.toy_stored_data[RTC_REG_B] & RTC_2412) // 24-hour
           state.toy_stored_data[4] = (u8)(stime.tm_hour);
         else
           // 12-hour
@@ -714,7 +713,6 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
         state.toy_stored_data[8] = (u8)(stime.tm_mon + 1);
         state.toy_stored_data[9] = (u8)(stime.tm_year % 100);
       } else {
-
         // BCD
         state.toy_stored_data[0] =
             (u8)(((stime.tm_sec / 10) << 4) | (stime.tm_sec % 10));
@@ -738,38 +736,21 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
                                         ((stime.tm_year % 100) % 10));
       }
 
-      // Debian Linux wants something out of 0x0a.  It gets initialized
-      // with 0x26, by the SRM
-      // Ah, here's something from the linux kernel:
-      //# /********************************************************
-      //# * register details
-      //# ********************************************************/
-      //# #define RTC_FREQ_SELECT RTC_REG_A
-      //#
-      //# /* update-in-progress - set to "1" 244 microsecs before RTC goes off
-      // the bus, # * reset after update (may take 1.984ms @ 32768Hz RefClock)
-      // is complete, # * totalling to a max high interval of 2.228 ms. # */ # #
-      // define RTC_UIP 0x80 # # define RTC_DIV_CTL 0x70 # /* divider control:
-      // refclock values 4.194 / 1.049 MHz / 32.768 kHz */ # # define
-      // RTC_REF_CLCK_4MHZ 0x00 # # define RTC_REF_CLCK_1MHZ 0x10 # # define
-      // RTC_REF_CLCK_32KHZ 0x20 # /* 2 values for divider stage reset, others
-      // for "testing purposes only" */ # # define RTC_DIV_RESET1 0x60 # #
-      // define RTC_DIV_RESET2 0x70 # /* Periodic intr. / Square wave rate
-      // select. 0=none, 1=32.8kHz,... 15=2Hz */ # # define RTC_RATE_SELECT 0x0F
-      //#
-      // The SRM-init value of 0x26 means:
-      //  xtal speed 32.768KHz  (standard)
+      // SRM initializes the value of A register to 0x26. This means:
+      //  xtal speed is set to MC_BASE_32_KHz 32.768KHz (standard)
       //  periodic interrupt rate divisor of 32 = interrupt every 976.562 ms
       //  (1024Hz clock)
-      if (state.toy_stored_data[0x0a] & 0x80) {
+      if (state.toy_stored_data[RTC_REG_A] & RTC_UIP) {
         // Once the UIP line goes high, we have to stay high for 2228us.
         hold_count--;
-        if (hold_count == 0) {
-          state.toy_stored_data[0x0a] &= ~0x80;
+        if (hold_count == 0 || (state.toy_stored_data[RTC_REG_B] & RTC_SET)) {
+          // Set UIP low and trigger the related interrupt.
+          state.toy_stored_data[RTC_REG_A] &= ~RTC_UIP;
+          state.toy_stored_data[RTC_REG_C] |= RTC_UF;
+          toy_update_irqf();
           read_count = 0;
         }
       } else {
-
         // UIP isn't high, so if we're looping and waiting for it to go, it
         // will take 1,000,000/(IPus*3) reads for a 3 instruction loop.
         // If it happens to be a one time read, it'll only throw our
@@ -778,7 +759,7 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
         read_count++;
         if (read_count > 1000000 / (IPus * 3)) // 3541 @ 847IPus
         {
-          state.toy_stored_data[0x0a] |= 0x80;
+          state.toy_stored_data[RTC_REG_A] |= RTC_UIP;
           hold_count =
               (2228 / (IPus * 3)) + 1; // .876 @ 847IPus, so we add one.
         }
@@ -786,12 +767,23 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
     }
 
     toy_handle_periodic_interrupt(data);
+    toy_update_irqf();
+
+    // Assign specified data to port so it can be read by the program
+    state.toy_access_ports[1] = state.toy_stored_data[data & 0x7f];
+
+    // Register C is cleared after a read, and we don't care if it's a write
+    if (data == RTC_REG_C)
+      state.toy_stored_data[data & 0x7f] = 0;
+
     break;
   case 1:
-    if (state.toy_access_ports[0] == 0x0b &&
+    if (state.toy_access_ports[0] == RTC_REG_B &&
         data & 0x040) // If we're writing to register B, we make register C look
                       // like it fired.
-      state.toy_stored_data[0x0c] = 0xf0;
+                      // TODO: Do actual interrupt implementation instead of
+                      //       a workaround.
+      state.toy_stored_data[RTC_REG_C] = 0xf0;
     state.toy_stored_data[state.toy_access_ports[0] & 0x7f] = (u8)data;
     break;
 
@@ -818,10 +810,10 @@ void CAliM1543C::toy_handle_periodic_interrupt(u8 data) {
 
   // For the meaning of the period calculation see the table on page 14 of the
   // aforementioned datasheet
-  int rate_pow = state.toy_stored_data[0x0a] & 0x0f;
+  int rate_pow = state.toy_stored_data[RTC_REG_A] & 0x0f;
   double period = (1 << rate_pow) / 65536.0;
 
-  if (state.toy_stored_data[0x0a] & MC_BASE_32_KHz) {
+  if (state.toy_stored_data[RTC_REG_A] & MC_BASE_32_KHz) {
     if (rate_pow == 0x1) {
       period = 1 / 256.0;
     } else if (rate_pow == 0x2) {
@@ -833,15 +825,24 @@ void CAliM1543C::toy_handle_periodic_interrupt(u8 data) {
     // Elapsed time since last check is equal or greater than the specified
     // period - fire the interrupt by setting the PF flag in register C
     // (see page 16 in the datasheet).
-    state.toy_stored_data[0x0c] |= RTC_PF;
+    state.toy_stored_data[RTC_REG_C] |= RTC_PF;
     state.toy_pi_last_fire = now;
   }
+}
 
-  state.toy_access_ports[1] = state.toy_stored_data[data & 0x7f];
-
-  // register C is cleared after a read, and we don't care if it's a write
-  if (data == 0x0c)
-    state.toy_stored_data[data & 0x7f] = 0;
+/**
+ * Update RTC interrupt request flag
+ **/
+void CAliM1543C::toy_update_irqf() {
+  if ((state.toy_stored_data[RTC_REG_B] & RTC_PIE &&
+       state.toy_stored_data[RTC_REG_C] & RTC_PF) ||
+      (state.toy_stored_data[RTC_REG_B] & RTC_UIE &&
+       state.toy_stored_data[RTC_REG_C] & RTC_UF) ||
+      (state.toy_stored_data[RTC_REG_B] & RTC_AIE &&
+       state.toy_stored_data[RTC_REG_C] & RTC_AF))
+    state.toy_stored_data[RTC_REG_C] |= RTC_IRQF;
+  else
+    state.toy_stored_data[RTC_REG_C] &= ~RTC_IRQF;
 }
 
 /**
