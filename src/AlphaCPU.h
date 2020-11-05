@@ -424,6 +424,7 @@ private:
 
   bool icache_enabled;
   bool skip_memtest_hack;
+  int skip_memtest_counter;
 
   // ... ... ...
   u64 cc_large;
