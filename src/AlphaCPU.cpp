@@ -400,6 +400,7 @@ void CAlphaCPU::init() {
   flush_icache();
   icache_enabled = myCfg->get_bool_value("icache", false);
   skip_memtest_hack = myCfg->get_bool_value("skip_memtest_hack", false);
+  skip_memtest_counter = 0;
 
   tbia(ACCESS_READ);
   tbia(ACCESS_EXEC);
@@ -567,46 +568,64 @@ void CAlphaCPU::check_state() {
  * Hack that skips memory check in SRM.
  **/
 inline void CAlphaCPU::skip_memtest() {
-  if (!(state.current_pc & U64(0x8b000))) {
+  const char *wrong_memskip = "warning: wrong memory check skip\n";
+  const char *counter_mismatch = "warning: memory check skip counter mismatch";
+
+  if (!(state.current_pc & U64(0x8b000)) || (skip_memtest_counter >= 5)) {
     return;
   }
 
   if (state.current_pc == U64(0x8bb90)) {
     if (state.r[5] != U64(0xaaaaaaaaaaaaaaaa)) {
-      printf("wrong memory check skip!\n");
+      printf("%s", wrong_memskip);
     } else {
+      if (skip_memtest_counter != 0)
+        printf("%s", counter_mismatch);
+      ++skip_memtest_counter;
       state.r[0] = state.r[4];
     }
   }
 
   if (state.current_pc == U64(0x8bbe0)) {
     if (state.r[5] != U64(0xaaaaaaaaaaaaaaaa)) {
-      printf("wrong memory check skip!\n");
+      printf("%s", wrong_memskip);
     } else {
+      if (skip_memtest_counter != 1)
+        printf("%s", counter_mismatch);
+      ++skip_memtest_counter;
       state.r[16] = 0;
     }
   }
 
   if (state.current_pc == U64(0x8bc28)) {
     if (state.r[5] != U64(0xaaaaaaaaaaaaaaaa)) {
-      printf("wrong memory check skip!\n");
+      printf("%s", wrong_memskip);
     } else {
+      if (skip_memtest_counter != 2)
+        printf("%s", counter_mismatch);
+      ++skip_memtest_counter;
       state.r[8] = state.r[4];
     }
   }
 
   if (state.current_pc == U64(0x8bc70)) {
     if (state.r[7] != U64(0x5555555555555555)) {
-      printf("wrong memory check skip1!\n");
+      printf("%s", wrong_memskip);
     } else {
+      if (skip_memtest_counter != 3)
+        printf("%s", counter_mismatch);
+      ++skip_memtest_counter;
       state.r[0] = 0;
     }
   }
 
   if (state.current_pc == U64(0x8bcb0)) {
     if (state.r[7] != U64(0x5555555555555555)) {
-      printf("wrong memory check skip2!\n");
+      if (skip_memtest_counter != 4)
+        printf("%s", counter_mismatch);
+      printf("%s", wrong_memskip);
     } else {
+      ++skip_memtest_counter;
       state.r[3] = state.r[4];
     }
   }
