@@ -102,6 +102,8 @@
 #include "DiskFile.h"
 #include "StdAfx.h"
 #include "filesystem.h"
+#include <iostream>
+#include <fstream>
 
 CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
