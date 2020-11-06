@@ -98,16 +98,35 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
+#include <iostream>
 #include "DiskFile.h"
 #include "StdAfx.h"
+#include "filesystem.h"
 
 CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
-    : CDisk(cfg, sys, c, idebus, idedev) {
-  filename = myCfg->get_text_value("file");
-  if (!filename) {
-    FAILURE_1(Configuration, "%s: Disk has no file attached!\n", devid_string);
-  }
+        : CDisk(cfg, sys, c, idebus, idedev) {
+
+    filename = myCfg->get_text_value("file");
+    if (!filename) {
+        defaultFilename = std::string(devid_string) + ".default.img";
+        std::cerr << devid_string << ": Disk has no filename attached! Assuming default: " <<
+                  defaultFilename;
+        filename = const_cast<char *>(defaultFilename.c_str());
+    }
+
+    if (!fs::exists(filename)) {
+        std::cout << devid_string << ": Could not open diskfile " << filename;
+
+        int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0) / 1024 / 1024;
+        if (!diskFileSize) {
+            std::cout << "File " << filename << "does not exist and no autocreate_size set.";
+            std::cout << "Assuming default size: 5000MB";
+            diskFileSize = 5000;
+        }
+        std::cerr << "disk file size: " << diskFileSize << std::endl;
+        createDiskFile(filename, diskFileSize);
+    }
 
 #ifdef HAVE_FOPEN64
     handle = fopen64(filename, read_only ? "rb" : "rb+");
@@ -115,112 +134,116 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     handle = fopen(filename, read_only ? "rb" : "rb+");
 #endif
 
-  if (!handle) {
-    printf("%s: Could not open file %s!\n", devid_string, filename);
+    // determine size...
+    fseek_large(handle, 0, SEEK_END);
+    byte_size = ftell_large(handle);
+    fseek_large(handle, 0, SEEK_SET);
+    state.byte_pos = ftell_large(handle);
 
-    int sz = myCfg->get_num_value("autocreate_size", false, 0) / 1024 / 1024;
-    if (!sz)
-      FAILURE_1(Runtime, "%s: File does not exist and no autocreate_size set",
-                devid_string);
+    sectors = 32;
+    heads = 8;
 
-    void *crt_buf;
-    handle = fopen_large(filename, "wb");
-    if (!handle)
-      FAILURE_1(Runtime, "%s: File does not exist and could not be created",
-                devid_string);
-    crt_buf = calloc(1024, 1024);
-    printf("%s: writing %d 1kB blocks:   0%%\b\b\b\b", devid_string, sz);
+    // calc_cylinders();
+    determine_layout();
+
+    model_number = myCfg->get_text_value("model_number", filename);
+
+    // skip to the filename portion of the path.
+    char *p = model_number;
+#if defined(_WIN32)
+    char x = '\\';
+#elif defined(__VMS)
+    char x = ']';
+#else
+    char x = '/';
+#endif
+    while (*p) {
+        if (*p == x)
+            model_number = p + 1;
+        p++;
+    }
+
+    printf("%s: Mounted file %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
+           devid_string, filename, byte_size / state.block_size, state.block_size,
+           cylinders, heads, sectors);
+}
+
+void CDiskFile::createDiskFile(const std::string &filename, int diskFileSize) {
+
+    if (!canFileBeOpened(filename, "wb")) {
+        FAILURE_1(Runtime, "%s: File does not exist and could not be created",
+                  devid_string);
+    }
+
+    void *createBuffer = calloc(1024, 1024);
+    printf("%s: writing %d 1kB blocks:   0%%\b\b\b\b", devid_string, diskFileSize);
 
     int lastpc = 0;
-    for (int a = 0; a < sz; a++) {
-      fwrite(crt_buf, 1024, 1024, handle);
+    for (int a = 0; a < diskFileSize; a++) {
+        fwrite(createBuffer, 1024, 1024, handle);
 
-      int pc = a * 100 / sz;
-      if (pc != lastpc) {
-        printf("%3d\b\b\b", pc);
-        lastpc = pc;
-      }
+        int pc = a * 100 / diskFileSize;
+        if (pc != lastpc) {
+            printf("%3d\b\b\b", pc);
+            lastpc = pc;
+        }
 
-      fflush(stdout);
+        fflush(stdout);
     }
 
-    printf("100%%\n");
+    std::cout << "100%%";
     fclose(handle);
-    free(crt_buf);
-    if (read_only)
-      handle = fopen_large(filename, "rb");
-    else
-      handle = fopen_large(filename, "rb+");
-    if (!handle) {
-      FAILURE_1(Runtime, "%s: File created could not be opened", devid_string);
+    free(createBuffer);
+
+    if (!canFileBeOpened(filename, read_only ? "rb" : "rb+")) {
+        FAILURE_1(Runtime, "%s: File does not exist and could not be created",
+                  devid_string);
     }
 
-    printf("%s: %d MB file %s created.\n", devid_string, sz, filename);
-  }
+    std::cout << devid_string << " " << diskFileSize << "MB file " << filename << "created";
+}
 
-  // determine size...
-  fseek_large(handle, 0, SEEK_END);
-  byte_size = ftell_large(handle);
-  fseek_large(handle, 0, SEEK_SET);
-  state.byte_pos = ftell_large(handle);
+bool CDiskFile::canFileBeOpened(const std::string &file_name, const std::string &modes) {
+    FILE *tmpHandle;
+    tmpHandle = fopen(file_name.c_str(), modes.c_str());
 
-  sectors = 32;
-  heads = 8;
+    if (!tmpHandle) {
+        return false;
+    }
 
-  // calc_cylinders();
-  determine_layout();
-
-  model_number = myCfg->get_text_value("model_number", filename);
-
-  // skip to the filename portion of the path.
-  char *p = model_number;
-#if defined(_WIN32)
-  char x = '\\';
-#elif defined(__VMS)
-  char x = ']';
-#else
-  char x = '/';
-#endif
-  while (*p) {
-    if (*p == x)
-      model_number = p + 1;
-    p++;
-  }
-
-  printf("%s: Mounted file %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
-         devid_string, filename, byte_size / state.block_size, state.block_size,
-         cylinders, heads, sectors);
+    fclose(tmpHandle);
+    return true;
 }
 
 CDiskFile::~CDiskFile(void) {
-  printf("%s: Closing file.\n", devid_string);
-  fclose(handle);
+    printf("%s: Closing file.\n", devid_string);
+    fclose(handle);
 }
 
 bool CDiskFile::seek_byte(off_t_large byte) {
-  if (byte >= byte_size) {
-    FAILURE_1(InvalidArgument, "%s: Seek beyond end of file!\n", devid_string);
-  }
+    if (byte >= byte_size) {
+        FAILURE_1(InvalidArgument, "%s: Seek beyond end of file!\n", devid_string);
+    }
 
-  fseek_large(handle, byte, SEEK_SET);
-  state.byte_pos = ftell_large(handle);
+    fseek_large(handle, byte, SEEK_SET);
+    state.byte_pos = ftell_large(handle);
 
-  return true;
+    return true;
 }
 
 size_t CDiskFile::read_bytes(void *dest, size_t bytes) {
-  size_t r;
-  r = fread(dest, 1, bytes, handle);
-  state.byte_pos = ftell_large(handle);
-  return r;
+    size_t r;
+    r = fread(dest, 1, bytes, handle);
+    state.byte_pos = ftell_large(handle);
+    return r;
 }
 
 size_t CDiskFile::write_bytes(void *src, size_t bytes) {
-  if (read_only)
-    return 0;
+    if (read_only)
+        return 0;
 
-  size_t r;
-  r = fwrite(src, 1, bytes, handle);
-  state.byte_pos = ftell_large(handle);
-  return r;
+    size_t r;
+    r = fwrite(src, 1, bytes, handle);
+    state.byte_pos = ftell_large(handle);
+    return r;
 }
