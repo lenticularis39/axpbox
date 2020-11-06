@@ -126,11 +126,19 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
   if (!ifs.good()) {
     std::cerr << devid_string << ": file does not exist: " << filename
               << std::endl;
-        int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
-        if (!diskFileSize) {
-            std::cout << "File " << filename << " does not exist and no autocreate_size set. " <<
-                         "Assuming default size." << std::endl;
-            diskFileSize = 2000000000;
+
+    /* If the disk file size was not set and the disk file does not exist, do
+     * not create it, but exit */
+    int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
+    if (!diskFileSize) {
+      FAILURE_1(Runtime, "%s: file does not exist and no autocreate_size set.",
+                devid_string);
+    }
+
+    /* Don't create disk file if it's supposed to be a cdrom */
+    if (is_cdrom) {
+      FAILURE_1(Runtime, "%s: file does not exist and is configured as cdrom.",
+                devid_string);
         }
         createDiskFile(filename, diskFileSize);
     }
