@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(AXPBox VERSION 0.1)
 
 # Source files
@@ -10,7 +8,7 @@ list(REMOVE_ITEM srcs ${include_sources})
 
 add_executable(axpbox ${srcs} src/Main.cpp)
 target_include_directories(axpbox PRIVATE src src/base src/gui ${CMAKE_BINARY_DIR}/src)
-target_link_libraries(axpbox pthread stdc++fs)
+target_link_libraries(axpbox pthread)
 
 # Configuration options
 include(CheckSymbolExists)

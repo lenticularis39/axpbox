@@ -100,9 +100,8 @@
  **/
 #include "DiskFile.h"
 #include "StdAfx.h"
-#include "filesystem.h"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
@@ -118,11 +117,15 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
         filename = const_cast<char *>(defaultFilename.c_str());
     }
 
-    /* if the file does not exist, create it */
-    if (!fs::exists(filename)) {
-        std::cerr << devid_string << ": Could not open diskfile " << filename << std::endl;
-
-        /* If the disk file size was not set, assume a default filesize */
+  /* if the file does not exist, create it. ifs actually checks for
+   * accessibility, not for existence, but for compatibility with
+   * platforms without c++17/boost and std::filesystem::exists, this
+   * is good enough. ifstream.good() returns false if the file does
+   * not exist.*/
+  std::ifstream ifs(filename, std::ios::binary);
+  if (!ifs.good()) {
+    std::cerr << devid_string << ": file does not exist: " << filename
+              << std::endl;
         int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
         if (!diskFileSize) {
             std::cout << "File " << filename << " does not exist and no autocreate_size set. " <<
