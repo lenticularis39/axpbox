@@ -170,39 +170,18 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
            cylinders, heads, sectors);
 }
 
-void CDiskFile::createDiskFile(const std::string &filename, int diskFileSize) {
+void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
 
-    if (!canFileBeOpened(filename, "wb")) {
+    std::ofstream ofs(fileName, std::ios::binary | std::ios::out);
+    if (ofs.is_open() && ofs.good()) {
+        ofs.seekp((diskFileSize) - 1);
+        ofs.write("", 1);
+    } else {
         FAILURE_1(Runtime, "%s: File does not exist and could not be created",
                   devid_string);
     }
 
-    void *createBuffer = calloc(1024, 1024);
-    printf("%s: writing %d 1kB blocks:   0%%\b\b\b\b", devid_string, diskFileSize);
-
-    int lastpc = 0;
-    for (int a = 0; a < diskFileSize; a++) {
-        fwrite(createBuffer, 1024, 1024, handle);
-
-        int pc = a * 100 / diskFileSize;
-        if (pc != lastpc) {
-            printf("%3d\b\b\b", pc);
-            lastpc = pc;
-        }
-
-        fflush(stdout);
-    }
-
-    std::cout << "100%%";
-    fclose(handle);
-    free(createBuffer);
-
-    if (!canFileBeOpened(filename, read_only ? "rb" : "rb+")) {
-        FAILURE_1(Runtime, "%s: File does not exist and could not be created",
-                  devid_string);
-    }
-
-    std::cout << devid_string << " " << diskFileSize << "MB file " << filename << "created";
+    std::cout << devid_string << " " << (diskFileSize/1024/1024) << "MB file " << filename << "created" << std::endl;
 }
 
 bool CDiskFile::canFileBeOpened(const std::string &file_name, const std::string &modes) {
