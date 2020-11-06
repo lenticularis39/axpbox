@@ -74,5 +74,9 @@ public:
 protected:
   FILE *handle;
   char *filename;
+
+    void createDiskFile(const std::string &filename, int diskFileSize);
+    std::string defaultFilename;
+    static bool canFileBeOpened(const std::string &filename, const std::string& modes);
 };
 #endif //! defined(__DISKFILE_H__)
