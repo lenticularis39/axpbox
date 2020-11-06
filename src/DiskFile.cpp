@@ -98,7 +98,6 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
-#include <iostream>
 #include "DiskFile.h"
 #include "StdAfx.h"
 #include "filesystem.h"
@@ -109,24 +108,27 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
         : CDisk(cfg, sys, c, idebus, idedev) {
 
+    /* If the filename exists in the config, use that,
+     * otherwise, use a default filename */
     filename = myCfg->get_text_value("file");
     if (!filename) {
         defaultFilename = std::string(devid_string) + ".default.img";
         std::cerr << devid_string << ": Disk has no filename attached! Assuming default: " <<
-                  defaultFilename;
+                  defaultFilename << std::endl;
         filename = const_cast<char *>(defaultFilename.c_str());
     }
 
+    /* if the file does not exist, create it */
     if (!fs::exists(filename)) {
-        std::cout << devid_string << ": Could not open diskfile " << filename;
+        std::cerr << devid_string << ": Could not open diskfile " << filename << std::endl;
 
-        int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0) / 1024 / 1024;
+        /* If the disk file size was not set, assume a default filesize */
+        int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
         if (!diskFileSize) {
-            std::cout << "File " << filename << "does not exist and no autocreate_size set.";
-            std::cout << "Assuming default size: 5000MB";
-            diskFileSize = 5000;
+            std::cout << "File " << filename << " does not exist and no autocreate_size set. " <<
+                         "Assuming default size." << std::endl;
+            diskFileSize = 2000000000;
         }
-        std::cerr << "disk file size: " << diskFileSize << std::endl;
         createDiskFile(filename, diskFileSize);
     }
 
