@@ -241,7 +241,8 @@ public:
 
   int RegisterMemory(CSystemComponent *component, int index, u64 base,
                      u64 length);
-  int RegisterComponent(CSystemComponent *component);
+  void RegisterComponent(CSystemComponent *component);
+  void UnregisterComponent(CSystemComponent *component);
   int RegisterCPU(class CAlphaCPU *cpu);
 
   CSystem(CConfigurator *cfg);

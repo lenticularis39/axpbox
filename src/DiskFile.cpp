@@ -194,7 +194,7 @@ void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
   } else {
     FAILURE_1(Runtime, "%s: File does not exist and could not be created", devid_string);
   }
-  
+
   std::cout << devid_string << " " << (diskFileSize / 1024 / 1024) << "MB file "
             << filename << " created" << std::endl;
 }
