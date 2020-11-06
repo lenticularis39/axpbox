@@ -141,7 +141,6 @@ set(SELECT_TYPE_ARG234 "fd_set *")
 set(SELECT_TYPE_ARG5 "struct timeval *")
 set(RETSIGTYPE "void")
 set(STDC_HEADERS 1)
-
 check_include_files("time.h;sys/time.h" TIME_WITH_SYS_TIME)
 
 configure_file(src/config.h.in src/config.h)
