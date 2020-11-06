@@ -105,10 +105,10 @@
 
 CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
-        : CDisk(cfg, sys, c, idebus, idedev) {
+    : CDisk(cfg, sys, c, idebus, idedev) {
 
-    /* If the filename exists in the config, use that,
-     * otherwise, use a default filename */
+  /* If the filename exists in the config, use that,
+   * otherwise, use a default filename */
   filename = myCfg->get_text_value("file");
   if (!filename) {
     defaultFilename = std::string(devid_string) + ".default.img";
@@ -146,52 +146,52 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
   }
 
 #ifdef HAVE_FOPEN64
-    handle = fopen64(filename, read_only ? "rb" : "rb+");
+  handle = fopen64(filename, read_only ? "rb" : "rb+");
 #else
-    handle = fopen(filename, read_only ? "rb" : "rb+");
+  handle = fopen(filename, read_only ? "rb" : "rb+");
 #endif
 
-    // determine size...
-    fseek_large(handle, 0, SEEK_END);
-    byte_size = ftell_large(handle);
-    fseek_large(handle, 0, SEEK_SET);
-    state.byte_pos = ftell_large(handle);
+  // determine size...
+  fseek_large(handle, 0, SEEK_END);
+  byte_size = ftell_large(handle);
+  fseek_large(handle, 0, SEEK_SET);
+  state.byte_pos = ftell_large(handle);
 
-    sectors = 32;
-    heads = 8;
+  sectors = 32;
+  heads = 8;
 
-    // calc_cylinders();
-    determine_layout();
+  // calc_cylinders();
+  determine_layout();
 
-    model_number = myCfg->get_text_value("model_number", filename);
+  model_number = myCfg->get_text_value("model_number", filename);
 
-    // skip to the filename portion of the path.
-    char *p = model_number;
+  // skip to the filename portion of the path.
+  char *p = model_number;
 #if defined(_WIN32)
-    char x = '\\';
+  char x = '\\';
 #elif defined(__VMS)
-    char x = ']';
+  char x = ']';
 #else
-    char x = '/';
+  char x = '/';
 #endif
-    while (*p) {
-        if (*p == x)
-            model_number = p + 1;
-        p++;
-    }
+  while (*p) {
+    if (*p == x)
+      model_number = p + 1;
+    p++;
+  }
 
-    printf("%s: Mounted file %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
-           devid_string, filename, byte_size / state.block_size, state.block_size,
-           cylinders, heads, sectors);
+  printf("%s: Mounted file %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
+         devid_string, filename, byte_size / state.block_size, state.block_size,
+         cylinders, heads, sectors);
 }
 
 void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
 
-    std::ofstream ofs(fileName, std::ios::binary | std::ios::out);
-    if (ofs.is_open() && ofs.good()) {
-        ofs.seekp((diskFileSize) - 1);
-        ofs.write("", 1);
-    } else {
+  std::ofstream ofs(fileName, std::ios::binary);
+  if (ofs.is_open() && ofs.good()) {
+    ofs.seekp((diskFileSize)-1);
+    ofs.write("", 1);
+  } else {
     FAILURE_1(Runtime, "%s: File does not exist and could not be created", devid_string);
   }
   
@@ -200,34 +200,34 @@ void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
 }
 
 CDiskFile::~CDiskFile(void) {
-    printf("%s: Closing file.\n", devid_string);
-    fclose(handle);
+  printf("%s: Closing file.\n", devid_string);
+  fclose(handle);
 }
 
 bool CDiskFile::seek_byte(off_t_large byte) {
-    if (byte >= byte_size) {
-        FAILURE_1(InvalidArgument, "%s: Seek beyond end of file!\n", devid_string);
-    }
+  if (byte >= byte_size) {
+    FAILURE_1(InvalidArgument, "%s: Seek beyond end of file!\n", devid_string);
+  }
 
-    fseek_large(handle, byte, SEEK_SET);
-    state.byte_pos = ftell_large(handle);
+  fseek_large(handle, byte, SEEK_SET);
+  state.byte_pos = ftell_large(handle);
 
-    return true;
+  return true;
 }
 
 size_t CDiskFile::read_bytes(void *dest, size_t bytes) {
-    size_t r;
-    r = fread(dest, 1, bytes, handle);
-    state.byte_pos = ftell_large(handle);
-    return r;
+  size_t r;
+  r = fread(dest, 1, bytes, handle);
+  state.byte_pos = ftell_large(handle);
+  return r;
 }
 
 size_t CDiskFile::write_bytes(void *src, size_t bytes) {
-    if (read_only)
-        return 0;
+  if (read_only)
+    return 0;
 
-    size_t r;
-    r = fwrite(src, 1, bytes, handle);
-    state.byte_pos = ftell_large(handle);
-    return r;
+  size_t r;
+  r = fwrite(src, 1, bytes, handle);
+  state.byte_pos = ftell_large(handle);
+  return r;
 }
