@@ -197,18 +197,6 @@ void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
     std::cout << devid_string << " " << (diskFileSize/1024/1024) << "MB file " << filename << " created" << std::endl;
 }
 
-bool CDiskFile::canFileBeOpened(const std::string &file_name, const std::string &modes) {
-    FILE *tmpHandle;
-    tmpHandle = fopen(file_name.c_str(), modes.c_str());
-
-    if (!tmpHandle) {
-        return false;
-    }
-
-    fclose(tmpHandle);
-    return true;
-}
-
 CDiskFile::~CDiskFile(void) {
     printf("%s: Closing file.\n", devid_string);
     fclose(handle);
