@@ -13,6 +13,8 @@ int main(int argc, char **argv) {
     std::cerr << "AXPBox Alpha Emulator" << std::endl;
 #ifdef GITINFO
     std::cerr << "Git version info: " << std::string(GITINFO) << std::endl;
+#else
+    std::cerr << "No git version information available during build." << std::endl;
 #endif
     std::cerr << "Usage: " << argv[0] << " run|configure <options>" << std::endl;
     return 1;
