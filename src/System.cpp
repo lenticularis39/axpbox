@@ -427,9 +427,7 @@ void CSystem::RegisterComponent(CSystemComponent *component) {
 }
 
 void CSystem::UnregisterComponent(CSystemComponent *component) {
-  if (acComponents[iNumComponents] == component)
-    acComponents[iNumComponents] = nullptr;
-  iNumComponents--;
+ iNumComponents--;
 }
 
 /**
