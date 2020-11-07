@@ -8,6 +8,7 @@ list(REMOVE_ITEM srcs ${include_sources})
 
 add_executable(axpbox ${srcs} src/Main.cpp)
 target_include_directories(axpbox PRIVATE src src/base src/gui ${CMAKE_BINARY_DIR}/src)
+find_package(Threads REQUIRED)
 target_link_libraries(axpbox pthread)
 
 # Configuration options
@@ -125,6 +126,31 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -DNDEBUG")
+endif()
+
+find_package(Git)
+if (GIT_FOUND)
+    execute_process(COMMAND
+        "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_SHA
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    execute_process(COMMAND
+            "${GIT_EXECUTABLE}" log -1 --format=%ad --date=local
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            OUTPUT_VARIABLE GIT_DATE
+            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    execute_process(COMMAND
+            "${GIT_EXECUTABLE}" log -1 --format=%s
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            OUTPUT_VARIABLE GIT_COMMIT_SUBJECT
+            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(GITINFO "SHA1: ${GIT_SHA}; Date: ${GIT_DATE}; Commit subject: ${GIT_COMMIT_SUBJECT}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGITINFO='\"${GITINFO}\"'")
+    message(STATUS "Git info: ${GITINFO}")
 endif()
 
 set(PACKAGE ${PROJECT_NAME})

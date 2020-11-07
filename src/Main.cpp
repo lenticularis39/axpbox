@@ -5,15 +5,16 @@
 #include <cstring>
 #include <iostream>
 
-using namespace std;
-
 int main_sim(int argc, char *argv[]);
 int main_cfg(int argc, char *argv[]);
 
 int main(int argc, char **argv) {
   if (argc <= 1 || (strcmp(argv[1], "run") && strcmp(argv[1], "configure"))) {
-    cerr << "AXPBox Alpha Emulator (version 0.1)" << endl
-         << "Usage: " << argv[0] << " run|configure <options>" << endl;
+    std::cerr << "AXPBox Alpha Emulator" << std::endl;
+#ifdef GITINFO
+    std::cerr << "Git version info: " << std::string(GITINFO) << std::endl;
+#endif
+    std::cerr << "Usage: " << argv[0] << " run|configure <options>" << std::endl;
     return 1;
   }
 
