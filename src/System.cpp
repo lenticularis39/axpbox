@@ -421,10 +421,13 @@ void CSystem::ResetMem(unsigned int membits) {
 /**
  * Register a device.
  **/
-int CSystem::RegisterComponent(CSystemComponent *component) {
+void CSystem::RegisterComponent(CSystemComponent *component) {
   acComponents[iNumComponents] = component;
   iNumComponents++;
-  return 0;
+}
+
+void CSystem::UnregisterComponent(CSystemComponent *component) {
+ iNumComponents--;
 }
 
 /**

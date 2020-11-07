@@ -100,63 +100,56 @@
  **/
 #include "DiskFile.h"
 #include "StdAfx.h"
+#include <fstream>
+#include <iostream>
 
 CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                      int idebus, int idedev)
     : CDisk(cfg, sys, c, idebus, idedev) {
+
+  /* If the filename exists in the config, use that,
+   * otherwise, use a default filename */
   filename = myCfg->get_text_value("file");
   if (!filename) {
-    FAILURE_1(Configuration, "%s: Disk has no file attached!\n", devid_string);
+    defaultFilename = std::string(devid_string) + ".default.img";
+    std::cerr << devid_string
+              << ": Disk has no filename attached! Assuming default: "
+              << defaultFilename << std::endl;
+    filename = const_cast<char *>(defaultFilename.c_str());
+  }
+
+  /* if the file does not exist, create it. ifs actually checks for
+   * accessibility, not for existence, but for compatibility with
+   * platforms without c++17/boost and std::filesystem::exists, this
+   * is good enough. ifstream.good() returns false if the file does
+   * not exist.*/
+  std::ifstream ifs(filename, std::ios::binary);
+  if (!ifs.good()) {
+    std::cerr << devid_string << ": file does not exist: " << filename
+              << std::endl;
+
+    /* If the disk file size was not set and the disk file does not exist, do
+     * not create it, but exit */
+    int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
+    if (!diskFileSize) {
+      FAILURE_1(Runtime, "%s: file does not exist and no autocreate_size set.",
+                devid_string);
+    }
+
+    /* Don't create disk file if it's supposed to be a cdrom */
+    if (is_cdrom) {
+      FAILURE_1(Runtime, "%s: file does not exist and is configured as cdrom.",
+                devid_string);
+    }
+
+    createDiskFile(filename, diskFileSize);
   }
 
 #ifdef HAVE_FOPEN64
-    handle = fopen64(filename, read_only ? "rb" : "rb+");
+  handle = fopen64(filename, read_only ? "rb" : "rb+");
 #else
-    handle = fopen(filename, read_only ? "rb" : "rb+");
+  handle = fopen(filename, read_only ? "rb" : "rb+");
 #endif
-
-  if (!handle) {
-    printf("%s: Could not open file %s!\n", devid_string, filename);
-
-    int sz = myCfg->get_num_value("autocreate_size", false, 0) / 1024 / 1024;
-    if (!sz)
-      FAILURE_1(Runtime, "%s: File does not exist and no autocreate_size set",
-                devid_string);
-
-    void *crt_buf;
-    handle = fopen_large(filename, "wb");
-    if (!handle)
-      FAILURE_1(Runtime, "%s: File does not exist and could not be created",
-                devid_string);
-    crt_buf = calloc(1024, 1024);
-    printf("%s: writing %d 1kB blocks:   0%%\b\b\b\b", devid_string, sz);
-
-    int lastpc = 0;
-    for (int a = 0; a < sz; a++) {
-      fwrite(crt_buf, 1024, 1024, handle);
-
-      int pc = a * 100 / sz;
-      if (pc != lastpc) {
-        printf("%3d\b\b\b", pc);
-        lastpc = pc;
-      }
-
-      fflush(stdout);
-    }
-
-    printf("100%%\n");
-    fclose(handle);
-    free(crt_buf);
-    if (read_only)
-      handle = fopen_large(filename, "rb");
-    else
-      handle = fopen_large(filename, "rb+");
-    if (!handle) {
-      FAILURE_1(Runtime, "%s: File created could not be opened", devid_string);
-    }
-
-    printf("%s: %d MB file %s created.\n", devid_string, sz, filename);
-  }
 
   // determine size...
   fseek_large(handle, 0, SEEK_END);
@@ -190,6 +183,20 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
   printf("%s: Mounted file %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
          devid_string, filename, byte_size / state.block_size, state.block_size,
          cylinders, heads, sectors);
+}
+
+void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
+
+  std::ofstream ofs(fileName, std::ios::binary);
+  if (ofs.is_open() && ofs.good()) {
+    ofs.seekp((diskFileSize)-1);
+    ofs.write("", 1);
+  } else {
+    FAILURE_1(Runtime, "%s: File does not exist and could not be created", devid_string);
+  }
+
+  std::cout << devid_string << " " << (diskFileSize / 1024 / 1024) << "MB file "
+            << filename << " created" << std::endl;
 }
 
 CDiskFile::~CDiskFile(void) {
