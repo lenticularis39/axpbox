@@ -74,7 +74,6 @@
 #ifndef Foundation_Thread_POSIX_INCLUDED
 #define Foundation_Thread_POSIX_INCLUDED
 
-#include "AutoPtr.h"
 #include "Event.h"
 #include "Foundation.h"
 #include "RefCountedObject.h"
@@ -85,6 +84,7 @@
 #include <sys/select.h>
 #endif
 #include <errno.h>
+#include <memory>
 
 class CThreadImpl {
 public:
@@ -126,7 +126,7 @@ private:
     CEvent done;
   };
 
-  CAutoPtr<CThreadData> _pData;
+  std::shared_ptr<CThreadData> _pData;
 
   static pthread_key_t _currentKey;
   static bool _haveCurrentKey;
