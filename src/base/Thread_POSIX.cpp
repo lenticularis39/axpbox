@@ -176,7 +176,7 @@ void *CThreadImpl::entry(void *pThread) {
 #endif
 
   CThreadImpl *pThreadImpl = reinterpret_cast<CThreadImpl *>(pThread);
-  CAutoPtr<CThreadData> pData = pThreadImpl->_pData;
+  std::shared_ptr<CThreadData> pData = pThreadImpl->_pData;
   try {
     pData->pTarget->run();
   } catch (CException &exc) {
