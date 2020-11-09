@@ -228,6 +228,10 @@
 /* Define to the version of this package. */
 #cmakedefine PACKAGE_VERSION @PACKAGE_VERSION@
 
+/* Define to the git revision of this package. */
+#cmakedefine PACKAGE_GITSHA @PACKAGE_GITSHA@
+
+
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 #cmakedefine PTHREAD_CREATE_JOINABLE @PTHREAD_CREATE_JOINABLE@

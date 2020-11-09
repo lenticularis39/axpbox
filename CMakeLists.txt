@@ -136,21 +136,7 @@ if (GIT_FOUND)
         OUTPUT_VARIABLE GIT_SHA
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    execute_process(COMMAND
-            "${GIT_EXECUTABLE}" log -1 --format=%ad --date=local
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            OUTPUT_VARIABLE GIT_DATE
-            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    execute_process(COMMAND
-            "${GIT_EXECUTABLE}" log -1 --format=%s
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            OUTPUT_VARIABLE GIT_COMMIT_SUBJECT
-            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    set(GITINFO "SHA1: ${GIT_SHA}; Date: ${GIT_DATE}; Commit subject: ${GIT_COMMIT_SUBJECT}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGITINFO='\"${GITINFO}\"'")
-    message(STATUS "Git info: ${GITINFO}")
+    set(PACKAGE_GITSHA "\"${GIT_SHA}\"")
 endif()
 
 set(PACKAGE ${PROJECT_NAME})
