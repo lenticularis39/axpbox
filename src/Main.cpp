@@ -1,7 +1,7 @@
 //
 // Created by tglozar on 21.09.20.
 //
-
+#include "config.h"
 #include <cstring>
 #include <iostream>
 
@@ -10,12 +10,11 @@ int main_cfg(int argc, char *argv[]);
 
 int main(int argc, char **argv) {
   if (argc <= 1 || (strcmp(argv[1], "run") && strcmp(argv[1], "configure"))) {
-    std::cerr << "AXPBox Alpha Emulator" << std::endl;
-#ifdef GITINFO
-    std::cerr << "Git version info: " << std::string(GITINFO) << std::endl;
-#else
-    std::cerr << "No git version information available during build." << std::endl;
+    std::cerr << "AXPBox Alpha Emulator";
+#ifdef PACKAGE_GITSHA
+    std::cerr << " (commit " << std::string(PACKAGE_GITSHA) << ")";
 #endif
+    std::cerr << std::endl;
     std::cerr << "Usage: " << argv[0] << " run|configure <options>" << std::endl;
     return 1;
   }
