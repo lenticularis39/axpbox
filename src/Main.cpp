@@ -1,19 +1,21 @@
 //
 // Created by tglozar on 21.09.20.
 //
-
+#include "config.h"
 #include <cstring>
 #include <iostream>
-
-using namespace std;
 
 int main_sim(int argc, char *argv[]);
 int main_cfg(int argc, char *argv[]);
 
 int main(int argc, char **argv) {
   if (argc <= 1 || (strcmp(argv[1], "run") && strcmp(argv[1], "configure"))) {
-    cerr << "AXPBox Alpha Emulator (version 0.1)" << endl
-         << "Usage: " << argv[0] << " run|configure <options>" << endl;
+    std::cerr << "AXPBox Alpha Emulator";
+#ifdef PACKAGE_GITSHA
+    std::cerr << " (commit " << std::string(PACKAGE_GITSHA) << ")";
+#endif
+    std::cerr << std::endl;
+    std::cerr << "Usage: " << argv[0] << " run|configure <options>" << std::endl;
     return 1;
   }
 
