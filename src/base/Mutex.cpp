@@ -73,7 +73,7 @@
 //
 
 #include "Mutex.h"
-#include "Thread.h"
+#include "Mutex.h"
 #include <string.h>
 
 #if defined(POCO_OS_FAMILY_WINDOWS)

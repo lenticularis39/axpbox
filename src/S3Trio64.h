@@ -84,7 +84,7 @@
  *   (http://home.worldonline.dk/~finth/)
  *  .
  **/
-class CS3Trio64 : public CVGA, public CRunnable {
+class CS3Trio64 : public CVGA {
 public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
@@ -100,7 +100,7 @@ public:
   virtual ~CS3Trio64();
 
   void update(void);
-  virtual void run(void);
+  void run(void);
 
   virtual u8 get_actl_palette_idx(u8 index);
   virtual void redraw_area(unsigned x0, unsigned y0, unsigned width,
@@ -159,7 +159,8 @@ private:
   void vga_mem_write(u32 addr, u8 value);
   u8 vga_mem_read(u32 addr);
 
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   bool StopThread;
 
   /// The state structure contains all elements that need to be saved to the

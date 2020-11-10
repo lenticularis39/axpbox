@@ -116,14 +116,13 @@
  **/
 class CSym53C895 : public CPCIDevice,
                    public CDiskController,
-                   public CSCSIDevice,
-                   public CRunnable {
+                   public CSCSIDevice {
 public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
   virtual void check_state();
 
-  virtual void run(); // Poco Thread entry point
+  void run();
   virtual void init();
   virtual void start_threads();
   virtual void stop_threads();
@@ -173,7 +172,8 @@ private:
   void set_interrupt(int reg, u8 interrupt);
   void chip_reset();
 
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   CSemaphore mySemaphore;
   CMutex *myRegLock;
   bool StopThread;

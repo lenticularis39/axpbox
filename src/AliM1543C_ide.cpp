@@ -424,9 +424,9 @@ void CAliM1543C_ide::init() {
   mtBusMaster[1] = new CRWLock("ide1-busmaster");
 
   for (int i = 0; i < 2; i++) {
-    semController[i] = new CSemaphore(0, 1); // disk controller
+    semController[i] = new CSemaphore(0, 1);      // disk controller
     semControllerReady[i] = new CSemaphore(0, 1); // disk controller ready
-    semBusMaster[i] = new CSemaphore(0, 1);  // bus master
+    semBusMaster[i] = new CSemaphore(0, 1);       // bus master
     semBusMasterReady[i] = new CSemaphore(0, 1);  // bus master ready
     semControllerReady[i]->set();
     semBusMasterReady[i]->set();
@@ -441,23 +441,24 @@ void CAliM1543C_ide::start_threads() {
   for (int i = 0; i < 2; i++) {
     if (!thrController[i]) {
       sprintf(buffer, "ide%d", i);
-      thrController[i] = new CThread(buffer);
-      printf(" %s", thrController[i]->getName().c_str());
+      thrController[i] =
+          std::make_unique<std::thread>([this]() { this->run(); });
+      printf(" %s", buffer);
       StopThread = false;
-      thrController[i]->start(*this);
     }
   }
 }
 
 void CAliM1543C_ide::stop_threads() {
+  char buffer[5];
   StopThread = true;
   for (int i = 0; i < 2; i++) {
     if (thrController[i]) {
-      printf(" %s", thrController[i]->getName().c_str());
+      sprintf(buffer, "ide%d", i);
+      printf(" %s", buffer);
       semController[i]->set();
       thrController[i]->join();
-      delete thrController[i];
-      thrController[i] = 0;
+      thrController[i] = nullptr;
     }
   }
 }
@@ -1429,9 +1430,10 @@ void CAliM1543C_ide::ide_status(int index) {
  * Check if threads are still running.
  **/
 void CAliM1543C_ide::check_state() {
-  if (thrController[0] && !thrController[0]->isRunning())
+  if (thrController[0] && thrControllerDead[0].load())
     FAILURE(Thread, "IDE 0 thread has died");
-  if (thrController[1] && !thrController[1]->isRunning())
+
+  if (thrController[1] && thrControllerDead[1].load())
     FAILURE(Thread, "IDE 1 thread has died");
 }
 
@@ -2463,7 +2465,8 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
  * Thread entry point.
  **/
 void CAliM1543C_ide::run() {
-  int index = (thrController[0] == CThread::current()) ? 0 : 1;
+  int index =
+      (thrController[0]->get_id() == std::this_thread::get_id()) ? 0 : 1;
   try {
     for (;;) {
       semController[index]->wait();
@@ -2494,7 +2497,7 @@ void CAliM1543C_ide::run() {
 
   catch (CException &e) {
     printf("Exception in IDE thread: %s.\n", e.displayText().c_str());
-
+    thrControllerDead[index].store(true);
     // Let the thread die...
   }
 }

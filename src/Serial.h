@@ -105,7 +105,7 @@
  *
  * The serial port is translated to a telnet port.
  **/
-class CSerial : public CSystemComponent, public CRunnable {
+class CSerial : public CSystemComponent {
 public:
   void write(const char *s);
   virtual void WriteMem(int index, u64 address, int dsize, u64 data);
@@ -118,7 +118,7 @@ public:
   virtual int RestoreState(FILE *f);
   void eval_interrupts();
   void WaitForConnection();
-  virtual void run();
+  void run();
   void execute();
 
   virtual void init();
@@ -127,7 +127,8 @@ public:
 
 private:
   void serial_menu();
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   bool StopThread = false;
   bool acceptingSocket = false;
   bool breakHit;

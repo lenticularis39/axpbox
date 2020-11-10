@@ -363,7 +363,7 @@ void CAlphaCPU::run() {
     while (state.wait_for_start) {
       if (StopThread)
         return;
-      CThread::sleep(1);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     printf("*** CPU%d *** STARTING ***\n", get_cpuid());
     for (;;) {
@@ -374,7 +374,7 @@ void CAlphaCPU::run() {
     }
   } catch (CException &e) {
     printf("Exception in CPU thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -416,7 +416,6 @@ void CAlphaCPU::init() {
 #if defined(IDB)
   bListing = false;
 #endif
-  myThread = 0;
 
   cc_large = 0;
   prev_cc = 0;
@@ -446,21 +445,21 @@ void CAlphaCPU::start_threads() {
   mySemaphore.tryWait(1);
   if (!myThread) {
     sprintf(buffer, "cpu%d", state.iProcNum);
-    myThread = new CThread(buffer);
-    printf(" %s", myThread->getName().c_str());
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
+    printf(" %s", buffer);
     StopThread = false;
-    myThread->start(*this);
   }
 }
 
 void CAlphaCPU::stop_threads() {
+  char buffer[5];
   StopThread = true;
   if (myThread) {
+    sprintf(buffer, "cpu%d", state.iProcNum);
     mySemaphore.set();
-    printf(" %s", myThread->getName().c_str());
+    printf(" %s", buffer);
     myThread->join();
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 
   mySemaphore.tryWait(1);
@@ -514,7 +513,7 @@ static double max_mips = 0.0;
  * Calibrate the CPU timing loop.
  **/
 void CAlphaCPU::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "CPU thread has died");
 
 #if !defined(CONSTANT_TIME_FACTOR)

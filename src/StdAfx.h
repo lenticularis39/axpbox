@@ -293,15 +293,16 @@ inline char printable(char c) {
 #error "Need ftell"
 #endif
 
+#include <atomic>
+#include <memory>
+#include <thread>
 #include <typeinfo>
 
 #define POCO_NO_UNWINDOWS
 
 #include "base/Mutex.h"
 #include "base/RWLock.h"
-#include "base/Runnable.h"
 #include "base/Semaphore.h"
-#include "base/Thread.h"
 #include "base/Timestamp.h"
 
 #include "es40_debug.h"

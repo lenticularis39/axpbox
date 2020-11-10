@@ -551,7 +551,7 @@ void CSystem::Run() {
   for (k = 0;; k++) {
     if (got_sigint)
       FAILURE(Graceful, "CTRL-C detected");
-    CThread::sleep(100); // 100ms sleep
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     for (i = 0; i < iNumComponents; i++)
       acComponents[i]->check_state();
 #if !defined(HIDE_COUNTER)
@@ -1719,7 +1719,7 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
           printf("*** IP interrupt set for CPU %d from CPU %d(@ %" PRIx64 ")\n",
                  i, cpu->get_cpuid(), cpu->get_pc() - 4);
 
-          //          CThread::sleep(10);
+          //          std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
       }
     }

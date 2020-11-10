@@ -602,7 +602,7 @@ void CSym53C810::run() {
 
   catch (CException &e) {
     printf("Exception in SYM thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -639,8 +639,6 @@ void CSym53C810::init() {
 
   myRegLock = new CMutex("sym-reg");
 
-  myThread = 0;
-
   printf("%s: $Id: Sym53C810.cpp,v 1.14 2008/05/31 15:47:13 iamcamiel Exp $\n",
          devid_string);
 }
@@ -650,10 +648,9 @@ void CSym53C810::init() {
  **/
 void CSym53C810::start_threads() {
   if (!myThread) {
-    myThread = new CThread("sym");
-    printf(" %s", myThread->getName().c_str());
+    printf(" sym");
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
     if (state.executing)
       mySemaphore.set();
   }
@@ -665,11 +662,10 @@ void CSym53C810::start_threads() {
 void CSym53C810::stop_threads() {
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    printf(" sym");
     mySemaphore.set();
     myThread->join();
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -1501,7 +1497,7 @@ void CSym53C810::post_dsp_write() {
  * Check if threads are still running.
  **/
 void CSym53C810::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "SYM thread has died");
 
   if (state.gen_timer) {
