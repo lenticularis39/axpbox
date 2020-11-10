@@ -251,7 +251,7 @@
  *(http://download.majix.org/dec/alpha_arch_ref.pdf)
  *	.
  **/
-class CAlphaCPU : public CSystemComponent, public CRunnable {
+class CAlphaCPU : public CSystemComponent {
 public:
   void flush_icache_asm();
   virtual int SaveState(FILE *f);
@@ -260,7 +260,7 @@ public:
   int get_cpuid();
   void flush_icache();
 
-  virtual void run(); // Poco Thread entry point
+  void run();
   void execute();
   void release_threads();
 
@@ -309,7 +309,8 @@ public:
   virtual void stop_threads();
 
 private:
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   CSemaphore mySemaphore;
   bool StopThread;
 

@@ -85,13 +85,8 @@
 #endif
 #endif
 
-/**
- * This Macro finds out what the current CThread object is, and returns it's
- *name. If there's no CThread object associated with this thread, it's assumed
- *to be the main thread, and "main" is returned.
- **/
-#define CURRENT_THREAD_NAME                                                    \
-  CThread::current() ? CThread::current()->getName().c_str() : "main"
+// Placeholder
+#define CURRENT_THREAD_NAME "<thread>"
 
 #include "../es40_debug.h"
 #include "Exception.h"

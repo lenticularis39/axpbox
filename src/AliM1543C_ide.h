@@ -173,8 +173,7 @@
  **/
 class CAliM1543C_ide : public CPCIDevice,
                        public CDiskController,
-                       public CSCSIDevice,
-                       public CRunnable {
+                       public CSCSIDevice {
 public:
   CAliM1543C_ide(CConfigurator *cfg, class CSystem *c, int pcibus, int pcidev);
   virtual ~CAliM1543C_ide();
@@ -193,7 +192,7 @@ public:
   virtual void check_state();
   virtual void ResetPCI();
 
-  virtual void run();
+  void run();
   virtual void init();
   virtual void start_threads();
   virtual void stop_threads();
@@ -217,13 +216,14 @@ private:
 
   void execute(int index);
 
-  CThread *thrController[2];          // one thread for each controller chip
-  CSemaphore *semController[2];       // controller start/stop
-  CSemaphore *semControllerReady[2];  // controller ready
-  CSemaphore *semBusMaster[2];        // bus master start/stop
-  CSemaphore *semBusMasterReady[2];   // bus master ready
-  CRWLock *mtRegisters[2];            // main registers
-  CRWLock *mtBusMaster[2];            // busmaster registers
+  std::unique_ptr<std::thread> thrController[2];
+  std::atomic_bool thrControllerDead[2] = {{false}, {false}};
+  CSemaphore *semController[2];      // controller start/stop
+  CSemaphore *semControllerReady[2]; // controller ready
+  CSemaphore *semBusMaster[2];       // bus master start/stop
+  CSemaphore *semBusMasterReady[2];  // bus master ready
+  CRWLock *mtRegisters[2];           // main registers
+  CRWLock *mtBusMaster[2];           // busmaster registers
   bool StopThread;
 
   bool usedma;

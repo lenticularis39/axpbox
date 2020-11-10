@@ -69,7 +69,7 @@
 /**
  * \brief Emulated keyboard controller, keyboard and mouse.
  **/
-class CKeyboard : public CSystemComponent, public CRunnable {
+class CKeyboard : public CSystemComponent {
 public:
   CKeyboard(CConfigurator *cfg, CSystem *c);
   virtual ~CKeyboard();
@@ -79,7 +79,7 @@ public:
   virtual u64 ReadMem(int index, u64 address, int dsize);
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
-  virtual void run();
+  void run();
   void execute();
 
   void gen_scancode(u32 key);
@@ -89,7 +89,8 @@ public:
   virtual void stop_threads();
 
 private:
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   bool StopThread;
 
   u8 read_60();

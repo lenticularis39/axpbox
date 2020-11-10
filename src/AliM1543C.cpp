@@ -485,28 +485,24 @@ void CAliM1543C::init() {
 
   myRegLock = new CMutex("ali-reg");
 
-  myThread = 0;
-
   printf("%s: $Id: AliM1543C.cpp,v 1.66 2008/05/31 15:47:07 iamcamiel Exp $\n",
          devid_string);
 }
 
 void CAliM1543C::start_threads() {
   if (!myThread) {
-    myThread = new CThread("ali");
-    printf(" %s", myThread->getName().c_str());
+    printf(" ali");
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
   }
 }
 
 void CAliM1543C::stop_threads() {
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    printf(" ali");
     myThread->join();
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -985,7 +981,7 @@ void CAliM1543C::pit_clock() {
 void CAliM1543C::run() {
   try {
     for (;;) {
-      CThread::sleep(1);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
       if (StopThread)
         return;
       do_pit_clock();
@@ -994,7 +990,7 @@ void CAliM1543C::run() {
 
   catch (CException &e) {
     printf("Exception in Ali thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -1434,7 +1430,7 @@ void CAliM1543C::lpt_write(u32 address, u8 data) {
  * Check if threads are still running.
  **/
 void CAliM1543C::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "ALi thread has died");
 }
 

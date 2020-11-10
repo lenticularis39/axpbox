@@ -89,7 +89,7 @@
  *   (http://home.worldonline.dk/~finth/)
  *  .
  **/
-class CCirrus : public CVGA, public CRunnable {
+class CCirrus : public CVGA {
 public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
@@ -164,13 +164,13 @@ private:
   void vga_mem_write(u32 addr, u8 value);
   u8 vga_mem_read(u32 addr);
 
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   bool StopThread;
 
   /// The state structure contains all elements that need to be saved to the
   /// statefile
   struct SCirrus_state {
-
     //      u8 disabled;
     //      u8 framebuffer[1<<VIDEO_RAM_SIZE];
     //      u8 legacybuffer[131072];

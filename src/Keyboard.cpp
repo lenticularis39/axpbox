@@ -144,27 +144,23 @@ void CKeyboard::init() {
   state.kbd_controller_Qsize = 0;
   state.kbd_controller_Qsource = 0;
 
-  myThread = 0;
-
   printf("kbc: $Id: Keyboard.cpp,v 1.10 2008/05/31 15:47:09 iamcamiel Exp $\n");
 }
 
 void CKeyboard::start_threads() {
   if (!myThread) {
-    myThread = new CThread("kbd");
-    printf(" %s", myThread->getName().c_str());
+    printf(" kbd");
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
   }
 }
 
 void CKeyboard::stop_threads() {
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    printf(" kbd");
     myThread->join();
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -1734,7 +1730,7 @@ void CKeyboard::execute() {
  * Check if threads are still running.
  **/
 void CKeyboard::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "KBD thread has died");
 }
 
@@ -1747,13 +1743,13 @@ void CKeyboard::run() {
       if (StopThread)
         return;
       execute();
-      CThread::sleep(20);
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
   }
 
   catch (CException &e) {
     printf("Exception in kbd thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }

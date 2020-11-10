@@ -166,7 +166,7 @@ void CCirrus::run() {
         bx_gui->lock();
         bx_gui->handle_events();
         bx_gui->unlock();
-        CThread::sleep(10);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
       // Update the screen (10 times per second)
       bx_gui->lock();
@@ -178,7 +178,7 @@ void CCirrus::run() {
 
   catch (CException &e) {
     printf("Exception in Cirrus thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -411,7 +411,6 @@ void CCirrus::init() {
   state.graphics_ctrl.memory_mapping = 3; // color text mode
   state.vga_mem_updated = 1;
 
-  myThread = 0;
   printf("%s: $Id: Cirrus.cpp,v 1.23 2008/05/31 15:47:09 iamcamiel Exp $\n",
          devid_string);
 }
@@ -421,10 +420,9 @@ void CCirrus::init() {
  **/
 void CCirrus::start_threads() {
   if (!myThread) {
-    myThread = new CThread("cirrus");
-    printf(" %s", myThread->getName().c_str());
+    printf(" cirrus");
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
   }
 }
 
@@ -435,12 +433,11 @@ void CCirrus::stop_threads() {
   // Signal the thread to stop
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    printf(" cirrus");
     // Wait for the thread to end execution
     myThread->join();
     // And delete the Thread object
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -575,7 +572,7 @@ void CCirrus::WriteMem_Bar(int func, int bar, u32 address, int dsize,
  * Check if threads are still running.
  **/
 void CCirrus::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "Cirrus thread has died");
 }
 

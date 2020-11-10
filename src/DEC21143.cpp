@@ -191,23 +191,21 @@ void CDEC21143::run() {
       if (state.reg[CSR_STATUS / 8] & state.reg[CSR_INTEN / 8] & 0x0c0037ba)
         state.reg[CSR_STATUS / 8] |= STATUS_AIS;
 
-      asserted =
-          (state.reg[CSR_STATUS / 8] & state.reg[CSR_INTEN / 8] & 0x0c01ffff)
-              ? true
-              : false;
+      asserted = (state.reg[CSR_STATUS / 8] & state.reg[CSR_INTEN / 8] &
+                  0x0c01ffff) != 0;
 
       if (asserted != state.irq_was_asserted) {
         if (do_pci_interrupt(0, asserted))
           state.irq_was_asserted = asserted;
       }
 
-      CThread::sleep(10);
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
   }
 
   catch (CException &e) {
     printf("Exception in NIC thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -502,28 +500,24 @@ void CDEC21143::init() {
 
   ResetPCI();
 
-  myThread = 0;
-
   printf("%s: $Id: DEC21143.cpp,v 1.36 2008/05/31 15:47:09 iamcamiel Exp $\n",
          devid_string);
 }
 
 void CDEC21143::start_threads() {
   if (!myThread) {
-    myThread = new CThread("nic");
-    printf(" %s", myThread->getName().c_str());
+    printf(" nic");
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
   }
 }
 
 void CDEC21143::stop_threads() {
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    printf(" nic");
     myThread->join();
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -564,7 +558,7 @@ void CDEC21143::WriteMem_Bar(int func, int bar, u32 address, int dsize,
  * Check if threads are still running.
  **/
 void CDEC21143::check_state() {
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "NIC thread has died");
 }
 

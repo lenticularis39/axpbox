@@ -112,7 +112,7 @@
  *(http://h30097.www3.hp.com/docs/dev_doc/DOCUMENTATION/HTML/dev_docs_r2.html)
  *  .
  **/
-class CDEC21143 : public CPCIDevice, public CRunnable {
+class CDEC21143 : public CPCIDevice {
 public:
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
@@ -128,7 +128,7 @@ public:
   void ResetNIC();
   void SetupFilter();
   void receive_process();
-  virtual void run();
+  void run();
   virtual void init();
   virtual void start_threads();
   virtual void stop_threads();
@@ -136,7 +136,8 @@ public:
 private:
   static int nic_num;
 
-  CThread *myThread = nullptr;
+  std::unique_ptr<std::thread> myThread;
+  std::atomic_bool myThreadDead{false};
   bool StopThread;
 
   u32 nic_read(u32 address, int dsize);

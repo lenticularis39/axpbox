@@ -78,8 +78,9 @@
 #include "Exception.h"
 #include "Foundation.h"
 #include "Mutex.h"
-#include "Thread.h"
 #include "Timestamp.h"
+
+#include <thread>
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
 #include "RWLock_WIN32.h"
@@ -216,7 +217,7 @@ inline bool CRWLock::tryWriteLock(long milliseconds) {
 #endif
         return true;
       }
-      CThread::sleep(5);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     } while (!now.isElapsed(diff));
 #if defined(DEBUG_LOCKS)
     printf("CAN'T W LOCK mutex %s from thread %s.   \n", lockName,
@@ -247,7 +248,7 @@ inline bool CRWLock::tryReadLock(long milliseconds) {
 #endif
         return true;
       }
-      CThread::sleep(5);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     } while (!now.isElapsed(diff));
 #if defined(DEBUG_LOCKS)
     printf("CAN'T R LOCK mutex %s from thread %s.   \n", lockName,
@@ -278,7 +279,7 @@ inline void CRWLock::writeLock(long milliseconds) {
 #endif
         return;
       }
-      CThread::sleep(5);
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
     } while (!now.isElapsed(diff));
     FAILURE(Timeout, "Timeout");
   } catch (CException &e) {
@@ -305,7 +306,7 @@ inline void CRWLock::readLock(long milliseconds) {
 #endif
         return;
       }
-      CThread::sleep(5);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     } while (!now.isElapsed(diff));
     FAILURE(Timeout, "Timeout");
   } catch (CException &e) {

@@ -271,7 +271,6 @@ void CSerial::init() {
   state.bMSR = 0x30; // CTS, DSR
   state.bIIR = 0x01; // no interrupt
   state.irq_active = false;
-  myThread = 0;
 
   printf("%s: $Id: Serial.cpp,v 1.51 2008/06/03 09:07:56 iamcamiel Exp $\n",
          devid_string);
@@ -281,22 +280,22 @@ void CSerial::start_threads() {
   char buffer[5];
   if (!myThread) {
     sprintf(buffer, "srl%d", state.iNumber);
-    myThread = new CThread(buffer);
-    printf(" %s", myThread->getName().c_str());
+    printf(" %s", buffer);
     StopThread = false;
-    myThread->start(*this);
+    myThread = std::make_unique<std::thread>([this](){ this->run(); });
   }
 }
 
 void CSerial::stop_threads() {
+  char buffer[5];
   StopThread = true;
   if (myThread) {
-    printf(" %s", myThread->getName().c_str());
+    sprintf(buffer, "srl%d", state.iNumber);
+    printf(" %s", buffer);
     if (!acceptingSocket) {
       myThread->join();
     }
-    delete myThread;
-    myThread = 0;
+    myThread = nullptr;
   }
 }
 
@@ -469,13 +468,13 @@ void CSerial::run() {
       if (StopThread)
         return;
       execute();
-      CThread::sleep(5);
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
 
   catch (CException &e) {
     printf("Exception in Serial thread: %s.\n", e.displayText().c_str());
-
+    myThreadDead.store(true);
     // Let the thread die...
   }
 }
@@ -489,7 +488,7 @@ void CSerial::check_state() {
   if (breakHit)
     serial_menu();
 
-  if (myThread && !myThread->isRunning())
+  if (myThreadDead.load())
     FAILURE(Thread, "Serial thread has died");
 }
 
