@@ -296,7 +296,7 @@ void bx_x11_gui_c::specific_init(unsigned tilewidth, unsigned tileheight) {
   y_tilesize = tileheight;
 
   /* connect to X server */
-  if ((bx_x_display = XOpenDisplay(display_name)) == NULL) {
+  if ((bx_x_display = XOpenDisplay(display_name)) == NULL && progname != nullptr) {
     BX_PANIC(("%s: cannot connect to X server %s", progname,
               XDisplayName(display_name)));
   }
@@ -429,11 +429,11 @@ void bx_x11_gui_c::specific_init(unsigned tilewidth, unsigned tileheight) {
     /* These calls store window_name and icon_name into
      * XTextProperty structures and set their other
      * fields properly. */
-    if (XStringListToTextProperty((char **)&window_name, 1, &windowName) == 0) {
+    if (XStringListToTextProperty((char **)&window_name, 1, &windowName) == 0 && progname != nullptr) {
       BX_PANIC(("%s: structure allocation for windowName failed.", progname));
     }
 
-    if (XStringListToTextProperty((char **)&icon_name, 1, &iconName) == 0) {
+    if (XStringListToTextProperty((char **)&icon_name, 1, &iconName) == 0 && progname != nullptr) {
       BX_PANIC(("%s: structure allocation for iconName failed.", progname));
     }
 
