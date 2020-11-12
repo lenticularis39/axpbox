@@ -1,11 +1,16 @@
 #!/bin/bash
 
 # Download the firmware
-wget 'http://80.211.96.38/s/inc/downloads/es40-srmon/cl67srmrom.exe'
+wget 'http://raymii.org/s/inc/downloads/es40-srmon/cl67srmrom.exe'
 
 # Start AXPbox
-../../build/axpbox run &
-AXPBOX_PID=$!
+if [[ -f ../../../build/axpbox ]]; then
+  ../../../build/axpbox run &
+  AXPBOX_PID=$!
+else # Travis
+  ../../build/axpbox run &
+  AXPBOX_PID=$!
+fi
 
 # Wait for AXPbox to start
 sleep 3
