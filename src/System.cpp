@@ -1871,14 +1871,14 @@ int CSystem::LoadROM() {
     for (i = 0; i < 0x240; i++) {
       if (feof(f))
         break;
-      fread(&scratch, 1, 1, f);
+      (void)!fread(&scratch, 1, 1, f);
     }
 
     if (feof(f))
       FAILURE(Runtime, "File is too short to be a SRM ROM image");
     buffer = PtrToMem(0x900000);
     while (!feof(f))
-      fread(buffer++, 1, 1, f);
+      (void)!fread(buffer++, 1, 1, f);
     fclose(f);
 
     printf("%%SYS-I-DECOMP: Decompressing ROM image.\n0%%");
@@ -1924,14 +1924,14 @@ int CSystem::LoadROM() {
   } else {
     printf("%%SYS-I-READROM: Reading decompressed ROM image from %s.\n",
            myCfg->get_text_value("rom.decompressed", "decompressed.rom"));
-    fread(&temp, 1, sizeof(u64), f);
+    (void)!fread(&temp, 1, sizeof(u64), f);
     for (int i = 0; i < iNumCPUs; i++)
       acCPUs[i]->set_pc(endian_64(temp));
-    fread(&temp, 1, sizeof(u64), f);
+    (void)!fread(&temp, 1, sizeof(u64), f);
     for (int i = 0; i < iNumCPUs; i++)
       acCPUs[i]->set_PAL_BASE(endian_64(temp));
     buffer = PtrToMem(0);
-    fread(buffer, 1, 0x200000, f);
+    (void)!fread(buffer, 1, 0x200000, f);
     fclose(f);
   }
 
@@ -2474,14 +2474,14 @@ void CSystem::RestoreState(const char *fn) {
     return;
   }
 
-  fread(&temp_32, sizeof(u32), 1, f);
+  (void)!fread(&temp_32, sizeof(u32), 1, f);
   if (temp_32 != 0xa1fae540) // MAGIC NUMBER (ALFAES40 ==> A1FAE540 )
   {
     printf("%%SYS-F-FORMAT: %s does not appear to be a state file.\n", fn);
     return;
   }
 
-  fread(&temp_32, sizeof(u32), 1, f);
+  (void)!fread(&temp_32, sizeof(u32), 1, f);
 
   if (temp_32 != 0x00020001) // File Format Version 2.1
   {
@@ -2491,16 +2491,16 @@ void CSystem::RestoreState(const char *fn) {
 
   // memory
   for (m = 0; m < memints; m++) {
-    fread(&(mem[m]), 1, sizeof(int), f);
+    (void)!fread(&(mem[m]), 1, sizeof(int), f);
     if (!mem[m]) {
-      fread(&j, 1, sizeof(int), f);
+      (void)!fread(&j, 1, sizeof(int), f);
       while (j--) {
         mem[++m] = 0;
       }
     }
   }
 
-  fread(&state, sizeof(state), 1, f);
+  (void)!fread(&state, sizeof(state), 1, f);
 
   // components
   //
