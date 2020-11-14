@@ -389,7 +389,7 @@ void CDEC21143::init() {
       inum = 0;
       while (inum < 1 || inum > i) {
         printf("%%NIC-Q-NICNO: Enter the interface number (1-%d):", i);
-        scanf("%d", &inum);
+        (void)!scanf("%d", &inum);
       }
     }
 
@@ -1707,7 +1707,7 @@ int CDEC21143::RestoreState(FILE *f) {
     return -1;
   }
 
-  fread(&ss, sizeof(long), 1, f);
+  r = fread(&ss, sizeof(long), 1, f);
   if (r != 1) {
     printf("%s: unexpected end of file!\n", devid_string);
     return -1;
@@ -1718,7 +1718,7 @@ int CDEC21143::RestoreState(FILE *f) {
     return -1;
   }
 
-  fread(&state, sizeof(state), 1, f);
+  r = fread(&state, sizeof(state), 1, f);
   if (r != 1) {
     printf("%s: unexpected end of file!\n", devid_string);
     return -1;
