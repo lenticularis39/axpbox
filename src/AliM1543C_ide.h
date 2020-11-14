@@ -192,7 +192,7 @@ public:
   virtual void check_state();
   virtual void ResetPCI();
 
-  void run();
+  void run(int index);
   virtual void init();
   virtual void start_threads();
   virtual void stop_threads();
