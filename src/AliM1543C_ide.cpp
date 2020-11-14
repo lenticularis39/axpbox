@@ -233,7 +233,7 @@
 #include "System.h"
 
 #include <cmath>
-
+#include <iostream>
 #include "gui/keymap.h"
 #include "gui/scancodes.h"
 
@@ -2465,7 +2465,11 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
  * Thread entry point.
  **/
 void CAliM1543C_ide::run() {
-  int index =
+  while (thrController[0] == nullptr) {
+    std::cerr << "CAliM1543C_ide waiting 1 seconds because thrController[0] == nullptr." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+    int index =
       (thrController[0]->get_id() == std::this_thread::get_id()) ? 0 : 1;
   try {
     for (;;) {
