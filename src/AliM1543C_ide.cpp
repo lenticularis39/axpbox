@@ -442,7 +442,7 @@ void CAliM1543C_ide::start_threads() {
     if (!thrController[i]) {
       sprintf(buffer, "ide%d", i);
       thrController[i] =
-          std::make_unique<std::thread>([this]() { this->run(); });
+          std::make_unique<std::thread>([this, i]() { this->run(i); });
       printf(" %s", buffer);
       StopThread = false;
     }
@@ -2464,9 +2464,7 @@ int CAliM1543C_ide::do_dma_transfer(int index, u8 *buffer, u32 buffersize,
 /**
  * Thread entry point.
  **/
-void CAliM1543C_ide::run() {
-  int index =
-      (thrController[0]->get_id() == std::this_thread::get_id()) ? 0 : 1;
+void CAliM1543C_ide::run(int index) {
   try {
     for (;;) {
       semController[index]->wait();
