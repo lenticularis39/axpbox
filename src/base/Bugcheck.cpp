@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Bugcheck.h"
-#include "Exception.h"
+#include "Bugcheck.hpp"
+#include "Exception.hpp"
 #include <sstream>
 
 void CBugcheck::assertion(const char *cond, const char *file, int line) {

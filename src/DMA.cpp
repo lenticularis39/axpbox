@@ -60,11 +60,11 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "DMA.h"
-#include "AliM1543C.h"
-#include "PCIDevice.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "DMA.hpp"
+#include "AliM1543C.hpp"
+#include "PCIDevice.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 #define DEBUG_DMA
 

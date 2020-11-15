@@ -74,9 +74,9 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
-#include "DiskController.h"
-#include "Disk.h"
-#include "StdAfx.h"
+#include "DiskController.hpp"
+#include "Disk.hpp"
+#include "StdAfx.hpp"
 
 CDiskController::CDiskController(int num_busses, int num_devices) {
   num_bus = num_busses;

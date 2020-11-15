@@ -102,11 +102,11 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "DPR.h"
-#include "AlphaCPU.h"
-#include "Serial.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "DPR.hpp"
+#include "AlphaCPU.hpp"
+#include "Serial.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 #include <time.h>
 
 #define ToBCD(x) (((x) / 10 << 4) | ((x) % 10))

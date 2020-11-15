@@ -148,11 +148,11 @@
  * X-1.1        Camiel Vanderhoeven                             14-NOV-2007
  *      Initial version for ES40 emulator.
  **/
-#include "StdAfx.h"
+#include "StdAfx.hpp"
 
 #if defined(HAVE_PCAP)
-#include "DEC21143.h"
-#include "System.h"
+#include "DEC21143.hpp"
+#include "System.hpp"
 
 #if defined(DEBUG_NIC)
 #define DEBUG_NIC_FILTER

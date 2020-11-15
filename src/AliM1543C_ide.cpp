@@ -228,17 +228,17 @@
 #ifdef DEBUG_IDE_LOCKS
 #define DEBUG_LOCKS
 #endif
-#include "AliM1543C_ide.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "AliM1543C_ide.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 #include <cmath>
 
-#include "gui/keymap.h"
-#include "gui/scancodes.h"
+#include "gui/keymap.hpp"
+#include "gui/scancodes.hpp"
 
-#include "AliM1543C.h"
-#include "Disk.h"
+#include "AliM1543C.hpp"
+#include "Disk.hpp"
 
 #define PAUSE(msg)                                                             \
   do {                                                                         \

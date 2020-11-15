@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "RWLock_POSIX.h"
+#include "RWLock_POSIX.hpp"
 
 CRWLockImpl::CRWLockImpl() {
   if (pthread_rwlock_init(&_rwl, NULL))

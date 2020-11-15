@@ -81,11 +81,11 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "FloppyController.h"
-#include "DMA.h"
-#include "Disk.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "FloppyController.hpp"
+#include "DMA.hpp"
+#include "Disk.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 /**
  * Constructor.

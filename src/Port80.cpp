@@ -66,9 +66,9 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / www.camicom.com)
  **/
-#include "Port80.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Port80.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 /**
  * Constructor.

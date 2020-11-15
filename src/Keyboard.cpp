@@ -64,14 +64,14 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "Keyboard.h"
-#include "AliM1543C.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Keyboard.hpp"
+#include "AliM1543C.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 #include <math.h>
 
-#include "gui/keymap.h"
-#include "gui/scancodes.h"
+#include "gui/keymap.hpp"
+#include "gui/scancodes.hpp"
 
 /**
  * Constructor.

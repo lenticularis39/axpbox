@@ -66,9 +66,9 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "SystemComponent.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "SystemComponent.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 /**
  * Constructor.

@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Semaphore_WIN32.h"
+#include "Semaphore_WIN32.hpp"
 
 CSemaphoreImpl::CSemaphoreImpl(int n, int max) {
   poco_assert(n >= 0 && max > 0 && n <= max);

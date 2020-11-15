@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "NumberFormatter.h"
+#include "NumberFormatter.hpp"
 #include <cctype>
 #include <cinttypes>
 #include <cstdio>

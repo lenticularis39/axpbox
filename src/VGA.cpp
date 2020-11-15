@@ -49,8 +49,8 @@
  * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
  *      Initial version in CVS.
  **/
-#include "VGA.h"
-#include "StdAfx.h"
+#include "VGA.hpp"
+#include "StdAfx.hpp"
 
 /**
  * Constructor.

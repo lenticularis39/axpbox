@@ -55,14 +55,14 @@
 #define XK_PUBLISHING
 #define XK_TECHNICAL
 
-#include "../StdAfx.h"
+#include "../StdAfx.hpp"
 
 #if defined(HAVE_X11)
-#include "../Configurator.h"
-#include "../Keyboard.h"
-#include "../VGA.h"
-#include "gui.h"
-#include "keymap.h"
+#include "../Configurator.hpp"
+#include "../Keyboard.hpp"
+#include "../VGA.hpp"
+#include "gui.hpp"
+#include "keymap.hpp"
 
 extern "C" {
 #include <X11/Xatom.h>
@@ -71,7 +71,7 @@ extern "C" {
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 }
-#include "gui_win32_font.h"
+#include "gui_win32_font.hpp"
 
 class bx_x11_gui_c : public bx_gui_c {
 public:

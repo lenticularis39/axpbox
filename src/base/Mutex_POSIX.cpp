@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Mutex_POSIX.h"
-#include "Timestamp.h"
+#include "Mutex_POSIX.hpp"
+#include "Timestamp.hpp"
 #if !defined(POCO_NO_SYS_SELECT_H)
 #include <sys/select.h>
 #endif

@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Timestamp.h"
-#include "Exception.h"
+#include "Timestamp.hpp"
+#include "Exception.hpp"
 #include <algorithm>
 #if defined(POCO_OS_FAMILY_UNIX)
 #include <sys/time.h>
@@ -78,7 +78,7 @@
 #include <time.h>
 #include <unistd.h>
 #elif defined(POCO_OS_FAMILY_WINDOWS)
-#include "UnWindows.h"
+#include "UnWindows.hpp"
 #endif
 
 CTimestamp::CTimestamp() { update(); }

@@ -101,11 +101,11 @@
  * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
  *      Initial version in CVS.
  **/
-#include "Cirrus.h"
-#include "AliM1543C.h"
-#include "StdAfx.h"
-#include "System.h"
-#include "gui/gui.h"
+#include "Cirrus.hpp"
+#include "AliM1543C.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
+#include "gui/gui.hpp"
 
 static unsigned old_iHeight = 0, old_iWidth = 0, old_MSL = 0;
 

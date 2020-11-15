@@ -312,11 +312,11 @@
  * X-1.1        Camiel Vanderhoeven                             19-JAN-2007
  *      Initial version in CVS.
  **/
-#include "System.h"
-#include "AlphaCPU.h"
-#include "DPR.h"
-#include "StdAfx.h"
-#include "lockstep.h"
+#include "System.hpp"
+#include "AlphaCPU.hpp"
+#include "DPR.hpp"
+#include "StdAfx.hpp"
+#include "lockstep.hpp"
 
 #include <ctype.h>
 #include <signal.h>

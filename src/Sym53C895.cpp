@@ -141,11 +141,11 @@
 #define DEBUG_SYM_REGS
 #define DEBUG_SYM_SCRIPTS
 #endif
-#include "Sym53C895.h"
-#include "Disk.h"
-#include "SCSIBus.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Sym53C895.hpp"
+#include "Disk.hpp"
+#include "SCSIBus.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 /// Register 00: SCNTL0: SCSI Control 0
 #define R_SCNTL0 0x00

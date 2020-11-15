@@ -72,7 +72,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "RWLock.h"
+#include "RWLock.hpp"
 #include <string.h>
 
 #if defined(POCO_OS_FAMILY_WINDOWS)

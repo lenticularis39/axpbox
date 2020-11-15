@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Semaphore.h"
+#include "Semaphore.hpp"
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
 #include "Semaphore_WIN32.cpp"

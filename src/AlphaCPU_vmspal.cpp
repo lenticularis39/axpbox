@@ -78,12 +78,12 @@
  * X-1.1        Camiel Vanderhoeven                             2-DEC-2007
  *      Initial version in CVS.
  **/
-#include "AlphaCPU.h"
-#include "StdAfx.h"
+#include "AlphaCPU.hpp"
+#include "StdAfx.hpp"
 
-#include "AliM1543C_ide.h"
-#include "Disk.h"
-#include "Serial.h"
+#include "AliM1543C_ide.hpp"
+#include "Disk.hpp"
+#include "Serial.hpp"
 
 /***********************************************************
  *                                                         *

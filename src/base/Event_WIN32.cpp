@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Event_WIN32.h"
+#include "Event_WIN32.hpp"
 
 CEventImpl::CEventImpl(bool autoReset) {
   _event = CreateEventW(NULL, autoReset ? FALSE : TRUE, FALSE, NULL);

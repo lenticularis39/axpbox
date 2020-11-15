@@ -183,12 +183,12 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "Serial.h"
-#include "AliM1543C.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Serial.hpp"
+#include "AliM1543C.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
-#include "lockstep.h"
+#include "lockstep.hpp"
 
 #define RECV_TICKS 10
 

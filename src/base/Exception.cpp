@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Exception.h"
+#include "Exception.hpp"
 #include <typeinfo>
 
 CException::CException(int code) : _pNested(0), _code(code) {}

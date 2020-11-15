@@ -56,9 +56,9 @@
  *      File created. Contains code based upon the SIMH Alpha pre-
  *      implementation, which is Copyright (c) 2003, Robert M Supnik.
  **/
-#include "AlphaCPU.h"
-#include "StdAfx.h"
-#include "cpu_debug.h"
+#include "AlphaCPU.hpp"
+#include "StdAfx.hpp"
+#include "cpu_debug.hpp"
 
 /***************************************************************************/
 

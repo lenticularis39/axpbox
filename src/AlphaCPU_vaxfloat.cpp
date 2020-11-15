@@ -65,9 +65,9 @@
  * is used only when HAVE_NEW_FP has been defined. The new code should be
  * fixed, so we can take advantage of floating point exceptions.
  **/
-#include "AlphaCPU.h"
-#include "StdAfx.h"
-#include "cpu_debug.h"
+#include "AlphaCPU.hpp"
+#include "StdAfx.hpp"
+#include "cpu_debug.hpp"
 
 #define IPMAX U64(0x7FFFFFFFFFFFFFFF) /* plus MAX (int) */
 #define IMMAX U64(0x8000000000000000) /* minus MAX (int) */

@@ -52,7 +52,7 @@
  *      File created.
  **/
 
-#include "StdAfx.h"
+#include "StdAfx.hpp"
 
 // C++ includes
 #include <algorithm>
@@ -70,11 +70,11 @@ using namespace std;
 
 // Question classes
 
-#include "FreeTextQuestion.h"
-#include "MultipleChoiceQuestion.h"
-#include "NumberQuestion.h"
-#include "Question.h"
-#include "ShrinkingChoiceQuestion.h"
+#include "FreeTextQuestion.hpp"
+#include "MultipleChoiceQuestion.hpp"
+#include "NumberQuestion.hpp"
+#include "Question.hpp"
+#include "ShrinkingChoiceQuestion.hpp"
 
 /**
  * Add disks for a controller to the configuration file.

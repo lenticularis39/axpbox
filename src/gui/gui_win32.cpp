@@ -56,18 +56,18 @@
  *      Initial version for ES40 emulator.
  *
  **/
-#include "../StdAfx.h"
+#include "../StdAfx.hpp"
 
 #if defined(_WIN32)
 #include <process.h>
 
-#include "../Configurator.h"
-#include "../Keyboard.h"
-#include "../VGA.h"
-#include "gui_win32_font.h"
-#include "keymap.h"
+#include "../Configurator.hpp"
+#include "../Keyboard.hpp"
+#include "../VGA.hpp"
+#include "gui_win32_font.hpp"
+#include "keymap.hpp"
 
-#include "gui.h"
+#include "gui.hpp"
 
 class bx_win32_gui_c : public bx_gui_c {
 public:

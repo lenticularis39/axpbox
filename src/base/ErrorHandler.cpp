@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "ErrorHandler.h"
-#include "SingletonHolder.h"
+#include "ErrorHandler.hpp"
+#include "SingletonHolder.hpp"
 
 CErrorHandler *CErrorHandler::_pHandler = CErrorHandler::defaultHandler();
 CFastMutex CErrorHandler::_mutex;

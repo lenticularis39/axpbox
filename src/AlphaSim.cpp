@@ -194,12 +194,12 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "DPR.h"
-#include "Flash.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "DPR.hpp"
+#include "Flash.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
-#include "lockstep.h"
+#include "lockstep.hpp"
 
 #if defined(HAVE_SDL)
 #include "SDL/SDL.h"
