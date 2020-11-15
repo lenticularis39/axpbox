@@ -155,7 +155,7 @@ set(RETSIGTYPE "void")
 set(STDC_HEADERS 1)
 check_include_files("time.h;sys/time.h" TIME_WITH_SYS_TIME)
 
-configure_file(src/config.h.in src/config.h)
+configure_file(src/config.hpp.in src/config.hpp)
 
 message(STATUS "C++ compiler flags  : ${CMAKE_CXX_FLAGS}")
 message(STATUS "C compiler flags    : ${CMAKE_C_FLAGS}")

@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Event.h"
+#include "Event.hpp"
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
 #include "Event_WIN32.cpp"

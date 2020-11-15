@@ -69,11 +69,11 @@
 //#define DEBUG_LOCKS
 //#define NO_LOCK_TIMEOUTS
 
-#include "../StdAfx.h"
+#include "../StdAfx.hpp"
 
 #include <signal.h>
 
-#include "gui.h"
+#include "gui.hpp"
 
 bx_gui_c *bx_gui = NULL;
 

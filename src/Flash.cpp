@@ -90,10 +90,10 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "Flash.h"
-#include "AlphaCPU.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Flash.hpp"
+#include "AlphaCPU.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 // These are the modes for our flash-state-machine.
 #define MODE_READ 0

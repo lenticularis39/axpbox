@@ -263,10 +263,10 @@
  * X-1.1        Camiel Vanderhoeven                             19-JAN-2007
  *      Initial version in CVS.
  **/
-#include "AliM1543C.h"
-#include "StdAfx.h"
-#include "System.h"
-#include "VGA.h"
+#include "AliM1543C.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
+#include "VGA.hpp"
 
 #ifdef DEBUG_PIC
 bool pic_messages = false;

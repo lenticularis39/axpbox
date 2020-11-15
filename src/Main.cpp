@@ -1,7 +1,7 @@
 //
 // Created by tglozar on 21.09.20.
 //
-#include "config.h"
+#include "config.hpp"
 #include <cstring>
 #include <iostream>
 

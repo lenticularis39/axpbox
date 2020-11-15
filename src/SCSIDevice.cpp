@@ -37,8 +37,8 @@
  * X-1.1        Camiel Vanderhoeven                             12-JAN-2008
  *      Initial version in CVS.
  **/
-#include "SCSIDevice.h"
-#include "SCSIBus.h"
+#include "SCSIDevice.hpp"
+#include "SCSIBus.hpp"
 
 /**
  * \brief Constructor.

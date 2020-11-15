@@ -43,10 +43,10 @@
  *      Initial version for ES40 emulator.
  *
  **/
-#include "../StdAfx.h"
+#include "../StdAfx.hpp"
 
 //#include "bochs.h"
-#include "scancodes.h"
+#include "scancodes.hpp"
 
 unsigned char translation8042[256] = {
     0xff, 0x43, 0x41, 0x3f, 0x3d, 0x3b, 0x3c, 0x58, 0x64, 0x44, 0x42, 0x40,

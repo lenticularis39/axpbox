@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Mutex_WIN32.h"
-#include "Timestamp.h"
+#include "Mutex_WIN32.hpp"
+#include "Timestamp.hpp"
 
 CMutexImpl::CMutexImpl() {
   // the fct has a boolean return value under WInnNt/2000/XP but not on Win98

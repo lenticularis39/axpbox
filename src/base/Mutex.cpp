@@ -72,8 +72,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Mutex.h"
-#include "Mutex.h"
+#include "Mutex.hpp"
 #include <string.h>
 
 #if defined(POCO_OS_FAMILY_WINDOWS)

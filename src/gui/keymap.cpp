@@ -55,10 +55,10 @@
  *      Initial version for ES40 emulator.
  *
  **/
-#include "keymap.h"
-#include "../StdAfx.h"
-#include "../System.h"
-#include "gui.h"
+#include "keymap.hpp"
+#include "../StdAfx.hpp"
+#include "../System.hpp"
+#include "gui.hpp"
 
 const char *bx_key_symbol[BX_KEY_NBKEYS] = {
     "BX_KEY_CTRL_L",

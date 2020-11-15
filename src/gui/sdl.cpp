@@ -73,17 +73,16 @@
  *      Initial version for ES40 emulator.
  *
  **/
-#include "../StdAfx.h"
+#include "../StdAfx.hpp"
 
 #if defined(HAVE_SDL)
-#include "../System.h"
-#include "../VGA.h"
-#include "gui.h"
-#include "keymap.h"
+#include "../System.hpp"
+#include "../VGA.hpp"
+#include "gui.hpp"
+#include "keymap.hpp"
 
-//#include "../AliM1543C.h"
-#include "../Configurator.h"
-#include "../Keyboard.h"
+#include "../Configurator.hpp"
+#include "../Keyboard.hpp"
 
 #define _MULTI_THREAD
 
@@ -97,7 +96,7 @@
 #include <SDL/SDL_thread.h>
 #include <stdlib.h>
 
-#include "sdl_fonts.h"
+#include "sdl_fonts.hpp"
 
 /**
  * \brief GUI implementation using SDL.
@@ -1201,7 +1200,7 @@ typedef struct {
 
 keyTableEntry keytable[] = {
 // this include provides all the entries.
-#include "sdlkeys.h"
+#include "sdlkeys.hpp"
     // one final entry to mark the end
     {NULL, 0}};
 

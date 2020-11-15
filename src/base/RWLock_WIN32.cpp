@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "RWLock_WIN32.h"
+#include "RWLock_WIN32.hpp"
 
 CRWLockImpl::CRWLockImpl() : _readers(0), _writers(0) {
   _mutex = CreateMutexW(NULL, FALSE, NULL);

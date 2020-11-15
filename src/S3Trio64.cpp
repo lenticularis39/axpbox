@@ -91,11 +91,11 @@
  * X-1.1        Camiel Vanderhoeven                             1-DEC-2007
  *      Initial version in CVS.
  **/
-#include "S3Trio64.h"
-#include "AliM1543C.h"
-#include "StdAfx.h"
-#include "System.h"
-#include "gui/gui.h"
+#include "S3Trio64.hpp"
+#include "AliM1543C.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
+#include "gui/gui.hpp"
 
 static unsigned old_iHeight = 0, old_iWidth = 0, old_MSL = 0;
 

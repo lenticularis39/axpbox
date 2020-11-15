@@ -79,8 +79,8 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
-#include "DiskRam.h"
-#include "StdAfx.h"
+#include "DiskRam.hpp"
+#include "StdAfx.hpp"
 
 CDiskRam::CDiskRam(CConfigurator *cfg, CSystem *sys, CDiskController *c,
                    int idebus, int idedev)

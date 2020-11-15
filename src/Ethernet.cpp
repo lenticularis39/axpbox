@@ -42,8 +42,8 @@
  * X-1.1        David Hittner                                   26-FEB-2008
  *      File creation.
  **/
-#include "Ethernet.h"
-#include "telnet.h"
+#include "Ethernet.hpp"
+#include "telnet.hpp"
 
 /**
  * \brief Packet Queue for Ethernet packets.

@@ -124,34 +124,34 @@
  * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
  *      Initial version in CVS.
  **/
-#include "Configurator.h"
-#include "AliM1543C.h"
-#include "AliM1543C_ide.h"
-#include "AliM1543C_usb.h"
-#include "AlphaCPU.h"
-#include "Cirrus.h"
-#include "DMA.h"
-#include "DPR.h"
-#include "DiskDevice.h"
-#include "DiskFile.h"
-#include "DiskRam.h"
-#include "Flash.h"
-#include "FloppyController.h"
-#include "Keyboard.h"
-#include "Port80.h"
-#include "S3Trio64.h"
-#include "Serial.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "Configurator.hpp"
+#include "AliM1543C.hpp"
+#include "AliM1543C_ide.hpp"
+#include "AliM1543C_usb.hpp"
+#include "AlphaCPU.hpp"
+#include "Cirrus.hpp"
+#include "DMA.hpp"
+#include "DPR.hpp"
+#include "DiskDevice.hpp"
+#include "DiskFile.hpp"
+#include "DiskRam.hpp"
+#include "Flash.hpp"
+#include "FloppyController.hpp"
+#include "Keyboard.hpp"
+#include "Port80.hpp"
+#include "S3Trio64.hpp"
+#include "Serial.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 #if defined(HAVE_RADEON)
 #include "Radeon.h"
 #endif
-#include "gui/plugin.h"
+#include "gui/plugin.hpp"
 #if defined(HAVE_PCAP)
-#include "DEC21143.h"
+#include "DEC21143.hpp"
 #endif
-#include "Sym53C810.h"
-#include "Sym53C895.h"
+#include "Sym53C810.hpp"
+#include "Sym53C895.hpp"
 
 /**
  * Constructor.

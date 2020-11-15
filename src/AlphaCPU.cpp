@@ -334,26 +334,26 @@
  * X-1.1        Camiel Vanderhoeven                             19-JAN-2007
  *      Initial version in CVS.
  **/
-#include "AlphaCPU.h"
-#include "StdAfx.h"
-#include "TraceEngine.h"
-#include "cpu_arith.h"
-#include "cpu_bwx.h"
-#include "cpu_control.h"
-#include "cpu_debug.h"
-#include "cpu_fp_branch.h"
-#include "cpu_fp_memory.h"
-#include "cpu_fp_operate.h"
-#include "cpu_logical.h"
-#include "cpu_memory.h"
-#include "cpu_misc.h"
-#include "cpu_mvi.h"
-#include "cpu_pal.h"
-#include "cpu_vax.h"
-#include "lockstep.h"
+#include "AlphaCPU.hpp"
+#include "StdAfx.hpp"
+#include "TraceEngine.hpp"
+#include "cpu_arith.hpp"
+#include "cpu_bwx.hpp"
+#include "cpu_control.hpp"
+#include "cpu_debug.hpp"
+#include "cpu_fp_branch.hpp"
+#include "cpu_fp_memory.hpp"
+#include "cpu_fp_operate.hpp"
+#include "cpu_logical.hpp"
+#include "cpu_memory.hpp"
+#include "cpu_misc.hpp"
+#include "cpu_mvi.hpp"
+#include "cpu_pal.hpp"
+#include "cpu_vax.hpp"
+#include "lockstep.hpp"
 
 #if !defined(HAVE_NEW_FP)
-#include "es40_float.h"
+#include "es40_float.hpp"
 #endif
 void CAlphaCPU::release_threads() { mySemaphore.set(); }
 

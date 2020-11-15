@@ -52,8 +52,8 @@
  * X-1.1        Camiel Vanderhoeven                             05-JAN-2008
  *      Initial version in CVS.
  **/
-#include "DiskDevice.h"
-#include "StdAfx.h"
+#include "DiskDevice.hpp"
+#include "StdAfx.hpp"
 
 #if defined(_WIN32)
 #include <WinIoCtl.h>

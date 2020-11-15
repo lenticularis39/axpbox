@@ -47,7 +47,7 @@
 // SPDX-License-Identifier:	BSL-1.0
 //
 
-#include "Semaphore_POSIX.h"
+#include "Semaphore_POSIX.hpp"
 #include <sys/time.h>
 
 //

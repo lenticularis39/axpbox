@@ -54,7 +54,7 @@
  *         of debug(), but not the output of fatal().
  *
  *****************************************************************************/
-#include "StdAfx.h"
+#include "StdAfx.hpp"
 
 // int verbose = 0;
 int quiet_mode = 0;

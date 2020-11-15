@@ -69,7 +69,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "base/Event_POSIX.h"
+#include "base/Event_POSIX.hpp"
 #include <sys/time.h>
 
 CEventImpl::CEventImpl(bool autoReset) : _auto(autoReset), _state(false) {

@@ -122,8 +122,8 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
-#include "Disk.h"
-#include "StdAfx.h"
+#include "Disk.hpp"
+#include "StdAfx.hpp"
 
 /**
  * \brief Constructor.

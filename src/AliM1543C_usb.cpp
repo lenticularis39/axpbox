@@ -44,9 +44,9 @@
  *      Initial version in CVS; this part was split off from the CAliM1543C
  *      class.
  **/
-#include "AliM1543C_usb.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "AliM1543C_usb.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 u32 usb_cfg_data[64] = {
     /*00*/ 0x523710b9, // CFID: vendor + device

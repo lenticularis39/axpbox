@@ -83,9 +83,9 @@
  * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
  *      Initial version in CVS.
  **/
-#include "PCIDevice.h"
-#include "StdAfx.h"
-#include "System.h"
+#include "PCIDevice.hpp"
+#include "StdAfx.hpp"
+#include "System.hpp"
 
 CPCIDevice::CPCIDevice(CConfigurator *cfg, CSystem *c, int pcibus, int pcidev)
     : CSystemComponent(cfg, c) {

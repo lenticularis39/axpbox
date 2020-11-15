@@ -42,9 +42,9 @@
  *
  * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
  **/
-#include "StdAfx.h"
+#include "StdAfx.hpp"
 
-#include "lockstep.h"
+#include "lockstep.hpp"
 
 #if defined(IDB) && (defined(LS_MASTER) || defined(LS_SLAVE))
 int ls_Socket;

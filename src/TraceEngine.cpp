@@ -156,15 +156,15 @@
  * X-1.1        Camiel Vanderhoeven                             19-JAN-2007
  *      Initial version in CVS.
  **/
-#include "StdAfx.h"
+#include "StdAfx.hpp"
 
 #if defined(IDB)
-#include "AlphaCPU.h"
-#include "DPR.h"
-#include "Flash.h"
-#include "System.h"
-#include "TraceEngine.h"
-#include "lockstep.h"
+#include "AlphaCPU.hpp"
+#include "DPR.hpp"
+#include "Flash.hpp"
+#include "System.hpp"
+#include "TraceEngine.hpp"
+#include "lockstep.hpp"
 #include <signal.h>
 
 CTraceEngine *trc;

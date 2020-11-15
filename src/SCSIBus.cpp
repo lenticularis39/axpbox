@@ -43,8 +43,8 @@
  * X-1.1        Camiel Vanderhoeven                             12-JAN-2008
  *      Initial version in CVS.
  **/
-#include "SCSIBus.h"
-#include "StdAfx.h"
+#include "SCSIBus.hpp"
+#include "StdAfx.hpp"
 
 /**
  * \brief Constructor.

@@ -98,8 +98,8 @@
  * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
  *      Initial version in CVS.
  **/
-#include "DiskFile.h"
-#include "StdAfx.h"
+#include "DiskFile.hpp"
+#include "StdAfx.hpp"
 #include <fstream>
 #include <iostream>
 

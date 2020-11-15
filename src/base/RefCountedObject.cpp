@@ -69,8 +69,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "RefCountedObject.h"
-#include "Mutex.h"
+#include "RefCountedObject.hpp"
+#include "Mutex.hpp"
 
 CRefCountedObject::CRefCountedObject() : _rc(1), _rcMutex("rc") {}
 
