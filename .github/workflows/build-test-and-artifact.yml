@@ -35,7 +35,7 @@ jobs:
         MAKEFLAGS: "-j2"
 
     - name: Run test scripts
-      working-directory: ${{runner.workspace}}/axpbox/test
+      working-directory: ${{runner.workspace}}/axpbox
       shell: bash
       run: ${{runner.workspace}}/axpbox/test/run
 

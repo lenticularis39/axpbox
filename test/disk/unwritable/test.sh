@@ -9,7 +9,13 @@ if [[ ! -f "cl67srmrom.exe" ]]; then
 fi
 
 # Start AXPbox
-../../../build/axpbox run | tee axp.log
+if [[ -f ../../../build/axpbox ]]; then
+  ../../../build/axpbox run | tee axp.log
+elif [[ -f ../../../../build/axpbox ]]; then
+  ../../../../build/axpbox run | tee axp.log;
+else
+   ../../build/axpbox run | tee axp.log
+fi
 
 chmod 700 disk-unwritable.img
 rm disk-unwritable.img
