@@ -11,7 +11,7 @@ AXPBOX_PID=$!
 sleep 3
 
 # Connect to terminal
-ncat -t 127.0.0.1 21000 | tee axp.log &
+nc -t 127.0.0.1 21000 | tee axp.log &
 NETCAT_PID=$!
 
 # Wait for the last line of log to become P00>>>
@@ -26,6 +26,7 @@ do
 
   if [ "$(tail -n 1 axp.log | tr -d '\0')" == "P00>>>"  ]
   then
+    echo
     break
   fi
 
@@ -35,5 +36,11 @@ done
 
 kill $NETCAT_PID
 kill $AXPBOX_PID
-diff axp_correct.log axp.log
+
+echo -n -e '\033[1;31m'
+diff -c axp_correct.log axp.log && echo -e '\033[1;32mdiff clean\033[0m'
+result=$?
+echo -n -e '\033[0m'
+
 rm -f axp.log cl67* *.rom
+exit $result

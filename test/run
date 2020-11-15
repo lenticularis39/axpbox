@@ -1,5 +1,41 @@
 #!/bin/bash
-OLD_PWD=$(pwd)
-cd test/rom
-./test.sh
-cd "$OLD_PWD"
+success=0
+
+function message() {
+  echo -n -e '\033[1;36m' >&2
+  echo $1 >&2
+  echo -n -e '\033[0m' >&2
+}
+
+function run_test() {
+  local old_pwd=$(pwd)
+
+  message "[test] Running test $1"
+
+  cd "test/$1"
+  ./test.sh
+  local result=$?
+  cd "$old_pwd"
+
+  if [ "$result" -eq "0" ]
+  then
+    message "[test] Test $1 passed" >&2
+  else
+    success=1
+    message "[test] Test $1 failed" >&2
+  fi
+}
+
+message "[test] This is the AXPbox test script"
+
+run_test rom
+run_test disk/unwritable
+
+if [ "$success" -ne "0" ]
+then
+  message "[test] Some tests failed, please check the log"
+else
+  message "[test] All tests passed"
+fi
+
+exit "$success"
