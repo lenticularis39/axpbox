@@ -34,10 +34,10 @@ jobs:
       env:
         MAKEFLAGS: "-j2"
 
-    - name: Run test script ROM
-      working-directory: ${{runner.workspace}}/axpbox/test/rom
+    - name: Run test scripts
+      working-directory: ${{runner.workspace}}/axpbox/test
       shell: bash
-      run: ${{runner.workspace}}/axpbox/test/rom/test.sh
+      run: ${{runner.workspace}}/axpbox/test/run
 
     - name: Upload AXPbox artifact
       uses: actions/upload-artifact@v1
