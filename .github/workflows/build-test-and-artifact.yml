@@ -4,8 +4,9 @@ on: [push, pull_request]
 
 jobs:
 
-  test-linux:
+  linux-clang:
     runs-on: "ubuntu-20.04"
+
     steps:
     - uses: actions/checkout@v2
 
@@ -14,10 +15,48 @@ jobs:
       run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
 
     - name: Install build dependencies
-      run: sudo apt -y update && sudo apt -y install ncat libpcap-dev libsdl-dev
+      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev netcat-openbsd
 
-    - name: Install test dependencies
-      run: sudo apt -y update && sudo apt -y install ncat
+    - name: Create build environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall"
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config Release
+      env:
+        MAKEFLAGS: "-j2"
+
+    - name: Run test scripts
+      working-directory: ${{runner.workspace}}/axpbox
+      shell: bash
+      run: ${{runner.workspace}}/axpbox/test/run
+
+    - name: Upload AXPbox binary
+      uses: actions/upload-artifact@v1
+      with:
+        name: AXPbox-linux-clang-${{ env.BUILD_DATE }}
+        path: ${{runner.workspace}}/build/axpbox 
+      env:
+        BUILD_DATE: ${{ steps.date.outputs.date }}
+
+  linux-gcc:
+    runs-on: "ubuntu-20.04"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+
+    - name: Install build dependencies
+      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev netcat-openbsd
 
     - name: Create build environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -39,78 +78,6 @@ jobs:
       shell: bash
       run: ${{runner.workspace}}/axpbox/test/run
 
-    - name: Upload AXPbox artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: AXPbox-linux-test-${{ env.BUILD_DATE }}
-        path: ${{runner.workspace}}/build/axpbox 
-      env:
-        BUILD_DATE: ${{ steps.date.outputs.date }}
-
-  build-linux-clang:
-    runs-on: "ubuntu-20.04"
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
-
-    - name: Install build dependencies
-      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev
-
-    - name: Create build environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall"
-
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config Release
-      env:
-        MAKEFLAGS: "-j2"
-
-    - name: Upload AXPbox binary
-      uses: actions/upload-artifact@v1
-      with:
-        name: AXPbox-linux-clang-${{ env.BUILD_DATE }}
-        path: ${{runner.workspace}}/build/axpbox 
-      env:
-        BUILD_DATE: ${{ steps.date.outputs.date }}
-
-  build-linux-gcc:
-    runs-on: "ubuntu-20.04"
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
-
-    - name: Install build dependencies
-      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev
-
-    - name: Create build environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall"
-
-    - name: Build
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: cmake --build . --config Release
-      env:
-        MAKEFLAGS: "-j2"
-
     - name: Upload AXPbox binary
       uses: actions/upload-artifact@v1
       with:
@@ -119,7 +86,7 @@ jobs:
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
-  build-windows-msvc:
+  windows-msvc:
     runs-on: windows-2019
     continue-on-error: true
     steps:
@@ -152,7 +119,7 @@ jobs:
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
-  build-osx-appleclang:
+  osx-appleclang:
     runs-on: "macos-10.15"
     continue-on-error: true
     
@@ -183,6 +150,11 @@ jobs:
       run: cmake --build . --config Release
       env:
         MAKEFLAGS: "-j2"
+
+    - name: Run test scripts
+      working-directory: ${{runner.workspace}}/axpbox
+      shell: bash
+      run: ${{runner.workspace}}/axpbox/test/run
 
     - name: Upload AXPbox Binary
       uses: actions/upload-artifact@v1
