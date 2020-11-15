@@ -1,0 +1,6 @@
+sys0(tsunami): $Id: System.cpp,v 1.79 2008/06/12 07:29:44 iamcamiel Exp $
+%FLS-F-NOREST: Flash could not be restored from flash.rom
+sys0(tsunami): $Id: Flash.cpp,v 1.19 2008/03/24 22:11:50 iamcamiel Exp $
+Emulator Failure: Runtime exception: pci0.15(ali_ide).disk0.0(file): file disk-unwritable.img is not writable: /home/remy/tmp/axpbox/src/DiskFile.cpp, line 201
+Stop threads:
+Freeing memory in use by system...

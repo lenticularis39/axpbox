@@ -145,6 +145,14 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     createDiskFile(filename, diskFileSize);
   }
 
+  if (!read_only) {
+    /* If the file is not configured as readonly, test if we can
+     * write to it by opening it in append mode. Just using 'out'
+     * would overwrite the contents of the file, which is
+     * unwanted. Issue #29. */
+    checkFileWritable(filename);
+  }
+
 #ifdef HAVE_FOPEN64
   handle = fopen64(filename, read_only ? "rb" : "rb+");
 #else
@@ -185,7 +193,18 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
          cylinders, heads, sectors);
 }
 
+void CDiskFile::checkFileWritable(const std::string& fileName) const {
+  std::ofstream ofs(fileName, std::ios::app);
+  // is_open for an ofstream checks if the file can be written to
+  bool isWritable = (ofs.is_open() && ofs.good());
+  if (!isWritable) {
+    FAILURE_2(Runtime, "%s: file %s is not writable", devid_string, fileName.c_str())
+  }
+  ofs.close();
+}
+
 void CDiskFile::createDiskFile(const std::string &fileName, u64 diskFileSize) {
+
   std::ofstream ofs(fileName, std::ios::binary);
   if (ofs.is_open() && ofs.good()) {
     ofs.seekp((diskFileSize)-1);
