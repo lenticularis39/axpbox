@@ -32,7 +32,7 @@ do
     exit 1
   fi
 
-  if [ "$(tail -n 1 axp.log | tr -d '\0')" == "P00>>>"  ]
+  if [ "$(tail -n 1 axp.log | LC_ALL=C tr -d '\0')" == "P00>>>"  ]
   then
     echo
     break
