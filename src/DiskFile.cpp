@@ -130,7 +130,7 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
 
     /* If the disk file size was not set and the disk file does not exist, do
      * not create it, but exit */
-    int diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
+    u64 diskFileSize = myCfg->get_num_value("autocreate_size", false, 0);
     if (!diskFileSize) {
       FAILURE_1(Runtime, "%s: file does not exist and no autocreate_size set.",
                 devid_string);
@@ -185,14 +185,14 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
          cylinders, heads, sectors);
 }
 
-void CDiskFile::createDiskFile(const std::string &fileName, int diskFileSize) {
-
+void CDiskFile::createDiskFile(const std::string &fileName, u64 diskFileSize) {
   std::ofstream ofs(fileName, std::ios::binary);
   if (ofs.is_open() && ofs.good()) {
     ofs.seekp((diskFileSize)-1);
     ofs.write("", 1);
   } else {
-    FAILURE_1(Runtime, "%s: File does not exist and could not be created", devid_string);
+    FAILURE_1(Runtime, "%s: File does not exist and could not be created",
+              devid_string);
   }
 
   std::cout << devid_string << " " << (diskFileSize / 1024 / 1024) << "MB file "
