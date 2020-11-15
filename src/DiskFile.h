@@ -75,7 +75,7 @@ protected:
   FILE *handle;
   char *filename;
 
-  void createDiskFile(const std::string &filename, int diskFileSize);
+  void createDiskFile(const std::string &filename, u64 diskFileSize);
   std::string defaultFilename;
 };
 #endif //! defined(__DISKFILE_H__)
