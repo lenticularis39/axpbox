@@ -167,12 +167,15 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Install dependencies
-      run: brew install sdl2 libpcap libx11
+      run: brew install coreutils libpcap netcat # sdl2 libx11
+
+    - name: gnu tr
+      run: sudo mv /usr/local/opt/coreutils/libexec/gnubin/tr /usr/bin/tr
 
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -Wc++11-extensions -Wc++11-long-long -Wc++11-extra-semi -std=c++11 -stdlib=libc++ -I/usr/local/opt/libpcap/include"
 
     - name: Build
       working-directory: ${{runner.workspace}}/build

@@ -1,4 +1,7 @@
 #!/bin/bash
+export LC_CTYPE=C
+export LANG=C
+export LC_ALL=C
 
 # Download the firmware
 wget 'http://raymii.org/s/inc/downloads/es40-srmon/cl67srmrom.exe'
