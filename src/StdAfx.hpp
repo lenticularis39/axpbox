@@ -308,4 +308,9 @@ inline char printable(char c) {
 #include "es40_debug.hpp"
 
 #include "es40_endian.hpp"
+
+#if __cplusplus < 201402L
+#include "make_unique.hpp"
+#endif
+
 #endif // !defined(INCLUDED_STDAFX_H)
