@@ -896,7 +896,7 @@ void CConfigurator::initialize() {
 
   case c_win32:
 #if defined(_WIN32)
-    PLUG_load_plugin(this, win32);
+    //PLUG_load_plugin(this, win32);
 #else
     FAILURE_2(Configuration, "Class %s for %s needs a Win32 platform", myValue,
               myName);
