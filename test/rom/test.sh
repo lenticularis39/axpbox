@@ -1,21 +1,29 @@
 #!/bin/bash
+export LC_CTYPE=C
+export LANG=C
+export LC_ALL=C
 
 # Download the firmware
-wget 'http://80.211.96.38/s/inc/downloads/es40-srmon/cl67srmrom.exe'
+wget 'http://raymii.org/s/inc/downloads/es40-srmon/cl67srmrom.exe'
 
 # Start AXPbox
-../../build/axpbox run &
-AXPBOX_PID=$!
+if [[ -f ../../../build/axpbox ]]; then
+  ../../../build/axpbox run &
+  AXPBOX_PID=$!
+else # Travis
+  ../../build/axpbox run &
+  AXPBOX_PID=$!
+fi
 
 # Wait for AXPbox to start
-sleep 3
+sleep 5
 
 # Connect to terminal
 nc -t 127.0.0.1 21000 | tee axp.log &
 NETCAT_PID=$!
 
 # Wait for the last line of log to become P00>>>
-timeout=300
+timeout=100
 while true
 do
   if [ $timeout -eq 0 ]
@@ -24,7 +32,8 @@ do
     exit 1
   fi
 
-  if [ "$(tail -n 1 axp.log | tr -d '\0')" == "P00>>>"  ]
+  # print last line and remove null byte from it
+  if [ "$(LC_ALL=C sed -n '$p' axp.log | LC_ALL=C sed 's/\x00//g')" == "P00>>>"  ]
   then
     echo
     break
