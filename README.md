@@ -27,4 +27,17 @@ Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wi
 - Code modernizing, replacing POCO framework parts by native C++ counterparts not available in 2008 (std::threads, etc)
 - Incorporate various patches from other es40 forks, for example, added MC146818 periodic interrupt to allow netbsd to boot and install, skip_memtest for faster booting.
 - Bug fixes, less segfaults, overall less crashes. 
-- [More](https://github.com/lenticularis39/axpbox/wiki/) documentation and usage information on the various features and operating systems 
+- [More](https://github.com/lenticularis39/axpbox/wiki/) documentation and usage information on the various features and operating systems
+
+## What doesn't work (also see issues)
+
+- Some guest operating systems (see [Guest support](https://github.com/lenticularis39/axpbox/wiki/Guest-support))
+- ARC
+- VGA in OpenVMS
+- SDL keyboard (partly works, but easily breaks)
+- Multiple CPU system emulation
+- Building on Windows
+- Running on big endian platforms
+- Some SCSI and IDE commands
+- Networking for a longer time (breaks after a couple minutes)
+- Copying large files between IDE CD-ROM to IDE hard drive (this usually doesn't affect OpenVMS installation)
