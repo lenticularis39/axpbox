@@ -1,5 +1,6 @@
 /* AXPbox Alpha Emulator
  * Copyright (C) 2020 Tomáš Glozar
+ * Copyright (C) 2020 Martin Vorländer
  * Website: https://github.com/lenticularis39/axpbox
  *
  * Forked from: ES40 emulator
