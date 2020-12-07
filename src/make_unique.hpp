@@ -1,5 +1,6 @@
 /* AXPbox Alpha Emulator
  * Copyright (C) 2020 Tomáš Glozar
+ * Copyright (C) 2020  Remy van Elst
  * Website: https://github.com/lenticularis39/axpbox
  *
  * This program is free software; you can redistribute it and/or
