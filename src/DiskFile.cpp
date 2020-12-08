@@ -1,8 +1,11 @@
-/* ES40 emulator.
- * Copyright (C) 2007-2008 by the ES40 Emulator Project
+/* AXPbox Alpha Emulator
+ * Copyright (C) 2020 Tomáš Glozar
+ * Copyright (C) 2020 Remy van Elst
+ * Website: https://github.com/lenticularis39/axpbox
  *
- * WWW    : http://sourceforge.net/projects/es40
- * E-mail : camiel@camicom.com
+ * Forked from: ES40 emulator
+ * Copyright (C) 2007-2008 by the ES40 Emulator Project
+ * Copyright (C) 2007 by Camiel Vanderhoeven
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
