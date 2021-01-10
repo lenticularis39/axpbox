@@ -88,7 +88,6 @@ jobs:
 
   windows-msvc:
     runs-on: windows-2019
-    continue-on-error: true
     steps:
     - uses: actions/checkout@v2
 
@@ -111,11 +110,15 @@ jobs:
       env:
         MAKEFLAGS: "-j2"
 
+    - name: Test run
+      working-directory: ${{runner.workspace}}/build
+      run: ${{runner.workspace}}\build\Release\axpbox.exe
+
     - name: Upload AXPbox Binary
       uses: actions/upload-artifact@v1
       with:
         name: AXPbox-windows-msvc-${{ env.BUILD_DATE }}.exe
-        path: ${{runner.workspace}}/build/axpbox 
+        path: ${{runner.workspace}}\build\Release\axpbox.exe
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
