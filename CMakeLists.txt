@@ -17,11 +17,10 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
   add_definitions(/wd4099 /wd4146 /wd4267 /wd4305 /wd4307)
   add_definitions(/wd4715 /wd4722 /wd4723 /wd4838 /wd4309 /wd4334)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-else()
-find_package(Threads REQUIRED)
-target_link_libraries(axpbox pthread)
 endif()
 
+find_package(Threads REQUIRED)
+target_link_libraries(axpbox Threads::Threads)
 
 # Configuration options
 include(CheckSymbolExists)
