@@ -156,6 +156,10 @@
 
 #include "datatypes.hpp"
 
+#ifdef _WIN32
+#pragma comment( lib, "ws2_32.lib")
+#endif /* _WIN32 */
+
 #if defined(HAVE_WINDOWS_H)
 #include "windows.h"
 #endif
