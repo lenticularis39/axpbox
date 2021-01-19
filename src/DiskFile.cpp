@@ -82,7 +82,7 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     checkFileWritable(filename);
   }
 
-#if defined(HAVE_FOPEN64) || defined(__ARM_ARCH_7__)
+#if defined(HAVE_FOPEN64) || defined(__arm__)
   handle = fopen64(filename, read_only ? "rb" : "rb+");
 #else
   handle = fopen(filename, read_only ? "rb" : "rb+");
