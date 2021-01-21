@@ -330,4 +330,4 @@ std::string CNumberFormatter::format(const void *ptr) {
   char buffer[24];
   std::sprintf(buffer, "%p", ptr);
   return std::string(buffer);
-}z
+}
