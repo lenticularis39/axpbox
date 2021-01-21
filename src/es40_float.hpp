@@ -123,7 +123,7 @@ inline double f2host(u64 val) {
           ((double)f / (double)(s64)U64(0x0020000000000000));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("f/g->host: %016" LL "x -> %f   \n", val, res);
+  printf("f/g->host: %016" PRIx64 " -> %f   \n", val, res);
 #endif
   return res;
 }
@@ -149,7 +149,7 @@ inline double d2host(u64 val) {
           ((double)f / (double)(s64)U64(0x0100000000000000));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("d->host: %016" LL "x -> %f   \n", val, res);
+  printf("d->host: %016" PRIx64 " -> %f   \n", val, res);
 #endif
   return res;
 }
@@ -195,7 +195,7 @@ inline double s2host(u64 val) {
   }
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("s/t->host: %016" LL "x -> %f   \n", val, res);
+  printf("s/t->host: %016" PRIx64 " -> %f   \n", val, res);
 #endif
   return res;
 }
@@ -251,7 +251,7 @@ inline u64 host2f(double val) {
       (f & U64(0x000fffffe0000000));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("host->f: %f -> %016" LL "x   \n", val, f);
+  printf("host->f: %f -> %016" PRIx64 "   \n", val, f);
 #endif
   return f;
 }
@@ -295,7 +295,7 @@ inline u64 host2g(double val) {
       (f & U64(0x000fffffffffffff));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("host->g: %f -> %016" LL "x   \n", val, f);
+  printf("host->g: %f -> %016" PRIx64 "   \n", val, f);
 #endif
   return f;
 }
@@ -339,7 +339,7 @@ inline u64 host2d(double val) {
       (f & U64(0x007fffffffffffff));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("host->d: %f -> %016" LL "x   \n", val, f);
+  printf("host->d: %f -> %016" PRIx64 "   \n", val, f);
 #endif
   return f;
 }
@@ -419,7 +419,7 @@ inline u64 host2s(double val) {
       (f & U64(0x000fffffe0000000));
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("host->s: %f -> %016" LL "x   \n", val, f);
+  printf("host->s: %f -> %016" PRIx64 "   \n", val, f);
 #endif
   return f;
 }
@@ -479,7 +479,7 @@ inline u64 host2t(double val) {
   }
 
 #if defined(DEBUG_FP_CONVERSION)
-  printf("host->t: %f -> %016" LL "x   \n", val, f);
+  printf("host->t: %f -> %016" PRIx64 "   \n", val, f);
 #endif
   return f;
 }
@@ -497,7 +497,7 @@ inline u32 store_f(u64 val) {
             45; /* frac.hi + exp.lo : 45..58 -->  0..13 */
 
 #if defined(DEBUG_FP_LOADSTORE)
-  printf("f->mem: %016" LL "x -> %08x   \n", val, retval);
+  printf("f->mem: %016" PRIx64 " -> %08x   \n", val, retval);
 #endif
   return (u32)retval;
 }
@@ -513,7 +513,7 @@ inline u64 store_g(u64 val) {
   retval |= (val << 16) & U64(0x0000ffff00000000);
 
 #if defined(DEBUG_FP_LOADSTORE)
-  printf("g->mem: %016" LL "x -> %016" LL "x   \n", val, retval);
+  printf("g->mem: %016" PRIx64 " -> %016" PRIx64 "   \n", val, retval);
 #endif
   return retval;
 }
@@ -533,7 +533,7 @@ inline u64 load_f(u32 val) {
     retval |= U64(0x3800000000000000); /* exp.mid */
 
 #if defined(DEBUG_FP_LOADSTORE)
-  printf("mem->f: %08x -> %016" LL "x   \n", val, retval);
+  printf("mem->f: %08x -> %016" PRIx64 "   \n", val, retval);
 #endif
   return retval;
 }
@@ -551,7 +551,7 @@ inline u64 itof_f(u64 val) {
     retval |= U64(0x3800000000000000); /* exp.mid */
 
 #if defined(DEBUG_FP_LOADSTORE)
-  printf("reg->f: %08x -> %016" LL "x   \n", val, retval);
+  printf("reg->f: %08x -> %016" PRIx64 "   \n", val, retval);
 #endif
   return retval;
 }
@@ -567,7 +567,7 @@ inline u64 load_g(u64 val) {
   retval |= (val & U64(0xffff000000000000)) >> 48;
 
 #if defined(DEBUG_FP_LOADSTORE)
-  printf("mem->g: %016" LL "x -> %016" LL "x   \n", val, retval);
+  printf("mem->g: %016" PRIx64 " -> %016" PRIx64 "   \n", val, retval);
 #endif
   return retval;
 }

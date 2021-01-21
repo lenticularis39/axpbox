@@ -104,7 +104,7 @@
  *   a) When an exception occurs, debugging information for the previous
  *      instruction is no longer lost.
  *   b) Made various printf-statements 64-bit safe in a neater way. (Use
- *      printf("%" LL "x",value) instead of printf("%x",(u64)value)).
+ *      printf("%" PRIx64 "",value) instead of printf("%x",(u64)value)).
  *
  * X-1.7        Camiel Vanderhoeven                             8-MAR-2007
  *      Pass "this" as an argument to CTraceEngine::get_fnc_name.
@@ -187,7 +187,7 @@ void handle_debug_string(char *s);
 #define DEBUG_XX                                                               \
   if (trc->get_fnc_name(this, state.current_pc & ~U64(0x3), &funcname)) {      \
     if (bListing && !strcmp(funcname, "")) {                                   \
-      printf("%08" LL "x: \"%s\"\n", state.current_pc,                         \
+      printf("%08" PRIx64 ": \"%s\"\n", state.current_pc,                         \
              cSystem->PtrToMem(state.current_pc));                             \
       state.pc = (state.current_pc +                                           \
                   strlen(cSystem->PtrToMem(state.current_pc)) + 4) &           \
@@ -202,11 +202,11 @@ void handle_debug_string(char *s);
     } else if (bListing && !strncmp(funcname, "!CHAR-", 6)) {                  \
       u64 xx_upto;                                                             \
       int xx_result;                                                           \
-      xx_result = sscanf(&(funcname[6]), "%" LL "x", &xx_upto);                \
+      xx_result = sscanf(&(funcname[6]), "%" PRIx64 "", &xx_upto);                \
       if (xx_result == 1) {                                                    \
         state.pc = state.current_pc;                                           \
         while (state.pc < xx_upto) {                                           \
-          printf("%08" LL "x: \"%s\"\n", state.pc,                             \
+          printf("%08" PRIx64 ": \"%s\"\n", state.pc,                             \
                  cSystem->PtrToMem(state.pc));                                 \
           state.pc += strlen(cSystem->PtrToMem(state.pc));                     \
           while (state.pc < xx_upto &&                                         \
@@ -220,14 +220,14 @@ void handle_debug_string(char *s);
       int stringlen;                                                           \
       u64 xx_upto;                                                             \
       int xx_result;                                                           \
-      xx_result = sscanf(&(funcname[7]), "%" LL "x", &xx_upto);                \
+      xx_result = sscanf(&(funcname[7]), "%" PRIx64 "", &xx_upto);                \
       if (xx_result == 1) {                                                    \
         state.pc = state.current_pc;                                           \
         while (state.pc < xx_upto) {                                           \
           stringlen = (int)cSystem->ReadMem(state.pc++, 8, this);              \
           memset(stringval, 0, 300);                                           \
           strncpy(stringval, cSystem->PtrToMem(state.pc), stringlen);          \
-          printf("%08" LL "x: \"%s\"\n", state.pc - 1, stringval);             \
+          printf("%08" PRIx64 ": \"%s\"\n", state.pc - 1, stringval);             \
           state.pc += stringlen;                                               \
           while (state.pc < xx_upto &&                                         \
                  cSystem->ReadMem(state.pc, 8, this) == 0)                     \
@@ -240,7 +240,7 @@ void handle_debug_string(char *s);
       state.pc = state.current_pc;                                             \
       while ((state.pc == state.current_pc) ||                                 \
              !trc->get_fnc_name(this, state.pc, &funcname)) {                  \
-        printf("%08" LL "x: %016" LL "x\n", state.pc,                          \
+        printf("%08" PRIx64 ": %016" PRIx64 "\n", state.pc,                          \
                cSystem->ReadMem(state.pc, 64, this));                          \
         state.pc += 8;                                                         \
       }                                                                        \
@@ -250,7 +250,7 @@ void handle_debug_string(char *s);
       state.pc = state.current_pc;                                             \
       while ((state.pc == state.current_pc) ||                                 \
              !trc->get_fnc_name(this, state.pc, &funcname)) {                  \
-        printf("%08" LL "x: %08" LL "x\n", state.pc,                           \
+        printf("%08" PRIx64 ": %08" PRIx64 "\n", state.pc,                           \
                cSystem->ReadMem(state.pc, 32, this));                          \
         state.pc += 4;                                                         \
       }                                                                        \
@@ -263,11 +263,11 @@ void handle_debug_string(char *s);
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }                                                                            \
-  sprintf(dbg_strptr, bListing ? "%08" LL "x: " : "%016" LL "x",               \
+  sprintf(dbg_strptr, bListing ? "%08" PRIx64 ": " : "%016" PRIx64 "",               \
           state.current_pc);                                                   \
   dbg_strptr += strlen(dbg_strptr);                                            \
   if (!bListing)                                                               \
-    sprintf(dbg_strptr, "(%08" LL "x): ", current_pc_physical);                \
+    sprintf(dbg_strptr, "(%08" PRIx64 "): ", current_pc_physical);                \
   else {                                                                       \
     sprintf(dbg_strptr, "%08x %c%c%c%c: ", ins, printable((char)(ins)),        \
             printable((char)(ins >> 8)), printable((char)(ins >> 16)),         \
@@ -296,7 +296,7 @@ void handle_debug_string(char *s);
 #define POST_X64(a)                                                            \
   if (bDisassemble) {                                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, " ==> %" LL "x", a);                                 \
+      sprintf(dbg_strptr, " ==> %" PRIx64 "", a);                                 \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -321,7 +321,7 @@ void handle_debug_string(char *s);
     if (trc->get_fnc_name(this, dbg_x, &funcname))                             \
       sprintf(dbg_strptr, "%s", funcname);                                     \
     else                                                                       \
-      sprintf(dbg_strptr, "%" LL "x", dbg_x);                                  \
+      sprintf(dbg_strptr, "%" PRIx64 "", dbg_x);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
   }
 
@@ -335,10 +335,10 @@ void handle_debug_string(char *s);
     if (trc->get_fnc_name(this, dbg_x, &funcname))                             \
       sprintf(dbg_strptr, "%s", funcname);                                     \
     else                                                                       \
-      sprintf(dbg_strptr, "%" LL "x", dbg_x);                                  \
+      sprintf(dbg_strptr, "%" PRIx64 "", dbg_x);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_1]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_1]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -353,10 +353,10 @@ void handle_debug_string(char *s);
     if (trc->get_fnc_name(this, dbg_x, &funcname))                             \
       sprintf(dbg_strptr, "%s", funcname);                                     \
     else                                                                       \
-      sprintf(dbg_strptr, "%" LL "x", dbg_x);                                  \
+      sprintf(dbg_strptr, "%" PRIx64 "", dbg_x);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.f[FREG_1]);                    \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.f[FREG_1]);                    \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -371,7 +371,7 @@ void handle_debug_string(char *s);
     if (trc->get_fnc_name(this, dbg_x, &funcname))                             \
       sprintf(dbg_strptr, "%s", funcname);                                     \
     else                                                                       \
-      sprintf(dbg_strptr, "%" LL "x", dbg_x);                                  \
+      sprintf(dbg_strptr, "%" PRIx64 "", dbg_x);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
   }
 
@@ -388,7 +388,7 @@ void handle_debug_string(char *s);
                      REG_2 & 31);                                              \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -405,7 +405,7 @@ void handle_debug_string(char *s);
     DEBUG_XX sprintf(dbg_strptr, #mnemonic " r%d", REG_2 & 31);                \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -446,7 +446,7 @@ void handle_debug_string(char *s);
             (u32)DISP_16, REG_2 & 31);                                         \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -459,14 +459,14 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " r%d, ", REG_1 & 31);                       \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (ins & 0x1000)                                                          \
-      sprintf(dbg_strptr, "%02xH", V_2);                                       \
+      sprintf(dbg_strptr, " PRIx64 "H", V_2);                                       \
     else                                                                       \
       sprintf(dbg_strptr, "r%d", REG_2 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     sprintf(dbg_strptr, ", r%d", REG_3 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x,%" LL "x)", state.r[REG_1], V_2);       \
+      sprintf(dbg_strptr, ": (%" PRIx64 ",%" PRIx64 ")", state.r[REG_1], V_2);       \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -482,7 +482,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " f%d, f%d, f%d", FREG_1, FREG_2, FREG_3);   \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x,%" LL "x)", state.f[FREG_1],            \
+      sprintf(dbg_strptr, ": (%" PRIx64 ",%" PRIx64 ")", state.f[FREG_1],            \
               state.f[FREG_2]);                                                \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
@@ -498,7 +498,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " r%d, f%d ", REG_1 & 31, FREG_3);           \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_1]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_1]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -511,7 +511,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " f%d, r%d ", FREG_1, REG_3 & 31);           \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.f[FREG_1]);                    \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.f[FREG_1]);                    \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -533,14 +533,14 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " ");                                        \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (ins & 0x1000)                                                          \
-      sprintf(dbg_strptr, "%02xH", V_2);                                       \
+      sprintf(dbg_strptr, " PRIx64 "H", V_2);                                       \
     else                                                                       \
       sprintf(dbg_strptr, "r%d", REG_2 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     sprintf(dbg_strptr, ", r%d", REG_3 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", V_2);                                \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", V_2);                                \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -595,7 +595,7 @@ void handle_debug_string(char *s);
             REG_2 & 31);                                                       \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -623,7 +623,7 @@ void handle_debug_string(char *s);
             REG_2 & 31);                                                       \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -638,7 +638,7 @@ void handle_debug_string(char *s);
             REG_2 & 31);                                                       \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.r[REG_2]);                     \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.r[REG_2]);                     \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }
@@ -655,7 +655,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " f%d, f%d", FREG_2, FREG_3);                \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (!bListing) {                                                           \
-      sprintf(dbg_strptr, ": (%" LL "x)", state.f[FREG_2]);                    \
+      sprintf(dbg_strptr, ": (%" PRIx64 ")", state.f[FREG_2]);                    \
       dbg_strptr += strlen(dbg_strptr);                                        \
     }                                                                          \
   }

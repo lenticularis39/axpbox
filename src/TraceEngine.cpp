@@ -266,12 +266,12 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
       /* Process context switch has happened. Print this in the trace files for
          both the old and the new process context. */
       fprintf(asPRBRs[o].f,
-              "\n==>   Switch to PRBR %08" LL "x %08" LL "x (%s)\n",
+              "\n==>   Switch to PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n",
               asPRBRs[p].prbr, asPRBRs[p].hwpcb, asPRBRs[p].procname);
-      fprintf(asPRBRs[p].f, "        This is PRBR %08" LL "x %08" LL "x (%s)\n",
+      fprintf(asPRBRs[p].f, "        This is PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n",
               asPRBRs[p].prbr, asPRBRs[p].hwpcb, asPRBRs[p].procname);
       fprintf(asPRBRs[p].f,
-              "<== Switch from PRBR %08" LL "x %08" LL "x (%s)\n\n",
+              "<== Switch from PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n\n",
               asPRBRs[o].prbr, asPRBRs[o].hwpcb, asPRBRs[o].procname);
     }
 
@@ -337,7 +337,7 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
 
         // And print the from address, and the value of the r0 register (return
         // value)
-        fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x) ($r0 = %" LL "x)\n", f,
+        fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ") ($r0 = %" PRIx64 ")\n", f,
                 pc_f, cpu->get_r(0, true));
 
         // Indent to the new (lower) trace level
@@ -345,7 +345,7 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
           fprintf(asPRBRs[p].f, " ");
 
         // Print the to address
-        fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x) <--\n", t, pc_t);
+        fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ") <--\n", t, pc_t);
         return;
       }
     }
@@ -385,7 +385,7 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
     fprintf(asPRBRs[p].f, " ");
 
   // Print the from address
-  fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x) -->\n", f, pc_f);
+  fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ") -->\n", f, pc_f);
 
   // Indent to the new (higher) trace level
   for (i = 0; i < asPRBRs[p].trclvl; i++)
@@ -397,7 +397,7 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
       // Function found
 
       // Print function name
-      fprintf(asPRBRs[p].f, "%016" LL "x(%s)", t, asFunctions[i].fn_name);
+      fprintf(asPRBRs[p].f, "%016" PRIx64 "(%s)", t, asFunctions[i].fn_name);
 
       // And print the argument list
       write_arglist(cpu, asPRBRs[p].f, asFunctions[i].fn_arglist);
@@ -413,7 +413,7 @@ void CTraceEngine::trace(CAlphaCPU *cpu, u64 f, u64 t, bool down, bool up,
   // No known function
 
   // Print the to address
-  fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x)", t, pc_t);
+  fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ")", t, pc_t);
 
   // Print a default argument list
   write_arglist(cpu, asPRBRs[p].f, "(%s|16%, %s|17%, %s|18%, %s|19%)");
@@ -463,12 +463,12 @@ void CTraceEngine::trace_br(CAlphaCPU *cpu, u64 f, u64 t) {
       /* Process context switch has happened. Print this in the trace files for
          both the old and the new process context. */
       fprintf(asPRBRs[o].f,
-              "\n==>   Switch to PRBR %08" LL "x %08" LL "x (%s)\n",
+              "\n==>   Switch to PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n",
               asPRBRs[p].prbr, asPRBRs[p].hwpcb, asPRBRs[p].procname);
-      fprintf(asPRBRs[p].f, "        This is PRBR %08" LL "x %08" LL "x (%s)\n",
+      fprintf(asPRBRs[p].f, "        This is PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n",
               asPRBRs[p].prbr, asPRBRs[p].hwpcb, asPRBRs[p].procname);
       fprintf(asPRBRs[p].f,
-              "<== Switch from PRBR %08" LL "x %08" LL "x (%s)\n\n",
+              "<== Switch from PRBR %08" PRIx64 " %08" PRIx64 " (%s)\n\n",
               asPRBRs[o].prbr, asPRBRs[o].hwpcb, asPRBRs[o].procname);
     }
 
@@ -485,7 +485,7 @@ void CTraceEngine::trace_br(CAlphaCPU *cpu, u64 f, u64 t) {
       fprintf(asPRBRs[p].f, " ");
 
     // Print from address
-    fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x) --+\n", f, pc_f);
+    fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ") --+\n", f, pc_f);
 
     // Indent to the trace level
     for (i = 0; i < asPRBRs[p].trclvl; i++)
@@ -497,7 +497,7 @@ void CTraceEngine::trace_br(CAlphaCPU *cpu, u64 f, u64 t) {
         // Yes, this is a known function
 
         // Print the function name
-        fprintf(asPRBRs[p].f, "%016" LL "x(%s)", t, asFunctions[i].fn_name);
+        fprintf(asPRBRs[p].f, "%016" PRIx64 "(%s)", t, asFunctions[i].fn_name);
 
         // Print the argument list
         write_arglist(cpu, asPRBRs[p].f, asFunctions[i].fn_arglist);
@@ -511,7 +511,7 @@ void CTraceEngine::trace_br(CAlphaCPU *cpu, u64 f, u64 t) {
     }
 
     // Print the to address. (No function call, so, no argument list)
-    fprintf(asPRBRs[p].f, "%016" LL "x(%08" LL "x) <-+\n", t, pc_t);
+    fprintf(asPRBRs[p].f, "%016" PRIx64 "(%08" PRIx64 ") <-+\n", t, pc_t);
   }
 }
 
@@ -591,7 +591,7 @@ int CTraceEngine::get_prbr(u64 prbr, u64 hwpcb) {
     strncpy(asPRBRs[i].procname, cSystem->PtrToMem(prbr + 0x154), 20);
   else
     strcpy(asPRBRs[i].procname, "");
-  sprintf(filename, "trace_%08" LL "x_%08" LL "x_%02d_%s.trc", prbr, hwpcb,
+  sprintf(filename, "trace_%08" PRIx64 "_%08" PRIx64 "_%02d_%s.trc", prbr, hwpcb,
           asPRBRs[i].generation, asPRBRs[i].procname);
   asPRBRs[i].f = fopen(filename, "w");
   if (asPRBRs[i].f == 0)
@@ -600,7 +600,7 @@ int CTraceEngine::get_prbr(u64 prbr, u64 hwpcb) {
   asPRBRs[i].trchide = -1;
   asPRBRs[i].trc_waitfor = 0;
   current_trace_file = asPRBRs[i].f;
-  printf("Add PRBR: %08" LL "x_%08" LL "x\n", prbr, hwpcb);
+  printf("Add PRBR: %08" PRIx64 "_%08" PRIx64 "\n", prbr, hwpcb);
   return i;
 }
 
@@ -636,7 +636,7 @@ void CTraceEngine::write_arglist(CAlphaCPU *c, FILE *fl, const char *a) {
       r = atoi(rp);
       value = c->get_r(r, true);
       if (!strcmp(f, "%s")) {
-        sprintf(op, "%" LL "x (", value);
+        sprintf(op, "%" PRIx64 " (", value);
         while (*op)
           op++;
         value = real_address(value, c, false);
@@ -649,21 +649,21 @@ void CTraceEngine::write_arglist(CAlphaCPU *c, FILE *fl, const char *a) {
         *(op++) = ')';
         *(op) = '\0';
       } else if (!strcmp(f, "%c"))
-        sprintf(op, "%02" LL "x (%c)", value, printable((char)value));
+        sprintf(op, "%02" PRIx64 " (%c)", value, printable((char)value));
       else if (!strcmp(f, "%d"))
-        sprintf(op, "%" LL "d", value);
+        sprintf(op, "%" PRId64 "", value);
       else if (!strcmp(f, "%x"))
-        sprintf(op, "%" LL "x", value);
+        sprintf(op, "%" PRIx64 "", value);
       else if (!strcmp(f, "%0x"))
-        sprintf(op, "%016" LL "x", value);
+        sprintf(op, "%016" PRIx64 "", value);
       else if (!strcmp(f, "%016x"))
-        sprintf(op, "%016" LL "x", value);
+        sprintf(op, "%016" PRIx64 "", value);
       else if (!strcmp(f, "%08x"))
-        sprintf(op, "%08" LL "x", value);
+        sprintf(op, "%08" PRIx64 "", value);
       else if (!strcmp(f, "%04x"))
-        sprintf(op, "%04" LL "x", value);
+        sprintf(op, "%04" PRIx64 "", value);
       else if (!strcmp(f, "%02x"))
-        sprintf(op, "%02" LL "x", value);
+        sprintf(op, "%02" PRIx64 "", value);
       else
         sprintf(op, f, value);
       while (*op)
@@ -702,7 +702,7 @@ void CTraceEngine::read_procfile(const char *filename) {
       if (fn_name) {
         *fn_name = '\0';
         fn_name++;
-        result = sscanf(linebuffer, "%" LL "x", &address);
+        result = sscanf(linebuffer, "%" PRIx64 "", &address);
         if ((result == 1) && address) {
           fn_args = strchr(fn_name, ';');
           if (fn_args) {
@@ -773,7 +773,7 @@ void CTraceEngine::run_script(const char *filename) {
       if (feof(f))
         break;
     } else {
-      printf("IDB %016" LL "x %c>", theSystem->get_cpu(0)->get_clean_pc(),
+      printf("IDB %016" PRIx64 " %c>", theSystem->get_cpu(0)->get_clean_pc(),
              (theSystem->get_cpu(0)->get_pc() & U64(0x1)) ? 'P' : '-');
     }
 #endif
@@ -925,16 +925,16 @@ int CTraceEngine::parse(char command[100][100]) {
 
     if (!strncasecmp(command[0], "DUMPREGS", strlen(command[0]))) {
       printf("\n==================== SYSTEM STATE =======================\n");
-      printf("PC: %" LL "x\n", theSystem->get_cpu(0)->get_pc());
-      printf("Physical PC: %" LL "x\n",
+      printf("PC: %" PRIx64 "\n", theSystem->get_cpu(0)->get_pc());
+      printf("Physical PC: %" PRIx64 "\n",
              theSystem->get_cpu(0)->get_current_pc_physical());
-      printf("Instruction count: %" LL "d\n",
+      printf("Instruction count: %" PRId64 "\n",
              theSystem->get_cpu(0)->get_instruction_count());
       printf("\n==================== REGISTER VALUES ====================\n");
       for (i = 0; i < 32; i++) {
         if (i < 10)
           printf("R");
-        printf("%d:%016" LL "x", i, theSystem->get_cpu(0)->get_r(i, false));
+        printf("%d:%016" PRIx64 "", i, theSystem->get_cpu(0)->get_r(i, false));
         if (i % 4 == 3)
           printf("\n");
         else
@@ -945,7 +945,7 @@ int CTraceEngine::parse(char command[100][100]) {
       for (i = 4; i < 8; i++) {
         if (i < 10)
           printf("S");
-        printf("%d:%016" LL "x", i,
+        printf("%d:%016" PRIx64 "", i,
                theSystem->get_cpu(0)->get_r(i + 32, false));
         if (i % 4 == 3)
           printf("\n");
@@ -956,7 +956,7 @@ int CTraceEngine::parse(char command[100][100]) {
       for (i = 20; i < 24; i++) {
         if (i < 10)
           printf("S");
-        printf("%d:%016" LL "x", i,
+        printf("%d:%016" PRIx64 "", i,
                theSystem->get_cpu(0)->get_r(i + 32, false));
         if (i % 4 == 3)
           printf("\n");
@@ -968,7 +968,7 @@ int CTraceEngine::parse(char command[100][100]) {
       for (i = 0; i < 32; i++) {
         if (i < 10)
           printf("F");
-        printf("%d:%016" LL "x", i, theSystem->get_cpu(0)->get_f(i));
+        printf("%d:%016" PRIx64 "", i, theSystem->get_cpu(0)->get_f(i));
         if (i % 4 == 3)
           printf("\n");
         else
@@ -1358,7 +1358,7 @@ int CTraceEngine::parse(char command[100][100]) {
     }
 
     if (!strncasecmp(command[0], "JUMP", strlen(command[0]))) {
-      result = sscanf(command[1], "%" LL "x", &iJump);
+      result = sscanf(command[1], "%" PRIx64 "", &iJump);
       if (result != 1) {
         printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
         return 0;
@@ -1380,7 +1380,7 @@ int CTraceEngine::parse(char command[100][100]) {
     if (!strncasecmp(command[0], "BREAKPOINT", strlen(command[0]))) {
       if (!strcmp(command[1], "=") || !strcmp(command[1], ">") ||
           !strcmp(command[1], "<")) {
-        result = sscanf(command[2], "%" LL "x", &iBreakPoint);
+        result = sscanf(command[2], "%" PRIx64 "", &iBreakPoint);
         if (result != 1) {
           printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
           bBreakPoint = false;
@@ -1405,13 +1405,13 @@ int CTraceEngine::parse(char command[100][100]) {
           break;
         }
 
-        printf("%%IDB-I-BRKSET: Breakpoint set when PC %c %016" LL "x.\n",
+        printf("%%IDB-I-BRKSET: Breakpoint set when PC %c %016" PRIx64 ".\n",
                command[1][0], iBreakPoint);
         bBreakPoint = true;
         return 0;
       } else {
         if (!strncasecmp(command[1], "INSTRUCTION", strlen(command[1]))) {
-          result = sscanf(command[2], "%" LL "x", &iBreakPointInstruction);
+          result = sscanf(command[2], "%" PRIx64 "", &iBreakPointInstruction);
           if (result != 1) {
             printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
             bBreakPoint = false;
@@ -1425,7 +1425,7 @@ int CTraceEngine::parse(char command[100][100]) {
           iBreakPointMode = 2;
           return 0;
         } else if (!strncasecmp(command[1], "ACCESS", strlen(command[1]))) {
-          result = sscanf(command[2], "%" LL "x", &iBreakPoint);
+          result = sscanf(command[2], "%" PRIx64 "", &iBreakPoint);
           if (result != 1) {
             printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
             bBreakPoint = false;
@@ -1433,13 +1433,13 @@ int CTraceEngine::parse(char command[100][100]) {
           }
 
           printf("%%IDB-I-BRKSET: Breakpoint set when data is read/written at "
-                 "%016" LL "x.\n",
+                 "%016" PRIx64 ".\n",
                  iBreakPoint);
           bBreakPoint = true;
           iBreakPointMode = 3;
           return 0;
         } else if (!strncasecmp(command[1], "READ", strlen(command[1]))) {
-          result = sscanf(command[2], "%" LL "x", &iBreakPoint);
+          result = sscanf(command[2], "%" PRIx64 "", &iBreakPoint);
           if (result != 1) {
             printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
             bBreakPoint = false;
@@ -1453,7 +1453,7 @@ int CTraceEngine::parse(char command[100][100]) {
           iBreakPointMode = 4;
           return 0;
         } else if (!strncasecmp(command[1], "WRITE", strlen(command[1]))) {
-          result = sscanf(command[2], "%" LL "x", &iBreakPoint);
+          result = sscanf(command[2], "%" PRIx64 "", &iBreakPoint);
           if (result != 1) {
             printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
             bBreakPoint = false;
@@ -1519,7 +1519,7 @@ int CTraceEngine::parse(char command[100][100]) {
         return 0;
       }
 
-      result = sscanf(command[2], "%" LL "x", &value);
+      result = sscanf(command[2], "%" PRIx64 "", &value);
       if (result != 1) {
         printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
         return 0;
@@ -1538,7 +1538,7 @@ int CTraceEngine::parse(char command[100][100]) {
         return 0;
       }
 
-      result = sscanf(command[2], "%" LL "x", &value);
+      result = sscanf(command[2], "%" PRIx64 "", &value);
       if (result != 1) {
         printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
         return 0;
@@ -1552,9 +1552,9 @@ int CTraceEngine::parse(char command[100][100]) {
   case 4:
     if (!strncasecmp(command[0], "LIST", strlen(command[0])) &&
         !strcmp(command[2], "-")) {
-      result = sscanf(command[1], "%" LL "x", &iFrom);
+      result = sscanf(command[1], "%" PRIx64 "", &iFrom);
       if (result == 1)
-        result = sscanf(command[3], "%" LL "x", &iTo);
+        result = sscanf(command[3], "%" PRIx64 "", &iTo);
       if (result != 1) {
         printf("%%IDB-F-INVVAL: Invalid hexadecimal value.\n");
         return 0;
@@ -1652,7 +1652,7 @@ void CTraceEngine::list_all() {
   p = pR;
 
   while (p) {
-    printf("\n======== DISASSEMBLING %08" LL "x TO %08" LL "x ========\n\n",
+    printf("\n======== DISASSEMBLING %08" PRIx64 " TO %08" PRIx64 " ========\n\n",
            p->from, p->to);
     theSystem->get_cpu(0)->listing(p->from, p->to);
     p = p->pNext;

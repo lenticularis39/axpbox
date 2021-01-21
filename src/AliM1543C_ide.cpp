@@ -1134,9 +1134,9 @@ void CAliM1543C_ide::ide_busmaster_write(int index, u32 address, u32 data,
     CONTROLLER(index).busmaster[address] = data;
     prd_address = endian_32(*(u32 *)(&CONTROLLER(index).busmaster[4]));
 #ifdef DEBUG_IDE_BUSMASTER
-    printf("%%IDE-I-PRD: Virtual address: %" LL "x  \n",
+    printf("%%IDE-I-PRD: Virtual address: %" PRIx64 "  \n",
            endian_32(*(u32 *)(&CONTROLLER(index).busmaster[4])));
-    printf("-IDE-I-PRD: Physical address: %" LL "x  \n", prd_address);
+    printf("-IDE-I-PRD: Physical address: %" PRIx64 "  \n", prd_address);
     u32 base, control;
     do {
       do_pci_read(prd_address, &base, 4, 1);
