@@ -367,12 +367,12 @@ int main_sim(int argc, char *argv[]) {
         if (PROFILE_BUCKET(p_i) > p_max)
           p_max = PROFILE_BUCKET(p_i);
       }
-      fprintf(p_fp, "p_max = %10" LL "d; %10" LL "d profiled instructions.\n\n",
+      fprintf(p_fp, "p_max = %10" PRId64 "; %10" PRId64 " profiled instructions.\n\n",
               p_max, profiled_insts);
       for (p_i = PROFILE_FROM; p_i < PROFILE_TO;
            p_i += (4 * PROFILE_BUCKSIZE)) {
         if (PROFILE_BUCKET(p_i)) {
-          fprintf(p_fp, "%016" LL "x: %10" LL "d ", p_i, PROFILE_BUCKET(p_i));
+          fprintf(p_fp, "%016" PRIx64 ": %10" PRId64 " ", p_i, PROFILE_BUCKET(p_i));
           for (p_j = 0;
                p_j < (((float)PROFILE_BUCKET(p_i) / (float)p_max) * 100); p_j++)
             fprintf(p_fp, "*");

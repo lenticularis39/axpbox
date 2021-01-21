@@ -107,7 +107,7 @@ u64 CAlphaCPU::vax_ldf(u32 op) {
             (((u64)exp) << FPR_V_EXP) |
             (((u64)SWAP_VAXF(op & ~(F_SIGN | F_EXP))) << F_V_FRAC);
 
-  // printf("vax_ldf: %08x -> %016" LL "x.\n", op, res);
+  // printf("vax_ldf: %08x -> %016" PRIx64 ".\n", op, res);
   return res;
 }
 
@@ -146,7 +146,7 @@ u32 CAlphaCPU::vax_stf(u64 op) {
 
   u32 res = sign | exp | (SWAP_VAXF(frac) & ~(F_SIGN | F_EXP));
 
-  // printf("vax_stf: %016" LL "x -> %08x.\n", op, res);
+  // printf("vax_stf: %016" PRIx64 " -> %08x.\n", op, res);
   return res;
 }
 
@@ -206,11 +206,12 @@ int CAlphaCPU::vax_fcmp(u64 s1, u64 s2, u32 ins) {
  * \return    64-bit VAX floating in register format.
  **/
 u64 CAlphaCPU::vax_cvtif(u64 val, u32 ins, u32 dp) {
+  s64 num = (s64)val;
   UFP a;
 
-  if (val == 0)
+  if (num == 0)
     return 0;    /* 0? return +0 */
-  if (val < 0) { /* < 0? */
+  if (num < 0) { /* < 0? */
     a.sign = 1;  /* set sign */
     val = NEG_Q(val);
   } /* |val| */

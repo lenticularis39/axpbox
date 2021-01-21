@@ -875,7 +875,7 @@ void CAliM1543C::toy_update_irqf() {
  **/
 u8 CAliM1543C::pit_read(u32 address) {
 
-  // printf("PIT Read: %02" LL "x \n",address);
+  // printf("PIT Read: %02" PRIx64 " \n",address);
   u8 data;
   data = 0;
   return data;
@@ -886,7 +886,7 @@ u8 CAliM1543C::pit_read(u32 address) {
  **/
 void CAliM1543C::pit_write(u32 address, u8 data) {
 
-  // printf("PIT Write: %02" LL "x, %02x \n",address,data);
+  // printf("PIT Write: %02" PRIx64 ", %02x \n",address,data);
   if (address == 3) { // control
     if (data != 0) {
       state.pit_status[address] = data; // last command seen.
@@ -1035,7 +1035,7 @@ u8 CAliM1543C::pic_read(int index, u32 address) {
 
 #ifdef DEBUG_PIC
   if (pic_messages)
-    printf("%%PIC-I-READ: read %02x from port %" LL "d on PIC %d\n", data,
+    printf("%%PIC-I-READ: read %02x from port %" PRId64 " on PIC %d\n", data,
            address, index);
 #endif
   return data;
@@ -1097,7 +1097,7 @@ void CAliM1543C::pic_write(int index, u32 address, u8 data) {
   int op;
 #ifdef DEBUG_PIC
   if (pic_messages)
-    printf("%%PIC-I-WRITE: write %02x to port %" LL "d on PIC %d\n", data,
+    printf("%%PIC-I-WRITE: write %02x to port %" PRId64 " on PIC %d\n", data,
            address, index);
 #endif
   switch (address) {

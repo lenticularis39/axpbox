@@ -542,13 +542,13 @@ void CAlphaCPU::check_state() {
 
     if (ce_new != ce) {
 
-      //    printf("                                     time %12" LL "d | prev
-      //    %12" LL "d  \n",time,prev_time); printf("          count lapse %12"
-      //    LL "d | curr %12" LL "d | prev %12" LL "d
-      //    \n",icount_lapse,icount,prev_icount); printf("cc %12" LL "d | aim
-      //    %12" LL "d | diff %12" LL "d | prev %12" LL "d
-      //    \n",cc,cc_aim,cc_diff,prev_cc); printf("ce %12" LL "d | aim %12" LL
-      //    "d | diff %12" LL "d | new  %12" LL "d
+      //    printf("                                     time %12" PRId64 " | prev
+      //    %12" PRId64 "  \n",time,prev_time); printf("          count lapse %12"
+      //    LL "d | curr %12" PRId64 " | prev %12" PRId64 "
+      //    \n",icount_lapse,icount,prev_icount); printf("cc %12" PRId64 " | aim
+      //    %12" PRId64 " | diff %12" PRId64 " | prev %12" PRId64 "
+      //    \n",cc,cc_aim,cc_diff,prev_cc); printf("ce %12" PRId64 " | aim %12" LL
+      //    "d | diff %12" PRId64 " | new  %12" PRId64 "
       //    \n",ce,ce_aim,ce_diff,ce_new);
       //    printf("==========================================================================
       //    \n");
@@ -1517,7 +1517,7 @@ void CAlphaCPU::listing(u64 from, u64 to) { listing(from, to, 0); }
  * \param mark    Address of instruction to be underlined with a marker line.
  **/
 void CAlphaCPU::listing(u64 from, u64 to, u64 mark) {
-  printf("%%CPU-I-LISTNG: Listing from %016" LL "x to %016" LL "x\n", from, to);
+  printf("%%CPU-I-LISTNG: Listing from %016" PRIx64 " to %016" PRIx64 "\n", from, to);
 
   u64 iSavedPC;
   bool bSavedDebug;
@@ -1718,7 +1718,7 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 #if defined(IDB)
     if (bTB_Debug)
 #endif
-      printf("TB %" LL "x,%x: ", virt, flags);
+      printf("TB %" PRIx64 ",%x: ", virt, flags);
 #endif
 
   // try superpage first.
@@ -1971,7 +1971,7 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 #if defined(IDB)
     if (bTB_Debug)
 #endif
-      printf("phys: %" LL "x - OK\n", *phys);
+      printf("phys: %" PRIx64 " - OK\n", *phys);
 #endif
   return 0;
 }
@@ -2070,10 +2070,10 @@ void CAlphaCPU::add_tb(u64 virt, u64 pte_phys, u64 pte_flags, int flags) {
 #endif
   {
     printf("Add TB---------------------------------------\n");
-    printf("Map VIRT    %016" LL "x\n", state.tb[i].virt);
-    printf("Matching    %016" LL "x\n", state.tb[i].match_mask);
-    printf("And keeping %016" LL "x\n", state.tb[i].keep_mask);
-    printf("To PHYS     %016" LL "x\n", state.tb[i].phys);
+    printf("Map VIRT    %016" PRIx64 "\n", state.tb[i].virt);
+    printf("Matching    %016" PRIx64 "\n", state.tb[i].match_mask);
+    printf("And keeping %016" PRIx64 "\n", state.tb[i].keep_mask);
+    printf("To PHYS     %016" PRIx64 "\n", state.tb[i].phys);
     printf("Read : %c%c%c%c %c\n", state.tb[i].access[0][0] ? 'K' : '-',
            state.tb[i].access[0][1] ? 'E' : '-',
            state.tb[i].access[0][2] ? 'S' : '-',
