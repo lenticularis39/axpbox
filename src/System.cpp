@@ -539,7 +539,7 @@ void CSystem::Run() {
   printf("Physical Address Size     Device/Index\n");
   printf("---------------- -------- -------------------------\n");
   for (i = 0; i < iNumMemories; i++) {
-    printf("%016" LL "x %8x %s/%d\n", asMemories[i]->base,
+    printf("%016" PRIx64 " %8x %s/%d\n", asMemories[i]->base,
            asMemories[i]->length, asMemories[i]->component->devid_string,
            asMemories[i]->index);
   }
@@ -558,10 +558,10 @@ void CSystem::Run() {
       acComponents[i]->check_state();
 #if !defined(HIDE_COUNTER)
 #if defined(PROFILE)
-    printf("%d | %016" LL "x | %" LL "d profiled instructions.  \r", k,
+    printf("%d | %016" PRIx64 " | %" PRId64 " profiled instructions.  \r", k,
            acCPUs[0]->get_pc(), profiled_insts);
 #else  // defined(PROFILE)
-    printf("%d | %016" LL "x\r", k, acCPUs[0]->get_pc());
+    printf("%d | %016" PRIx64 "\r", k, acCPUs[0]->get_pc());
 #endif // defined(PROFILE)
 #endif // defined(HIDE_COUNTER)
   }
@@ -604,7 +604,7 @@ int CSystem::SingleStep() {
   //#if !defined(LS_SLAVE)
   //     if (bHashing)
   //#endif
-  //       printf("%d | %016" LL "x\r",iSSCycles,acCPUs[0]->get_pc());
+  //       printf("%d | %016" PRIx64 "\r",iSSCycles,acCPUs[0]->get_pc());
   //#endif
   //  }
   return 0;
@@ -616,7 +616,7 @@ u64 lastport;
 void CSystem::cpu_lock(int cpuid, u64 address) {
   SCOPED_FM_LOCK(cpu_lock_mutex);
 
-  //  printf("cpu%d: lock %" LL "x.   \n",cpuid,address);
+  //  printf("cpu%d: lock %" PRIx64 ".   \n",cpuid,address);
   state.cpu_lock_flags |= (1 << cpuid);
   state.cpu_lock_address[cpuid] = address;
 }
@@ -836,10 +836,10 @@ void CSystem::WriteMem(u64 address, int dsize, u64 data,
 
       // Unused PCI I/O space
       if (source) {
-        printf("Write to unknown IO port %" LL "x on PCI 1 from %s   \n",
+        printf("Write to unknown IO port %" PRIx64 " on PCI 1 from %s   \n",
                a & U64(0x1ffffff), source->devid_string);
       } else
-        printf("Write to unknown IO port %" LL "x on PCI 1   \n",
+        printf("Write to unknown IO port %" PRIx64 " on PCI 1   \n",
                a & U64(0x1ffffff));
       return;
     }
@@ -850,10 +850,10 @@ void CSystem::WriteMem(u64 address, int dsize, u64 data,
       u64 paddr = a & U64(0xffffffff);
       if (paddr > 0xb8fff || paddr < 0xb8000) { // skip legacy video
         if (source) {
-          printf("Write to unknown memory %" LL "x on PCI 0 from %s   \n",
+          printf("Write to unknown memory %" PRIx64 " on PCI 0 from %s   \n",
                  a & U64(0xffffffff), source->devid_string);
         } else
-          printf("Write to unknown memory %" LL "x on PCI 0   \n",
+          printf("Write to unknown memory %" PRIx64 " on PCI 0   \n",
                  a & U64(0xffffffff));
       }
     }
@@ -862,20 +862,20 @@ void CSystem::WriteMem(u64 address, int dsize, u64 data,
 
       // Unused PCI memory space
       if (source) {
-        printf("Write to unknown memory %" LL "x on PCI 1 from %s   \n",
+        printf("Write to unknown memory %" PRIx64 " on PCI 1 from %s   \n",
                a & U64(0xffffffff), source->devid_string);
       } else
-        printf("Write to unknown memory %" LL "x on PCI 1   \n",
+        printf("Write to unknown memory %" PRIx64 " on PCI 1   \n",
                a & U64(0xffffffff));
       return;
     }
 
 #ifdef DEBUG_UNKMEM
     if (source)
-      printf("Write to unknown memory %" LL "x from %s   \n", a,
+      printf("Write to unknown memory %" PRIx64 " from %s   \n", a,
              source->devid_string);
     else
-      printf("Write to unknown memory %" LL "x   \n", a);
+      printf("Write to unknown memory %" PRIx64 "   \n", a);
 #endif // defined(DEBUG_UNKMEM)
     return;
   }
@@ -1077,10 +1077,10 @@ u64 CSystem::ReadMem(u64 address, int dsize, CSystemComponent *source) {
 
       // Unused PCI I/O space
       if (source) {
-        printf("Read from unknown IO port %" LL "x on PCI 1 from %s   \n",
+        printf("Read from unknown IO port %" PRIx64 " on PCI 1 from %s   \n",
                a & U64(0x1ffffff), source->devid_string);
       } else
-        printf("Read from unknown IO port %" LL "x on PCI 1   \n",
+        printf("Read from unknown IO port %" PRIx64 " on PCI 1   \n",
                a & U64(0x1ffffff));
       return 0;
     }
@@ -1091,10 +1091,10 @@ u64 CSystem::ReadMem(u64 address, int dsize, CSystemComponent *source) {
       u64 paddr = a & U64(0xffffffff);
       if (paddr > 0xb8fff || paddr < 0xb8000) { // skip legacy video
         if (source) {
-          printf("Read from unknown memory %" LL "x on PCI 0 from %s   \n",
+          printf("Read from unknown memory %" PRIx64 " on PCI 0 from %s   \n",
                  a & U64(0xffffffff), source->devid_string);
         } else
-          printf("Read from unknown memory %" LL "x on PCI 0   \n",
+          printf("Read from unknown memory %" PRIx64 " on PCI 0   \n",
                  a & U64(0xffffffff));
       }
 
@@ -1105,20 +1105,20 @@ u64 CSystem::ReadMem(u64 address, int dsize, CSystemComponent *source) {
 
       // Unused PCI memory space
       if (source) {
-        printf("Read from unknown memory %" LL "x on PCI 1 from %s   \n",
+        printf("Read from unknown memory %" PRIx64 " on PCI 1 from %s   \n",
                a & U64(0xffffffff), source->devid_string);
       } else
-        printf("Read from unknown memory %" LL "x on PCI 1   \n",
+        printf("Read from unknown memory %" PRIx64 " on PCI 1   \n",
                a & U64(0xffffffff));
       return 0;
     }
 
 #if defined(DEBUG_UNKMEM)
     if (source)
-      printf("Read from unknown memory %" LL "x from %s   \n", a,
+      printf("Read from unknown memory %" PRIx64 " from %s   \n", a,
              source->devid_string);
     else
-      printf("Read from unknown memory %" LL "x   \n", a);
+      printf("Read from unknown memory %" PRIx64 "   \n", a);
 #endif // defined(DEBUG_UNKMEM)
     return 0x00;
 
@@ -1624,7 +1624,7 @@ u64 CSystem::cchip_csr_read(u32 a, CSystemComponent *source) {
 
   case 0x080:
 
-    //    printf("MISC: %016" LL "x from CPU %d (@%" LL "x) (other @ %" LL
+    //    printf("MISC: %016" PRIx64 " from CPU %d (@%" PRIx64 ") (other @ %" LL
     //    "x).\n",state.cchip.misc | cpu->get_cpuid(),cpu->get_cpuid(),
     //    cpu->get_pc()-4, acCPUs[1-cpu->get_cpuid()]->get_pc());
     return state.cchip.misc | cpu->get_cpuid();
@@ -2182,7 +2182,7 @@ u64 CSystem::PCI_Phys(int pcibus, u32 address) {
 
   // Step through windows
   for (j = 0; j < 4; j++) {
-    printf("WSBA%d: %016" LL "x WSM: %016" LL "x TBA: %016" LL "x\n", j,
+    printf("WSBA%d: %016" PRIx64 " WSM: %016" PRIx64 " TBA: %016" PRIx64 "\n", j,
            state.pchip[pcibus].wsba[j], state.pchip[pcibus].wsm[j],
            state.pchip[pcibus].tba[j]);
   }
@@ -2219,7 +2219,7 @@ u64 CSystem::PCI_Phys(int pcibus, u32 address) {
           a = PCI_Phys_direct_mapped(address, state.pchip[pcibus].wsm[j],
                                      state.pchip[pcibus].tba[j]);
 #if defined(DEBUG_PCI)
-        printf("PCI memory address %08x translated to %016" LL "x\n", address,
+        printf("PCI memory address %08x translated to %016" PRIx64 "\n", address,
                a);
 #endif
         return a;
@@ -2556,8 +2556,8 @@ void CSystem::panic(char *message, int flags) {
 
     printf("PC: %016" PRIx64 "\n", cpu->get_pc());
 #ifdef IDB
-    printf("Physical PC: %016" LL "x\n", cpu->get_current_pc_physical());
-    printf("Instruction Count: %" LL "d\n", cpu->get_instruction_count());
+    printf("Physical PC: %016" PRIx64 "\n", cpu->get_current_pc_physical());
+    printf("Instruction Count: %" PRId64 "\n", cpu->get_instruction_count());
 #endif
     printf("\n");
 

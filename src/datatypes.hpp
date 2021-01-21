@@ -102,22 +102,20 @@
 #define INCLUDED_DATATYPES_H
 
 #if defined(HAVE_STDINT_H)
-#include <stdint.h>
+#include <cstdint>
 #endif
 
 #if defined(HAVE_INTTYPES_H)
-#include <inttypes.h>
+#include <cinttypes>
 #endif
 
 #if defined(_WIN32) && !defined(__GNUWIN32__)
 
 #define U64(a) a##ui64
-#define LL "I64"
 
 #else // defined(_WIN32)
 
-#define U64(a) a##ll
-#define LL "ll"
+#define U64(a)  UINT64_C(a)
 
 #endif // defined(_WIN32)
 

@@ -651,7 +651,7 @@ int CS3Trio64::RestoreState(FILE *f) {
 u32 CS3Trio64::mem_read(u32 address, int dsize) {
   u32 data = 0;
 
-  // printf("S3 mem read: %" LL "x, %d, %" LL "x   \n", address, dsize, data);
+  // printf("S3 mem read: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize, data);
   return data;
 }
 
@@ -662,7 +662,7 @@ u32 CS3Trio64::mem_read(u32 address, int dsize) {
  **/
 void CS3Trio64::mem_write(u32 address, int dsize, u32 data) {
 
-  // printf("S3 mem write: %" LL "x, %d, %" LL "x   \n", address, dsize, data);
+  // printf("S3 mem write: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize, data);
   switch (dsize) {
   case 8:
   case 16:
@@ -690,7 +690,7 @@ u32 CS3Trio64::legacy_read(u32 address, int dsize) {
     data |= (u64)vga_mem_read((u32)address + 0xA0000);
   }
 
-  //  //printf("S3 legacy read: %" LL "x, %d, %" LL "x   \n", address, dsize,
+  //  //printf("S3 legacy read: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize,
   //  data);
   return data;
 }
@@ -702,7 +702,7 @@ u32 CS3Trio64::legacy_read(u32 address, int dsize) {
  **/
 void CS3Trio64::legacy_write(u32 address, int dsize, u32 data) {
 
-  //  //printf("S3 legacy write: %" LL "x, %d, %" LL "x   \n", address, dsize,
+  //  //printf("S3 legacy write: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize,
   //  data);
   switch (dsize) {
   case 32:
@@ -737,10 +737,10 @@ u32 CS3Trio64::rom_read(u32 address, int dsize) {
       break;
     }
 
-    // printf("S3 rom read: %" LL "x, %d, %" LL "x\n", address, dsize,data);
+    // printf("S3 rom read: %" PRIx64 ", %d, %" PRIx64 "\n", address, dsize,data);
   } else {
 
-    // printf("S3 (BAD) rom read: %" LL "x, %d, %" LL "x\n", address,
+    // printf("S3 (BAD) rom read: %" PRIx64 ", %d, %" PRIx64 "\n", address,
     // dsize,data);
   }
 
@@ -815,7 +815,7 @@ u32 CS3Trio64::io_read(u32 address, int dsize) {
     FAILURE_1(NotImplemented, "Unhandled port %x read", address);
   }
 
-  // printf("S3 io read: %" LL "x, %d, %" LL "x   \n", address, dsize, data);
+  // printf("S3 io read: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize, data);
   return data;
 }
 
@@ -826,7 +826,7 @@ u32 CS3Trio64::io_read(u32 address, int dsize) {
  */
 void CS3Trio64::io_write(u32 address, int dsize, u32 data) {
 
-  //  printf("S3 io write: %" LL "x, %d, %" LL "x   \n", address+VGA_BASE,
+  //  printf("S3 io write: %" PRIx64 ", %d, %" PRIx64 "   \n", address+VGA_BASE,
   //  dsize, data);
   switch (dsize) {
   case 8:
