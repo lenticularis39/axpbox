@@ -206,11 +206,12 @@ int CAlphaCPU::vax_fcmp(u64 s1, u64 s2, u32 ins) {
  * \return    64-bit VAX floating in register format.
  **/
 u64 CAlphaCPU::vax_cvtif(u64 val, u32 ins, u32 dp) {
+  s64 num = (s64)val;
   UFP a;
 
-  if (val == 0)
+  if (num == 0)
     return 0;    /* 0? return +0 */
-  if (val < 0) { /* < 0? */
+  if (num < 0) { /* < 0? */
     a.sign = 1;  /* set sign */
     val = NEG_Q(val);
   } /* |val| */
