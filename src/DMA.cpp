@@ -116,7 +116,7 @@ u64 CDMA::ReadMem(int index, u64 address, int dsize) {
   u64 ret;
   u8 data = 0;
   int num;
-  // printf("dma: Readmem %s, %" LL "x, %x\n",DMA_INDEX(index),address, dsize);
+  // printf("dma: Readmem %s, %" PRIx64 ", %x\n",DMA_INDEX(index),address, dsize);
   switch (dsize) {
   case 32:
     ret = ReadMem(index, address, 8);

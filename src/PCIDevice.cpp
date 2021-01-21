@@ -248,7 +248,7 @@ void CPCIDevice::register_bar(int func, int bar, u32 data, u32 mask) {
                                 (data & ~0x3),
                             length);
 #if defined(DEBUG_PCI)
-    printf("%s(%s).%d PCI BAR %d set to IO  % " LL "x, len %x.\n",
+    printf("%s(%s).%d PCI BAR %d set to IO  % " PRIx64 ", len %x.\n",
            myCfg->get_myName(), myCfg->get_myValue(), func, bar, t, length);
 #endif
   } else if ((data & 1) || bar != 6) {
@@ -262,7 +262,7 @@ void CPCIDevice::register_bar(int func, int bar, u32 data, u32 mask) {
                                 (data & ~0xf),
                             length);
 #if defined(DEBUG_PCI)
-    printf("%s(%s).%d PCI BAR %d set to MEM % " LL "x, len %x.\n",
+    printf("%s(%s).%d PCI BAR %d set to MEM % " PRIx64 ", len %x.\n",
            myCfg->get_myName(), myCfg->get_myValue(), func, bar, t, length);
 #endif
   } else {

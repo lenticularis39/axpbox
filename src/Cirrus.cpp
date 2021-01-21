@@ -663,7 +663,7 @@ int CCirrus::RestoreState(FILE *f) {
 u32 CCirrus::mem_read(u32 address, int dsize) {
   u32 data = 0;
 
-  // printf("cirrus: mem read: %" LL "x, %d, %" LL "x   \n", address, dsize,
+  // printf("cirrus: mem read: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize,
   // data);
   return data;
 }
@@ -675,7 +675,7 @@ u32 CCirrus::mem_read(u32 address, int dsize) {
  **/
 void CCirrus::mem_write(u32 address, int dsize, u32 data) {
 
-  // printf("cirrus: mem write: %" LL "x, %d, %" LL "x   \n", address, dsize,
+  // printf("cirrus: mem write: %" PRIx64 ", %d, %" PRIx64 "   \n", address, dsize,
   // data);
   switch (dsize) {
   case 8:
@@ -704,7 +704,7 @@ u32 CCirrus::legacy_read(u32 address, int dsize) {
     data |= (u64)vga_mem_read((u32)address + 0xA0000);
   }
 
-  //  //printf("cirrus: legacy read: %" LL "x, %d, %" LL "x   \n", address,
+  //  //printf("cirrus: legacy read: %" PRIx64 ", %d, %" PRIx64 "   \n", address,
   //  dsize, data);
   return data;
 }
@@ -716,7 +716,7 @@ u32 CCirrus::legacy_read(u32 address, int dsize) {
  **/
 void CCirrus::legacy_write(u32 address, int dsize, u32 data) {
 
-  //  //printf("cirrus: legacy write: %" LL "x, %d, %" LL "x   \n", address,
+  //  //printf("cirrus: legacy write: %" PRIx64 ", %d, %" PRIx64 "   \n", address,
   //  dsize, data);
   switch (dsize) {
   case 32:
@@ -751,7 +751,7 @@ u32 CCirrus::rom_read(u32 address, int dsize) {
       break;
     }
 
-    // printf("cirrus: rom read: %" LL "x, %d, %" LL "x\n", address,
+    // printf("cirrus: rom read: %" PRIx64 ", %d, %" PRIx64 "\n", address,
     // dsize,data);
   } else {
     printf("cirrus: (BAD) rom read: %" PRIu32 "x, %d, %" PRIu32 "x\n", address,
@@ -829,7 +829,7 @@ u32 CCirrus::io_read(u32 address, int dsize) {
     FAILURE_1(NotImplemented, "Unhandled port %x read", address);
   }
 
-  // printf("cirrus: io read: %" LL "x, %d, %" LL "x   \n", address+VGA_BASE,
+  // printf("cirrus: io read: %" PRIx64 ", %d, %" PRIx64 "   \n", address+VGA_BASE,
   // dsize, data);
   return data;
 }
@@ -841,7 +841,7 @@ u32 CCirrus::io_read(u32 address, int dsize) {
  */
 void CCirrus::io_write(u32 address, int dsize, u32 data) {
 
-  //  printf("cirrus: io write: %" LL "x, %d, %" LL "x   \n", address+VGA_BASE,
+  //  printf("cirrus: io write: %" PRIx64 ", %d, %" PRIx64 "   \n", address+VGA_BASE,
   //  dsize, data);
   switch (dsize) {
   case 8:
