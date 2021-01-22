@@ -156,24 +156,36 @@
 
 #include "datatypes.hpp"
 
+#ifdef _WIN32
+#pragma comment( lib, "ws2_32.lib")
+#endif /* _WIN32 */
+
 #if defined(HAVE_WINDOWS_H)
-#include <windows.h>
+#include "windows.h"
 #endif
 
 #if !defined(HAVE_STRCASECMP)
 #if defined(HAVE__STRICMP)
-#define strcasecmp(a, b) _stricmp(a, b)
-#else
-#error "Need strcasecmp"
-#endif
+        #define strcasecmp(a, b) _stricmp(a, b)
+    #else
+        #ifdef _MSC_VER
+            #define strcasecmp _stricmp
+        #else
+            #error "Need strcasecmp"
+        #endif
+    #endif
 #endif // !defined(HAVE_STRCASECMP)
 
 #if !defined(HAVE_STRNCASECMP)
 #if defined(HAVE__STRNICMP)
-#define strncasecmp(a, b, c) _strnicmp(a, b, c)
-#else
-#error "Need strncasecmp"
-#endif
+        #define strncasecmp(a, b, c) _strnicmp(a, b, c)
+    #else
+        #ifdef _MSC_VER
+            #define strncasecmp _strnicmp
+        #else
+            #error "Need strncasecmp"
+        #endif
+    #endif
 #endif // !defined(HAVE_STRNCASECMP)
 
 #if defined(HAVE_PROCESS_H)
@@ -312,7 +324,9 @@ inline char printable(char c) {
 #include "es40_endian.hpp"
 
 #if __cplusplus < 201402L
+#ifndef _WIN32
 #include "make_unique.hpp"
+#endif
 #endif
 
 #endif // !defined(INCLUDED_STDAFX_H)

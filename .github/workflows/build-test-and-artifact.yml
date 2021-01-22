@@ -86,6 +86,42 @@ jobs:
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
+  windows-msvc:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+
+    - name: Create build environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release 
+      
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config Release
+      env:
+        MAKEFLAGS: "-j2"
+
+    - name: Test run
+      working-directory: ${{runner.workspace}}/build
+      run: ${{runner.workspace}}\build\Release\axpbox.exe
+
+    - name: Upload AXPbox Binary
+      uses: actions/upload-artifact@v1
+      with:
+        name: AXPbox-windows-msvc-${{ env.BUILD_DATE }}.exe
+        path: ${{runner.workspace}}\build\Release\axpbox.exe
+      env:
+        BUILD_DATE: ${{ steps.date.outputs.date }} 
+
   osx-appleclang:
     runs-on: "macos-10.15"
     continue-on-error: true
