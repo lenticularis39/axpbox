@@ -82,12 +82,8 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     checkFileWritable(filename);
   }
 
-#if defined(HAVE_FOPEN64) || defined(__arm__)
-  handle = fopen64(filename, read_only ? "rb" : "rb+");
-#else
-  handle = fopen(filename, read_only ? "rb" : "rb+");
-#endif
-      
+  handle = fopen_large(filename, read_only ? "rb" : "rb+");
+
   // determine size...
   fseek_large(handle, 0, SEEK_END);
   byte_size = ftell_large(handle);
