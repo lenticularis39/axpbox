@@ -11,6 +11,9 @@ target_include_directories(axpbox PRIVATE src src/base src/gui ${CMAKE_BINARY_DI
 find_package(Threads REQUIRED)
 target_link_libraries(axpbox pthread)
 
+# Path to additional CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 # Configuration options
 include(CheckSymbolExists)
 include(CheckIncludeFile)
@@ -18,6 +21,7 @@ include(CheckLibraryExists)
 include(CheckTypeSize)
 include(CheckIncludeFiles)
 include(TestBigEndian)
+include(CheckLargeFiles)
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
@@ -100,6 +104,9 @@ check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
 check_include_file("pcap.h" HAVE_PCAP)
 check_include_file("SDL/SDL.h" HAVE_SDL)
 check_include_file("X11/X.h" HAVE_X11)
+# Large file support (fopen64 / disk files > 2 GB)
+AXPBOX_TEST_LARGE_FILES(HAVE_LARGE_FILES)
+
 
 if(HAVE_PCAP)
     target_link_libraries(axpbox pcap)
@@ -118,6 +125,12 @@ if(HAVE_X11)
     message(STATUS "x11 found. x11 graphics support enabled")
 else()
     message(WARNING "x11 not found. Building without x11 graphics support")
+endif()
+
+if(HAVE_LARGE_FILES)
+    message(STATUS "Large file support enabled")
+else()
+    message(WARNING "Building without large file graphics support")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

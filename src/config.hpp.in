@@ -16,6 +16,21 @@
 /* Define to 1 if you have the <errno.h> header file. */
 #cmakedefine HAVE_ERRNO_H
 
+/* Define to 1 if you have large file support */
+#cmakedefine HAVE_LARGE_FILES
+
+/* Define to 1 if you have large file support */
+#cmakedefine _LARGEFILE_SOURCE
+
+/* Define to 1 if you have large file support */
+#cmakedefine _LARGE_FILES
+
+/* Define to 64 if you have large file support */
+#cmakedefine _FILE_OFFSET_BITS @_FILE_OFFSET_BITS@
+
+/* Define to 1 if you have large file support */
+#cmakedefine AXPBOX_HAVE_FSEEKO @AXPBOX_HAVE_FSEEKO@
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #cmakedefine HAVE_FCNTL_H
 
