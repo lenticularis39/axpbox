@@ -1,6 +1,6 @@
 # AXPbox Alpha emulator
 
-AXPbox is a fork of the discontinued es40 emulator. It could theoretically used for running any operating system that runs on the OpenVMS or Tru64 PALcode (e.g. OpenVMS, Tru64 UNIX, Linux, NetBSD), however as of now only OpenVMS can be installed (for more details see [Guest support](https://github.com/lenticularis39/axpbox/wiki/Guest-support)).
+AXPbox is a fork of the discontinued es40 emulator. It could theoretically used for running any operating system that runs on the OpenVMS or Tru64 PALcode (e.g. OpenVMS, Tru64 UNIX, Linux, NetBSD), however as of now only OpenVMS and some versions of NetBSD can be installed (for more details see [Guest support](https://github.com/lenticularis39/axpbox/wiki/Guest-support)).
 
 The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and [VGA graphics](https://github.com/lenticularis39/axpbox/wiki/VGA) (using SDL).
 
@@ -36,7 +36,6 @@ Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wi
 - VGA in OpenVMS
 - SDL keyboard (partly works, but easily breaks)
 - Multiple CPU system emulation
-- Building on Windows
 - Running on big endian platforms
 - Some SCSI and IDE commands
 - Networking for a longer time (breaks after a couple minutes)
