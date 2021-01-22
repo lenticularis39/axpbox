@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 #endif
     std::cerr << std::endl;
     std::cerr << "Usage: " << argv[0] << " run|configure <options>" << std::endl;
-    return 1;
+    return 0;
   }
 
   if (strcmp(argv[1], "run") == 0) {
