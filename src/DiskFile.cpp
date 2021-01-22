@@ -82,7 +82,7 @@ CDiskFile::CDiskFile(CConfigurator *cfg, CSystem *sys, CDiskController *c,
     checkFileWritable(filename);
   }
 
-  handle = fopen_large(filename, read_only ? "rb" : "rb+");
+  handle = fopen(filename, read_only ? "rb" : "rb+");
 
   // determine size...
   fseek_large(handle, 0, SEEK_END);
