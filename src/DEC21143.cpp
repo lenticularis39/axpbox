@@ -1,5 +1,6 @@
 /* AXPbox Alpha Emulator
  * Copyright (C) 2020 Tomáš Glozar
+ * Copyright (C) 2021 Dietmar M. Zettl
  * Website: https://github.com/lenticularis39/axpbox
  *
  * Forked from: ES40 emulator
@@ -1374,6 +1375,19 @@ int CDEC21143::dec21143_tx() {
     do_pci_read(bufaddr, state.tx.cur_buf + state.tx.cur_buf_len, 1, bufsize);
 
     state.tx.cur_buf_len += bufsize;
+
+/* only partial frames were written to the pcap filter, because the second
+ * buffer was not considered when collecting the ethernet frames in dec21143_tx.
+ * It can happen that both buffers to which tdes2 and tdes3 point contain data.
+ * When this happens the data of both buffers have to be combined to get a valid
+ * ethernet frame and hence IP packet. The patch simply checks if buf2_size is
+ * greater 0 and if that's true append the data from the buffer pointed to by
+ * tdes3 to the current frame.
+ */
+    if ((buf2_size > 0) && (!(tdes1 & TDCTL_CH))) {
+      do_pci_read(tdes3, state.tx.cur_buf + state.tx.cur_buf_len, 1, buf2_size);
+      state.tx.cur_buf_len += buf2_size;
+    }
 
     /*  Last segment? Then actually transmit it:  */
     if (tdes1 & TDCTL_Tx_LS) {
