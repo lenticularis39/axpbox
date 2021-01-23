@@ -192,8 +192,7 @@ size_t CDiskDevice::read_bytes(void *dest, size_t bytes) {
   ReadFile(handle, buffer, byte_len, &r, NULL);
 
   if (r != (byte_len)) {
-    printf("%s: Tried to read %d bytes from pos %" LL
-           "d, but could only read %d bytes!\n",
+    printf("%s: Tried to read %d bytes from pos %ld, but could only read %d bytes!\n",
            devid_string, byte_len, byte_from, r);
     printf("%s: Error %ld.\n", devid_string, GetLastError());
   }
@@ -235,8 +234,7 @@ size_t CDiskDevice::write_bytes(void *src, size_t bytes) {
     SetFilePointerEx(handle, a, NULL, FILE_BEGIN);
     ReadFile(handle, buffer, (DWORD)dev_block_size, &r, NULL);
     if (r != (dev_block_size)) {
-      printf("%s: Tried to read %d bytes from pos %" LL
-             "d, but could only read %zd bytes!\n",
+      printf("%s: Tried to read %d bytes from pos %ld, but could only read %zd bytes!\n",
              devid_string, dev_block_size, byte_from, r);
       FAILURE(InvalidArgument, "Error during device write operation. "
                                "Terminating to avoid disk corruption.");
@@ -253,8 +251,7 @@ size_t CDiskDevice::write_bytes(void *src, size_t bytes) {
     ReadFile(handle, buffer + byte_len - dev_block_size, (DWORD)dev_block_size,
              &r, NULL);
     if (r != (dev_block_size)) {
-      printf("%s: Tried to read %d bytes from pos %" LL
-             "d, but could only read %zd bytes!\n",
+      printf("%s: Tried to read %d bytes from pos %ld, but could only read %zd bytes!\n",
              devid_string, dev_block_size, byte_to - dev_block_size, r);
       FAILURE(InvalidArgument, "Error during device write operation. "
                                "Terminating to avoid disk corruption.");
@@ -271,8 +268,7 @@ size_t CDiskDevice::write_bytes(void *src, size_t bytes) {
   WriteFile(handle, buffer, byte_len, &r, NULL);
 
   if (r != byte_len) {
-    printf("%s: Tried to write %d bytes to pos %" LL
-           "d, but could only write %d bytes!\n",
+    printf("%s: Tried to write %d bytes to pos %ld, but could only write %d bytes!\n",
            devid_string, byte_len, byte_from, r);
     FAILURE(InvalidArgument, "Error during device write operation. Terminating "
                              "to avoid disk corruption.");
