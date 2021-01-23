@@ -23,7 +23,7 @@ nc -t 127.0.0.1 21000 | tee axp.log &
 NETCAT_PID=$!
 
 # Wait for the last line of log to become P00>>>
-timeout=100
+timeout=600
 while true
 do
   if [ $timeout -eq 0 ]
