@@ -10,7 +10,7 @@ function message() {
 function run_test() {
   local old_pwd=$(pwd)
 
-  message "[test] Running test $1"
+  message "[test] Started test $1 at $(date)"
 
   cd "test/$1"
   ./test.sh
@@ -19,10 +19,10 @@ function run_test() {
 
   if [ "$result" -eq "0" ]
   then
-    message "[test] Test $1 passed" >&2
+    message "[test] Test $1 finished at $(date)" >&2
   else
     success=1
-    message "[test] Test $1 failed" >&2
+    message "[test] Test $1 failed at $(date)" >&2
   fi
 }
 
