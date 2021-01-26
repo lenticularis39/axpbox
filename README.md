@@ -4,6 +4,10 @@ AXPbox is a fork of the discontinued es40 emulator. It could theoretically used 
 
 The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and [VGA graphics](https://github.com/lenticularis39/axpbox/wiki/VGA) (using SDL).
 
+![OpenVMS 8.4 desktop](https://i.ibb.co/zQh35hm/Sn-mek-z-2021-01-24-14-18-41.png)
+
+OpenVMS 8.4 desktop in AXPbox
+
 ## Usage
 
 First invoke the interactive configuration file generator:
