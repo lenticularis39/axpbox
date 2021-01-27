@@ -6,7 +6,7 @@ The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and [VGA gr
 
 ![OpenVMS 8.4 desktop](https://i.ibb.co/zQh35hm/Sn-mek-z-2021-01-24-14-18-41.png)
 
-OpenVMS 8.4 desktop in AXPbox
+OpenVMS 8.4 desktop in AXPbox. [Here is a wiki page showing you how to get this CDE desktop running](https://github.com/lenticularis39/axpbox/wiki/GUI-Desktop-Environment-(CDE))
 
 ## Usage
 
