@@ -136,7 +136,7 @@ CDiskDevice::CDiskDevice(CConfigurator *cfg, CSystem *sys, CDiskController *c,
 
   model_number = myCfg->get_text_value("model_number", filename);
 
-  printf("%s: Mounted device %s, %td %zd-byte blocks, %td/%ld/%ld.\n",
+  printf("%s: Mounted device %s, %" PRId64 " %zd-byte blocks, %" PRId64 "/%ld/%ld.\n",
          devid_string, filename, byte_size / state.block_size, state.block_size,
          cylinders, heads, sectors);
 }

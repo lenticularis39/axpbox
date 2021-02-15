@@ -1,6 +1,5 @@
 /* AXPbox Alpha Emulator
  * Copyright (C) 2020 Tomáš Glozar
- * Copyright (C) 2020 Martin Vorländer
  * Website: https://github.com/lenticularis39/axpbox
  *
  * Forked from: ES40 emulator
@@ -26,6 +25,60 @@
  * and receiving any modifications you may make to the source code that might
  * serve the general public.
  */
+
+/* Copyright notice from SimH/alpha/alpha_fpi.c:
+
+   Copyright (c) 2003-2006, Robert M Supnik
+
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+   ROBERT M SUPNIK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+   Except as contained in this notice, the name of Robert M Supnik shall not be
+   used in advertising or otherwise to promote the sale, use or other dealings
+   in this Software without prior written authorization from Robert M Supnik.
+
+   Portions of this module (specifically, the convert floating to integer
+   routine and the square root routine) are a derivative work from SoftFloat,
+   written by John Hauser.  SoftFloat includes the following license terms:
+
+   Written by John R. Hauser.  This work was made possible in part by the
+   International Computer Science Institute, located at Suite 600, 1947 Center
+   Street, Berkeley, California 94704.  Funding was partially provided by the
+   National Science Foundation under grant MIP-9311980.  The original version
+   of this code was written as part of a project to build a fixed-point vector
+   processor in collaboration with the University of California at Berkeley,
+   overseen by Profs. Nelson Morgan and John Wawrzynek.  More information
+   is available through the Web page 'http://www.cs.berkeley.edu/~jhauser/
+   arithmetic/SoftFloat.html'.
+
+   THIS SOFTWARE IS DISTRIBUTED AS IS, FOR FREE.  Although reasonable effort has
+   been made to avoid it, THIS SOFTWARE MAY CONTAIN FAULTS THAT WILL AT TIMES
+   RESULT IN INCORRECT BEHAVIOR.  USE OF THIS SOFTWARE IS RESTRICTED TO PERSONS
+   AND ORGANIZATIONS WHO CAN AND WILL TAKE FULL RESPONSIBILITY FOR ALL LOSSES,
+   COSTS, OR OTHER PROBLEMS THEY INCUR DUE TO THE SOFTWARE, AND WHO FURTHERMORE
+   EFFECTIVELY INDEMNIFY JOHN HAUSER AND THE INTERNATIONAL COMPUTER SCIENCE
+   INSTITUTE (possibly via similar legal warning) AGAINST ALL LOSSES, COSTS, OR
+   OTHER PROBLEMS INCURRED BY THEIR CUSTOMERS AND CLIENTS DUE TO THE SOFTWARE.
+
+   Derivative works are acceptable, even for commercial purposes, so long as
+   (1) the source code for the derivative work includes prominent notice that
+   the work is derivative, and (2) the source code includes prominent notice with
+   these four paragraphs for those parts of this code that are retained.
+*/
 
 /**
  * \file

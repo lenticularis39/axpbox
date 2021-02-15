@@ -697,7 +697,11 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
 
       // Update time
       time(&ltime);
-      gmtime_s(&stime, &ltime);
+#ifdef _WIN32
+      localtime_s(&stime, &ltime);
+#else
+      localtime_s(&ltime, &stime);
+#endif
       if (state.toy_stored_data[RTC_REG_B] & RTC_DM) {
         // binary
         state.toy_stored_data[0] = (u8)(stime.tm_sec);

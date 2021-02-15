@@ -459,7 +459,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " r%d, ", REG_1 & 31);                       \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (ins & 0x1000)                                                          \
-      sprintf(dbg_strptr, " PRIx64 "H", V_2);                                       \
+      sprintf(dbg_strptr, "%02" PRIx64 "H", V_2);                              \
     else                                                                       \
       sprintf(dbg_strptr, "r%d", REG_2 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
@@ -533,7 +533,7 @@ void handle_debug_string(char *s);
     sprintf(dbg_strptr, #mnemonic " ");                                        \
     dbg_strptr += strlen(dbg_strptr);                                          \
     if (ins & 0x1000)                                                          \
-      sprintf(dbg_strptr, " PRIx64 "H", V_2);                                       \
+      sprintf(dbg_strptr, "%02" PRIx64 "H", V_2);                              \
     else                                                                       \
       sprintf(dbg_strptr, "r%d", REG_2 & 31);                                  \
     dbg_strptr += strlen(dbg_strptr);                                          \
