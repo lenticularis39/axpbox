@@ -597,7 +597,7 @@ struct tm CAliM1543C::get_time() {
   // Convert POSIX time to date
   if (timebase == "local") {
 #ifdef _WIN32
-    localtime_s(&time, &time_raw);
+    localtime_s(&time_out, &time_raw);
 #else
     localtime_s(&time_raw, &time_out);
 #endif
