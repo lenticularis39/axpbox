@@ -214,6 +214,8 @@ private:
   CMutex *myRegLock;
   bool StopThread;
 
+  struct tm get_time();
+
   // REGISTER 61 (NMI)
   u8 reg_61_read();
   void reg_61_write(u8 data);
