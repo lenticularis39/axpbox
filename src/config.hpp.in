@@ -46,6 +46,9 @@
 /* Define to 1 if you have the `ftello64' function. */
 #cmakedefine HAVE_FTELLO64
 
+/* Define to 1 if you have the `gmtime_s' function. */
+#cmakedefine HAVE_GMTIME_S
+
 /* Define to 1 if you have the `localtime_s' function. */
 #cmakedefine HAVE_LOCALTIME_S
 

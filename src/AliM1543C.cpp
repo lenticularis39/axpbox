@@ -497,7 +497,7 @@ void CAliM1543C::start_threads() {
   if (!myThread) {
     printf(" ali");
     StopThread = false;
-    myThread = std::make_unique<std::thread>([this](){ this->run(); });
+    myThread = std::make_unique<std::thread>([this]() { this->run(); });
   }
 }
 
@@ -518,6 +518,113 @@ CAliM1543C::~CAliM1543C() {
 
   if (lpt)
     fclose(lpt);
+}
+
+/**
+ * Calculates VM time based on the configuration specified in the configuration
+ * file.
+ * @return The time.
+ */
+struct tm CAliM1543C::get_time() {
+  struct tm time_out;
+  time_t time_raw;
+
+  // Timezone setting from configuration file
+  std::string timezone{myCfg->get_text_value("timezone", "local")};
+
+  // Time base (local or utc)
+  std::string timebase;
+
+  // Time offset
+  bool offset_present = false;
+  long offset;
+
+  // Get raw time
+  time(&time_raw);
+
+  // Set time base
+  if (timezone.rfind("local") == 0) {
+    timebase = "local";
+  } else if (timezone.rfind("utc") == 0) {
+    timebase = "utc";
+  } else {
+    FAILURE_1(Configuration, "Invalid timezone %s", timezone.c_str());
+  }
+
+  // Characters remaining after time base
+  int remaining_chars = timezone.length() - timebase.length();
+
+  if (remaining_chars > 0 &&
+      timezone.at(timezone.length() - remaining_chars) == '+') {
+    // An offset is included in the timezone
+    offset_present = true;
+    sscanf(timezone.c_str() + timezone.length() - remaining_chars + 1, "%ld",
+           &offset);
+    remaining_chars -= std::to_string(offset).length() + 1;
+
+    if (remaining_chars != 1) {
+      // Offset type always has one character
+      FAILURE_1(Configuration, "Invalid timezone %s", timezone.c_str());
+    }
+  } else if (remaining_chars > 0) {
+    FAILURE_1(Configuration, "Invalid timezone %s", timezone.c_str());
+  }
+
+  if (offset_present) {
+    // Apply POSIX time offset (seconds, minutes, hours, days)
+    switch (timezone.at(timezone.length() - 1)) {
+    case 's':
+      time_raw += offset;
+      break;
+    case 'm':
+      time_raw += offset * 60;
+      break;
+    case 'h':
+      time_raw += offset * 3600;
+      break;
+    case 'd':
+      time_raw += offset * 86400;
+      break;
+    case 'M':
+    case 'y':
+      break;
+    default:
+      FAILURE_1(Configuration, "Invalid timezone offset type %c",
+                timezone.at(timezone.length() - 1));
+    }
+  }
+
+  // Convert POSIX time to date
+  if (timebase == "local") {
+#ifdef _WIN32
+    localtime_s(&time, &time_raw);
+#else
+    localtime_s(&time_raw, &time_out);
+#endif
+  } else if (timebase == "utc") {
+    gmtime_s(&time_out, &time_raw);
+  } else {
+    // This shouldn't happen
+    FAILURE_1(Configuration, "Invalid timezone %s", timezone.c_str());
+  }
+
+  if (offset_present) {
+    // Apply date offset (months, years)
+    switch (timezone.at(timezone.length() - 1)) {
+    case 'M':
+      time_out.tm_year += offset / 12;
+      time_out.tm_mon += offset % 12;
+      break;
+    case 'y':
+      time_out.tm_year += offset;
+      break;
+    }
+
+    // Fix day of week
+    mktime(&time_out);
+  }
+
+  return time_out;
 }
 
 /**
@@ -680,7 +787,6 @@ u8 CAliM1543C::toy_read(u32 address) {
  * clock values.
  **/
 void CAliM1543C::toy_write(u32 address, u8 data) {
-  time_t ltime;
   struct tm stime;
   static long read_count = 0;
   static long hold_count = 0;
@@ -694,14 +800,9 @@ void CAliM1543C::toy_write(u32 address, u8 data) {
     if ((data & 0x7f) < 14) {
       // Assign VRT (valid RAM and time) bit
       state.toy_stored_data[RTC_REG_D] = RTC_VRT;
-
       // Update time
-      time(&ltime);
-#ifdef _WIN32
-      localtime_s(&stime, &ltime);
-#else
-      localtime_s(&ltime, &stime);
-#endif
+      stime = get_time();
+
       if (state.toy_stored_data[RTC_REG_B] & RTC_DM) {
         // binary
         state.toy_stored_data[0] = (u8)(stime.tm_sec);

@@ -248,6 +248,14 @@
 #include <ctype.h>
 #endif
 
+#if !defined(HAVE_GMTIME_S)
+inline void gmtime_s(struct tm *t1, time_t *t2) {
+  struct tm *t3;
+  t3 = gmtime(t2);
+  memcpy(t1, t3, sizeof(struct tm));
+}
+#endif
+
 #if !defined(HAVE_LOCALTIME_S)
 #ifdef _WIN32
 inline struct tm *localtime_s(struct tm *buf, time_t *timer)
