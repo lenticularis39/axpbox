@@ -1446,7 +1446,7 @@ int CTraceEngine::parse(char command[100][100]) {
             return 0;
           }
 
-          printf("%%IDB-I-BRKSET: Breakpoint set when data is read at %016" LL
+          printf("%%IDB-I-BRKSET: Breakpoint set when data is read at %016" PRIx64
                  "x.\n",
                  iBreakPoint);
           bBreakPoint = true;
@@ -1461,7 +1461,7 @@ int CTraceEngine::parse(char command[100][100]) {
           }
 
           printf(
-              "%%IDB-I-BRKSET: Breakpoint set when data is written at %016" LL
+              "%%IDB-I-BRKSET: Breakpoint set when data is written at %016" PRIx64
               "x.\n",
               iBreakPoint);
           bBreakPoint = true;
