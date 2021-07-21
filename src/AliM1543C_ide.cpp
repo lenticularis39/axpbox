@@ -2155,8 +2155,10 @@ void CAliM1543C_ide::execute(int index) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         SEL_PER_DRIVE(index).multiple_size = SEL_REGISTERS(index).sector_count;
+#ifdef DEBUG_IDE_MULTIPLE
         printf("Set multiple mode: sector_count = %d\n",
                SEL_REGISTERS(index).sector_count);
+#endif
         SEL_STATUS(index).busy = false;
         SEL_STATUS(index).drive_ready = true;
         SEL_STATUS(index).fault = false;
