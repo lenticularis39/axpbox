@@ -19,7 +19,7 @@ This creates a file named es40.cfg, which you can now modify (the generator UI d
 axpbox run
 ```
 
-Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wiki/OpenVMS-installation-guide) for information to get OpenVMS installed in the emulator.
+Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wiki/OpenVMS-installation-guide) for information to get OpenVMS installed in the emulator. A guide for NetBSD is [also available on the Wiki](https://github.com/lenticularis39/axpbox/wiki/NetBSD-9.2-install-guide)
 
 ## Changes in comparison with es40
 
