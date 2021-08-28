@@ -224,6 +224,8 @@
 #include "System.hpp"
 #include "SystemComponent.hpp"
 #include "cpu_defs.hpp"
+#include <list>
+#include <memory>
 
 /// Number of entries in the Instruction Cache
 #define ICACHE_ENTRIES 1024
@@ -521,10 +523,9 @@ private:
       u64 address;                /**< Address of first instruction */
       u64 p_address;              /**< Physical address of first instruction */
       bool asm_bit;               /**< Address Space Match bit */
-      bool valid;                 /**< Valid cache entry */
-    } icache[ICACHE_ENTRIES];     /**< Instruction cache entries [HRM p 2-11] */
-    int next_icache;              /**< Number of next cache entry to use */
-    int last_found_icache;        /**< Number of last cache entry found */
+    };
+
+    std::list<std::unique_ptr<SICache>> icache;
 
     /**
      * \brief Translation Buffer Entry.
@@ -584,17 +585,7 @@ private:
  **/
 inline void CAlphaCPU::flush_icache() {
   if (icache_enabled) {
-
-    //  memset(state.icache,0,sizeof(state.icache));
-    int i;
-    for (i = 0; i < ICACHE_ENTRIES; i++) {
-      state.icache[i].valid = false;
-
-      //    state.icache[i].asm_bit = true;
-    }
-
-    state.next_icache = 0;
-    state.last_found_icache = 0;
+    state.icache.clear();
   }
 }
 
@@ -603,10 +594,16 @@ inline void CAlphaCPU::flush_icache() {
  **/
 inline void CAlphaCPU::flush_icache_asm() {
   if (icache_enabled) {
-    int i;
-    for (i = 0; i < ICACHE_ENTRIES; i++)
-      if (!state.icache[i].asm_bit)
-        state.icache[i].valid = false;
+    for (
+        auto iCacheIterator = state.icache.begin();
+        iCacheIterator != state.icache.end();) {
+
+      if (!iCacheIterator->get()->asm_bit) {
+        iCacheIterator = state.icache.erase(iCacheIterator);
+      } else {
+        iCacheIterator++;
+      }
+    }
   }
 }
 
@@ -640,37 +637,32 @@ inline void CAlphaCPU::set_PAL_BASE(u64 pb) {
  * remain in the cache.
  **/
 inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
-  int i = state.last_found_icache;
   u64 v_a;
   u64 p_a;
   int result;
   bool asm_bit;
 
   if (icache_enabled) {
-    if (state.icache[i].valid &&
-        (state.icache[i].asn == state.asn || state.icache[i].asm_bit) &&
-        state.icache[i].address == (address & ICACHE_MATCH_MASK)) {
-      *data =
-          endian_32(state.icache[i].data[(address >> 2) & ICACHE_INDEX_MASK]);
-#ifdef IDB
-      current_pc_physical =
-          state.icache[i].p_address + (address & ICACHE_BYTE_MASK);
-#endif
-      return 0;
-    }
 
-    for (i = 0; i < ICACHE_ENTRIES; i++) {
-      if (state.icache[i].valid &&
-          (state.icache[i].asn == state.asn || state.icache[i].asm_bit) &&
-          state.icache[i].address == (address & ICACHE_MATCH_MASK)) {
-        state.last_found_icache = i;
-        *data =
-            endian_32(state.icache[i].data[(address >> 2) & ICACHE_INDEX_MASK]);
+    for (
+      auto iCacheIterator = state.icache.begin();
+      iCacheIterator != state.icache.end();
+      iCacheIterator++) {
 
+      auto& spICacheEntry{ *iCacheIterator };
+
+      if ((spICacheEntry->asn == state.asn || spICacheEntry->asm_bit) &&
+          spICacheEntry->address == (address & ICACHE_MATCH_MASK)) {
+
+        *data = endian_32(spICacheEntry->data[(address >> 2) & ICACHE_INDEX_MASK]);
 #ifdef IDB
-        current_pc_physical =
-            state.icache[i].p_address + (address & ICACHE_BYTE_MASK);
+        current_pc_physical = spICacheEntry->p_address + (address & ICACHE_BYTE_MASK);
 #endif
+        if (iCacheIterator != state.icache.begin()) {
+          state.icache.push_front(std::move(spICacheEntry));
+          state.icache.erase(iCacheIterator);
+        }
+
         return 0;
       }
     }
@@ -686,26 +678,26 @@ inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
         return result;
     }
 
-    memcpy(state.icache[state.next_icache].data, cSystem->PtrToMem(p_a),
-           ICACHE_LINE_SIZE * 4);
+    auto spNewICacheEntry{ std::make_unique<SCPU_state::SICache>() };
 
-    state.icache[state.next_icache].valid = true;
-    state.icache[state.next_icache].asn = state.asn;
-    state.icache[state.next_icache].asm_bit = asm_bit;
-    state.icache[state.next_icache].address = address & ICACHE_MATCH_MASK;
-    state.icache[state.next_icache].p_address = p_a;
+    memcpy(spNewICacheEntry->data, cSystem->PtrToMem(p_a), sizeof(spNewICacheEntry->data));
 
-    *data = endian_32(state.icache[state.next_icache]
-                          .data[(address >> 2) & ICACHE_INDEX_MASK]);
+    spNewICacheEntry->asn = state.asn;
+    spNewICacheEntry->asm_bit = asm_bit;
+    spNewICacheEntry->address = address & ICACHE_MATCH_MASK;
+    spNewICacheEntry->p_address = p_a;
 
+    *data = endian_32(spNewICacheEntry->data[(address >> 2) & ICACHE_INDEX_MASK]);
 #ifdef IDB
-    current_pc_physical = state.icache[state.next_icache].p_address +
-                          (address & ICACHE_BYTE_MASK);
+    current_pc_physical = spNewICacheEntry->p_address + (address & ICACHE_BYTE_MASK);
 #endif
-    state.last_found_icache = state.next_icache;
-    state.next_icache++;
-    if (state.next_icache == ICACHE_ENTRIES)
-      state.next_icache = 0;
+
+    state.icache.push_front(std::move(spNewICacheEntry));
+
+    if (state.icache.size() > ICACHE_ENTRIES) {
+      state.icache.pop_back();
+    }
+
     return 0;
   }
 

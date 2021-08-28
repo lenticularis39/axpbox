@@ -392,7 +392,7 @@ CAlphaCPU::CAlphaCPU(CConfigurator *cfg, CSystem *system)
  * Initialize the CPU.
  **/
 void CAlphaCPU::init() {
-  memset(&state, 0, sizeof(state));
+  state = {};
 
   cpu_hz = myCfg->get_num_value("speed", true, 500000000);
 
