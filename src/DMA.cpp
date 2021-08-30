@@ -26,42 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the code for the emulated DMA controller.
- *
- * $Id: DMA.cpp,v 1.9 2008/04/29 09:24:52 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             29-APR-2008
- *      Removed double function bodies. (patch issue)
- *
- * X-1.8        Brian Wheeler                                   29-APR-2008
- *      Fixed floppy disk implementation.
- *
- * X-1.7        Brian Wheeler                                   29-APR-2008
- *      DMA now supports floppy device.
- *
- * X-1.6        Brian Wheeler                                   18-APR-2008
- *      Rewrote DMA code to make it ready for floppy support.
- *
- * X-1.5        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.4        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.3        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.2        Brian Wheeler                                   26-FEB-2008
- *      Debugging statements conditionalized.
- *
- * X-1.1        Camiel Vanderhoeven                             26-FEB-2008
- *      Created. Contains code previously found in AliM1543C.cpp
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #include "DMA.hpp"
 #include "AliM1543C.hpp"
 #include "PCIDevice.hpp"

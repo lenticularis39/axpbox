@@ -26,35 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor control instructions.
- * Based on ARM chapter 4.3
- *
- * $Id: cpu_control.h,v 1.7 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.6        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.5        Camiel Vanderhoeven                             30-JAN-2008
- *      Always use set_pc or add_pc to change the program counter.
- *
- * X-1.4        Camiel Vanderhoeven                             30-JAN-2008
- *      Remember number of instructions left in current memory page, so
- *      that the translation-buffer doens't need to be consulted on every
- *      instruction fetch when the Icache is disabled.
- *
- * X-1.3        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- **/
 #define DO_BEQ                                                                 \
   if (!state.r[REG_1])                                                         \
     add_pc(DISP_21 * 4);

@@ -27,16 +27,6 @@
  */
 
 /**
- * \file
- * NumberQuestion class for Configuration file creator.
- *
- * $Id: NumberQuestion.h,v 1.1 2008/03/28 21:56:58 iamcamiel Exp $
- *
- * X-1.1        Camiel Vanderhoeven                             28-MAR-2008
- *      File created.
- **/
-
-/**
  * Convert an integer to a string.
  **/
 inline string i2s(int x) {

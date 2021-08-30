@@ -52,47 +52,6 @@
    in this Software without prior written authorization from Robert M Supnik.
 */
 
-/**
- * \file
- * Contains VAX floating point code for the Alpha CPU.
- *
- * $Id: AlphaCPU_vaxfloat.cpp,v 1.11 2008/03/14 15:30:50 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.8        Camiel Vanderhoeven                             05-FEB-2008
- *      Bug description added.
- *
- * X-1.7        Camiel Vanderhoeven                             28-JAN-2008
- *      Better floating-point exception handling.
- *
- * X-1.6        Camiel Vanderhoeven                             27-JAN-2008
- *      Comments.
- *
- * X-1.5        Camiel Vanderhoeven                             27-JAN-2008
- *      Minor floating-point improvements.
- *
- * X-1.4        Camiel Vanderhoeven                             26-JAN-2008
- *      Bugfix in vax_stf.
- *
- * X-1.3        Camiel Vanderhoeven                             26-JAN-2008
- *      Made IDB compile again.
- *
- * X-1.2        Camiel Vanderhoeven                             22-JAN-2008
- *      Minor cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             21-JAN-2008
- *      File created. Contains code based upon the SIMH Alpha pre-
- *      implementation, which is Copyright (c) 2003, Robert M Supnik.
- *
- * \bug The new floating point code has some unidentified problems. The
- * OpenVMS installation routine fails with this new code. For now, the old
- * floating point code has been restored, and the new floating-point code
- * is used only when HAVE_NEW_FP has been defined. The new code should be
- * fixed, so we can take advantage of floating point exceptions.
- **/
 #include "AlphaCPU.hpp"
 #include "StdAfx.hpp"
 #include "cpu_debug.hpp"

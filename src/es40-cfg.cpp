@@ -26,34 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Configuration file creator.
- *
- * $Id: es40-cfg.cpp,v 1.8 2008/05/04 11:45:11 iamcamiel Exp $
- *
- * X-1.7        Camiel Vanderhoeven                             29-APR-2008
- *      Added floppy configuration.
- *
- * X-1.6        Camiel Vanderhoeven                             29-MAR-2008
- *      Replaced SDL with sdl.
- *
- * X-1.5        Camiel Vanderhoeven                             29-MAR-2008
- *      Fix VGA console value.
- *
- * X-1.4        Camiel Vanderhoeven                             29-MAR-2008
- *      Fill in NIC section.
- *
- * X-1.3        Camiel Vanderhoeven                             28-MAR-2008
- *      Fixed CD-ROM question behaviour.
- *
- * X-1.2        Camiel Vanderhoeven                             28-MAR-2008
- *      Properly capitalized "StdAfx.h".
- *
- * X-1.1        Camiel Vanderhoeven                             28-MAR-2008
- *      File created.
- **/
-
 #include "StdAfx.hpp"
 
 // C++ includes

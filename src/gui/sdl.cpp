@@ -29,50 +29,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains the code for the bx_sdl_gui_c class used for interfacing with
- * SDL.
- *
- * $Id: sdl.cpp,v 1.18 2008/04/10 12:32:25 iamcamiel Exp $
- *
- * X-1.18       Martin Borgman                                  10-APR-2008
- *	    Handle SDL support on OS X through OS_X/SDLMain.m.
- *
- * X-1.15       Camiel Vanderhoeven                             29-FEB-2008
- *      Comments
- *
- * X-1.14       Camiel Vanderhoeven                             12-FEB-2008
- *      Moved keyboard code into it's own class (CKeyboard)
- *
- * X-1.13       Camiel Vanderhoeven                             22-JAN-2008
- *      Minor cleanups.
- *
- * X-1.12       Fang Zhe                                        05-JAN-2008
- *      Last patch was applied incompletely.
- *
- * X-1.11       Fang Zhe                                        04-JAN-2008
- *      Improved compatibility with Apple OS X; keyboard works now.
- *
- * X-1.10       Fang Zhe                                        03-JAN-2008
- *      Compatibility with Apple OS X.
- *
- * X-1.9        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.4        Camiel Vanderhoeven                             10-DEC-2007
- *      Use Configurator.
- *
- * X-1.3        Camiel Vanderhoeven                             7-DEC-2007
- *      Made keyboard messages conditional.
- *
- * X-1.2        Camiel Vanderhoeven                             7-DEC-2007
- *      Code cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #include "../StdAfx.hpp"
 
 #if defined(HAVE_SDL)

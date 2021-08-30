@@ -26,61 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code to use a RAM disk.
- *
- * $Id: DiskRam.cpp,v 1.18 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.17       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.16       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.15       Camiel Vanderhoeven                             02-MAR-2008
- *      Natural way to specify large numeric values ("10M") in the config file.
- *
- * X-1.14       Camiel Vanderhoeven                             13-JAN-2008
- *      Use determine_layout in stead of calc_cylinders.
- *
- * X-1.12       Camiel Vanderhoeven                             09-JAN-2008
- *      Save disk state to state file.
- *
- * X-1.11       Camiel Vanderhoeven                             06-JAN-2008
- *      Set default blocksize to 2048 for cd-rom devices.
- *
- * X-1.10       Camiel Vanderhoeven                             06-JAN-2008
- *      Support changing the block size (required for SCSI, ATAPI).
- *
- * X-1.9        Camiel Vanderhoeven                             04-JAN-2008
- *      64-bit file I/O.
- *
- * X-1.8        Camiel Vanderhoeven                             02-JAN-2008
- *      Cleanup.
- *
- * X-1.7        Camiel Vanderhoeven                             28-DEC-2007
- *      Throw exceptions rather than just exiting when errors occur.
- *
- * X-1.6        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.5        Camiel Vanderhoeven                             18-DEC-2007
- *      Byte-sized transfers for SCSI controller.
- *
- * X-1.4        Brian wheeler                                   17-DEC-2007
- *      Changed last cylinder number.
- *
- * X-1.3        Brian Wheeler                                   16-DEC-2007
- *      Fixed case of StdAfx.h.
- *
- * X-1.2        Camiel Vanderhoeven                             14-DEC-2007
- *      Free memory malloc'ed at destruction.
- *
- * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
- *      Initial version in CVS.
- **/
 #include "DiskRam.hpp"
 #include "StdAfx.hpp"
 

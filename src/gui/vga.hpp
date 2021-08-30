@@ -31,24 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Definitions for VGA cards.
- *
- * \todo Split this out for the different VGA cards.
- *
- * $Id: vga.h,v 1.5 2008/03/14 15:31:29 iamcamiel Exp $
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Camiel Vanderhoeven                             7-DEC-2007
- *      Code cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #ifndef BX_IODEV_VGA_H
 #define BX_IODEV_VGA_H
 

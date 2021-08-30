@@ -26,26 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the code for the emulated Ali M1543C IDE chipset part.
- *
- * X-1.5        Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.4        Brian wheeler                                   18-FEB-2008
- *      Implemented HCI register space.
- *
- * X-1.3        Camiel Vanderhoeven                             30-DEC-2007
- *      Print file id on initialization.
- *
- * X-1.2        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS; this part was split off from the CAliM1543C
- *      class.
- **/
 #include "AliM1543C_usb.hpp"
 #include "StdAfx.hpp"
 #include "System.hpp"

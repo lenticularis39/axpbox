@@ -22,6 +22,7 @@
  * and receiving any modifications you may make to the source code that might
  * serve the general public.
  */
+
 #include "config.hpp"
 #include <cstring>
 #include <iostream>

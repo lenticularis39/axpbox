@@ -31,18 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains definitions for scancode table.
- *
- * $Id: scancodes.h,v 1.4 2008/03/14 15:31:29 iamcamiel Exp $
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #include "gui.hpp"
 #ifndef BX_SCANCODES_H
 #define BX_SCANCODES_H

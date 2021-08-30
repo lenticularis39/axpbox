@@ -26,62 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor integer arithmetic instructions.
- * Based on ARM chapter 4.4.
- *
- * $Id: cpu_arith.h,v 1.15 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.14       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.13       Camiel Vanderhoeven                             28-JAN-2008
- *      Better floating-point exception handling.
- *
- * X-1.12      Camiel Vanderhoeven                             24-JAN-2008
- *      Fixed some overflow-detection issues.
- *
- * X-1.11      Camiel Vanderhoeven                             22-JAN-2008
- *      Also fixed MULQ/V.
- *
- * X-1.10      Camiel Vanderhoeven                             22-JAN-2008
- *      Use RA, RAV style macro's for integer registers; fixed MULQ.
- *
- * X-1.9       Camiel Vanderhoeven                             22-JAN-2008
- *      Implemented missing /V integer instructions.
- *
- * X-1.8       Camiel Vanderhoeven                             21-JAN-2008
- *      Fixed misunderstanding of the INT bit in integer overflow traps.
- *
- * X-1.7       Camiel Vanderhoeven                             18-JAN-2008
- *      Replaced sext_64 inlines with sext_u64_<bits> inlines for
- *      performance reasons (thanks to David Hittner for spotting this!);
- *
- * X-1.6        David Hittner                                   16-JAN-2008
- *      Added ADDL/V instruction
- *
- * X-1.5        Camiel Vanderhoeven                             2-DEC-2007
- *      Use sext_64 inline.
- *
- * X-1.4        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.3        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.2        Camiel Vanderhoeven                             18-MAR-2007
- *      Bugfix in CTLZ and CTTZ instructions. Fixes the INCON_SCHED
- *      bugcheck (bug # 1680064).
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
-
 /* comparison */
 #define DO_CMPEQ RCV = (RAV == RBV) ? 1 : 0;
 #define DO_CMPLT RCV = ((s64)RAV < (s64)RBV) ? 1 : 0;

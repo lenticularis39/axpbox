@@ -26,46 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the code for the emulated Keyboard and mouse devices and controller.
- *
- * $Id: Keyboard.cpp,v 1.10 2008/05/31 15:47:09 iamcamiel Exp $
- *
- * X-1.10       Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.9        Camiel Vanderhoeven                             16-MAR-2008
- *      Fixed threading problems with SDL (I hope).
- *
- * X-1.8        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.7        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.6        Camiel Vanderhoeven                             13-MAR-2008
- *      Create init(), start_threads() and stop_threads() functions.
- *
- * X-1.5        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.4        Brian Wheeler                                   29-FEB-2008
- *      ACK recognized, but unhandled, keyboard commands.
- *
- * X-1.3        Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.2        David Leonard                                   20-FEB-2008
- *      Avoid 'Xlib: unexpected async reply' errors on Linux/Unix/BSD's by
- *      adding some thread interlocking.
- *
- * X-1.1        Camiel Vanderhoeven                             12-FEB-2008
- *      Created. Contains code previously found in AliM1543C.cpp
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #include "Keyboard.hpp"
 #include "AliM1543C.hpp"
 #include "StdAfx.hpp"

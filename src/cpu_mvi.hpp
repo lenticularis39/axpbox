@@ -26,28 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor MVI (multimedia) instructions.
- *
- * $Id: cpu_mvi.h,v 1.5 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.4        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.3        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #define DO_MINUB8                                                              \
   temp_64 = 0;                                                                 \
   temp_64_1 = state.r[REG_1];                                                  \

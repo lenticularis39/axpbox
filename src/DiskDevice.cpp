@@ -26,34 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code to use a raw device as a disk image.
- *
- * $Id: DiskDevice.cpp,v 1.8 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.7        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.6        Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.5        Camiel Vanderhoeven                             13-JAN-2008
- *      Use determine_layout in stead of calc_cylinders.
- *
- * X-1.4        Camiel Vanderhoeven                             09-JAN-2008
- *      Save disk state to state file.
- *
- * X-1.3        Camiel Vanderhoeven                             06-JAN-2008
- *      Set default blocksize to 2048 for cd-rom devices.
- *
- * X-1.2        Camiel Vanderhoeven                             06-JAN-2008
- *      Support changing the block size (required for SCSI, ATAPI).
- *
- * X-1.1        Camiel Vanderhoeven                             05-JAN-2008
- *      Initial version in CVS.
- **/
 #include "DiskDevice.hpp"
 #include "StdAfx.hpp"
 

@@ -29,13 +29,6 @@
  * 2004-2006, Applied Informatics Software Engineering GmbH. and Contributors.
  */
 
-/**
- * $Id: Event_WIN32.cpp,v 1.1 2008/05/31 15:47:21 iamcamiel Exp $
- *
- * X-1.1        Camiel Vanderhoeven                             31-MAY-2008
- *      Initial version for ES40 emulator.
- **/
-
 //
 // Event_WIN32.cpp
 //

@@ -26,41 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated Port 80 device.
- *
- * $Id: Port80.h,v 1.10 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.8        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.7        Camiel Vanderhoeven                             10-DEC-2007
- *      Use configurator.
- *
- * X-1.6        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.5        Camiel Vanderhoeven                             16-FEB-2007
- *      Changed header guards
- *
- * X-1.4        Camiel Vanderhoeven                             12-FEB-2007
- *      Added comments.
- *
- * X-1.3        Camiel Vanderhoeven                             9-FEB-2007
- *      Added comments.
- *
- * X-1.2        Brian Wheeler                                   3-FEB-2007
- *      Formatting.
- *
- * X-1.1        Camiel Vanderhoeven                             19-JAN-2007
- *      Initial version in CVS.
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #if !defined(INCLUDED_PORT80_H)
 #define INCLUDED_PORT80_H
 

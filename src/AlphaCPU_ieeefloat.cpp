@@ -80,38 +80,6 @@
    these four paragraphs for those parts of this code that are retained.
 */
 
-/**
- * \file
- * Contains IEEE floating point code for the Alpha CPU.
- *
- * $Id: AlphaCPU_ieeefloat.cpp,v 1.9 2008/04/02 13:29:02 iamcamiel Exp $
- *
- * X-1.8        Camiel Vanderhoeven                             02-APR-2008
- *      Fixed pointless comparison of U64 value against zero.
- *
- * X-1.7        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.6        Camiel Vanderhoeven                             29-JAN-2008
- *      Comments.
- *
- * X-1.5        Camiel Vanderhoeven                             28-JAN-2008
- *      Better floating-point exception handling.
- *
- * X-1.4        Camiel Vanderhoeven                             27-JAN-2008
- *      Comments.
- *
- * X-1.3        Camiel Vanderhoeven                             27-JAN-2008
- *      Minor floating-point improvements.
- *
- * X-1.2        Camiel Vanderhoeven                             27-JAN-2008
- *      Bugfix in ieee_sts.
- *
- * X-1.1        Camiel Vanderhoeven                             21-JAN-2008
- *      File created. Contains code based upon the SIMH Alpha pre-
- *      implementation, which is Copyright (c) 2003, Robert M Supnik.
- **/
 #include "AlphaCPU.hpp"
 #include "StdAfx.hpp"
 #include "cpu_debug.hpp"

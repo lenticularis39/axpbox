@@ -26,39 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions to use a RAM disk.
- *
- * $Id: DiskRam.h,v 1.10 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             12-JAN-2008
- *      Avoid compiler warnings.
- *
- * X-1.8        Camiel Vanderhoeven                             09-JAN-2008
- *      Save disk state to state file.
- *
- * X-1.7        Camiel Vanderhoeven                             06-JAN-2008
- *      Support changing the block size (required for SCSI, ATAPI).
- *
- * X-1.6        Camiel Vanderhoeven                             04-JAN-2008
- *      64-bit file I/O.
- *
- * X-1.5        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.4        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.3        Camiel Vanderhoeven                             20-DEC-2007
- *      Close files and free memory when the emulator shuts down.
- *
- * X-1.2        Brian Wheeler                                   16-DEC-2007
- *      Corrected some weird uses of size_t...
- *
- * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__DISKRAM_H__)
 #define __DISKRAM_H__
 

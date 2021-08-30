@@ -26,53 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for miscellaneous processor instructions.
- * Based on ARM chapter 4.11.
- *
- * $Id: cpu_misc.h,v 1.13 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.12       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.11       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.10       Camiel Vanderhoeven                             30-JAN-2008
- *      Always use set_pc or add_pc to change the program counter.
- *
- * X-1.9        Camiel Vanderhoeven                             30-JAN-2008
- *      Remember number of instructions left in current memory page, so
- *      that the translation-buffer doens't need to be consulted on every
- *      instruction fetch when the Icache is disabled.
- *
- * X-1.8        Camiel Vanderhoeven                             2-DEC-2007
- *      Use vmspal_call functions.
- *
- * X-1.7        Camiel Vanderhoeven                             16-NOV-2007
- *      Avoid more compiler warnings.
- *
- * X-1.6        Camiel Vanderhoeven                             14-NOV-2007
- *      Bug-fix in CALL_PAL RSCC.
- *
- * X-1.5        Camiel Vanderhoeven                             14-NOV-2007
- *      Implemented most simple PALcode routines in C++.
- *
- * X-1.4        Camiel Vanderhoeven                             12-NOV-2007
- *      Made a start with implementing PALcode routines in C++.
- *
- * X-1.3        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- **/
 #define DO_AMASK state.r[REG_3] = V_2 & ~CPU_AMASK;
 
 #define DO_CALL_PAL                                                            \

@@ -26,63 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the configuration file interpreter.
- *
- * $Id: Configurator.h,v 1.17 2008/04/29 09:52:46 iamcamiel Exp $
- *
- * X-1.17       Camiel Vanderhoeven                             29-APR-2008
- *      Added floppy configuration.
- *
- * X-1.16       Camiel Vanderhoeven                             26-MAR-2008
- *      Fix compiler warnings.
- *
- * X-1.15       Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.14       Camiel Vanderhoeven                             13-MAR-2008
- *      Create init() start_threads() and stop_threads() functions.
- *
- * X-1.13       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.12       Pepito Grillo                                   02-MAR-2008
- *      Avoid compiler warnings.
- *
- * X-1.11       Camiel Vanderhoeven                             02-MAR-2008
- *      Natural way to specify large numeric values ("10M") in the config file.
- *
- * X-1.10       Camiel Vanderhoeven                             26-FEB-2008
- *      Moved DMA code into it's own class (CDMA)
- *
- * X-1.9        Camiel Vanderhoeven                             16-FEB-2008
- *      Added Symbios 53C810 controller.
- *
- * X-1.8        Camiel Vanderhoeven                             20-JAN-2008
- *      Added X11 GUI.
- *
- * X-1.7        Camiel Vanderhoeven                             19-JAN-2008
- *      Added win32 GUI.
- *
- * X-1.6        Camiel Vanderhoeven                             05-JAN-2008
- *      Added CDiskDevice class.
- *
- * X-1.5        Camiel Vanderhoeven                             02-JAN-2008
- *      Better handling of configuration errors.
- *
- * X-1.4        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.3        Camiel Vanderhoeven                             14-DEC-2007
- *      Add support for Symbios SCSI controller.
- *
- * X-1.2        Camiel Vanderhoeven                             12-DEC-2007
- *      Add support for file- and RAM-disk.
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__CONFIGURATOR_H__)
 #define __CONFIGURATOR_H__
 

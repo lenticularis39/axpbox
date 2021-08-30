@@ -39,21 +39,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file
- * Contains definitions for the MII physical interface layer for the
- * emulated DEC 21143 NIC device.
- *
- * $Id: DEC21143_mii.h,v 1.3 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.2        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             14-NOV-2007
- *      Initial version for ES40 emulator.
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #ifndef _DEV_MII_MII_H_
 #define _DEV_MII_MII_H_
 

@@ -26,48 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for emulated S3 Trio 64 Video Card device.
- *
- * $Id: S3Trio64.h,v 1.13 2008/05/31 15:47:11 iamcamiel Exp $
- *
- * X-1.12       Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.11       Camiel Vanderhoeven                             13-MAR-2008
- *      Create init() start_threads() and stop_threads() functions.
- *
- * X-1.10       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.9        Camiel Vanderhoeven                             20-JAN-2008
- *      Added X11 GUI.
- *
- * X-1.8        Camiel Vanderhoeven                             08-JAN-2008
- *      Comments.
- *
- * X-1.7        Camiel Vanderhoeven                             02-JAN-2008
- *      Cleanup.
- *
- * X-1.6        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.5        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.4        Brian Wheeler                                   10-DEC-2007
- *      Added SDL.h.
- *
- * X-1.3        Camiel Vanderhoeven                             10-DEC-2007
- *      Use new base class VGA.
- *
- * X-1.2        Camiel Vanderhoeven/Brian Wheeler               6-DEC-2007
- *      Changed implementation (with thanks to the Bochs project!!)
- *
- * X-1.1        Camiel Vanderhoeven                             1-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(INCLUDED_S3Trio64_H_)
 #define INCLUDED_S3Trio64_H_
 

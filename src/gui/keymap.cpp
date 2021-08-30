@@ -31,32 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains the code for the bx_keymap_c class used for keyboard
- * interfacing with SDL and other device interfaces.
- *
- * $Id: keymap.cpp,v 1.9 2008/03/26 19:19:53 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             26-MAR-2008
- *      Fix compiler warnings.
- *
- * X-1.8        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.4        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.3        Camiel Vanderhoeven                             10-DEC-2007
- *      Use Configurator.
- *
- * X-1.2        Camiel Vanderhoeven                             7-DEC-2007
- *      Code cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #include "keymap.hpp"
 #include "../StdAfx.hpp"
 #include "../System.hpp"

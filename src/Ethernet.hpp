@@ -29,21 +29,6 @@
  * Anders Gavare.  All rights reserved.
  */
 
-/**
- * \file
- * Contains the definitions for the packet queue and other NIC support routines.
- *
- * $Id: Ethernet.h,v 1.3 2008/03/26 19:13:35 iamcamiel Exp $
- *
- * X-1.3        Camiel Vanderhoeven                             26-MAR-2008
- *      Fix compiler warnings.
- *
- * X-1.2        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.1        David Hittner                                   26-FEB-2008
- *      File creation.
- **/
 #if !defined(INCLUDED_ETHERNET_H)
 #define INCLUDED_ETHERNET_H
 

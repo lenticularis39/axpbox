@@ -29,13 +29,6 @@
  * 2004-2006, Applied Informatics Software Engineering GmbH. and Contributors.
  */
 
-/**
- * $Id: Semaphore_WIN32.cpp,v 1.1 2008/05/31 15:47:28 iamcamiel Exp $
- *
- * X-1.1        Camiel Vanderhoeven                             31-MAY-2008
- *      Initial version for ES40 emulator.
- **/
-
 //
 // Semaphore_WIN32.cpp
 //

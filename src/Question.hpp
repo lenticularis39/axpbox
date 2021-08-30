@@ -26,15 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Question class for Configuration file creator.
- *
- * $Id: Question.h,v 1.1 2008/03/28 21:56:59 iamcamiel Exp $
- *
- * X-1.1        Camiel Vanderhoeven                             28-MAR-2008
- *      File created.
- **/
 #if !defined(INCLUDED_QUESTION_H)
 #define INCLUDED_QUESTION_H
 

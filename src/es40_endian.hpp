@@ -25,41 +25,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains macro's for byte-swapping on big-endian host architectures.
- *
- * $Id: es40_endian.h,v 1.7 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.6        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.5        Camiel Vanderhoeven                             04-JAN-2008
- *      Added swap_xx macro's for use in places where bytes need to be
- *      swapped regardless of endianess.
- *
- * X-1.4        Camiel Vanderhoeven                             03-JAN-2008
- *      Attempt to make PCI base device endianess-correct.
- *
- * X-1.3        Fang Zhe                                        02-JAN-2008
- *      Recognize endianess on more architectures.
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Brian Wheeler                                   8-MAR-2007
- *      Renamed this file from endian.h to es40_endian.h to avoid conflicts
- *      with system-include files.
- *
- * X-A1-1.2     Camiel Vanderhoeven                             7-MAR-2007
- *      Properly handle OpenVMS
- *
- * X-A1-1.1     Camiel Vanderhoeven                             1-MAR-2007
- *      File created to support the Solaris/SPARC port.
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #if !defined(INCLUDED_ENDIAN_H)
 #define INCLUDED_ENDIAN_H
 
