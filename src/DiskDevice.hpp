@@ -26,21 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions to use a raw device as a disk image.
- *
- * $Id: DiskDevice.h,v 1.4 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.3        Camiel Vanderhoeven                             09-JAN-2008
- *      Save disk state to state file.
- *
- * X-1.2        Camiel Vanderhoeven                             06-JAN-2008
- *      Support changing the block size (required for SCSI, ATAPI).
- *
- * X-1.1        Camiel Vanderhoeven                             05-JAN-2008
- *      Initial version in CVS.
- **/
 #if !defined(__DISKDEV_H__)
 #define __DISKDEV_H__
 

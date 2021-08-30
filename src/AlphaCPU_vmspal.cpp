@@ -26,60 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains routines that replace parts of the VMS PALcode for the emulated
- * DecChip 21264CB EV68 Alpha processor. Based on disassembly of original VMS
- * PALcode, HRM, and OpenVMS AXP Internals and Data Structures.
- *
- * $Id: AlphaCPU_vmspal.cpp,v 1.15 2008/03/14 15:30:50 iamcamiel Exp $
- *
- * X-1.14       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.13       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.12       Camiel Vanderhoeven                             08-FEB-2008
- *      Show originating device name on memory errors.
- *
- * X-1.11       Camiel Vanderhoeven                             01-FEB-2008
- *      Avoid unnecessary shift-operations to calculate constant values.
- *
- * X-1.10       Camiel Vanderhoeven                             30-JAN-2008
- *      Always use set_pc or add_pc to change the program counter.
- *
- * X-1.9        Camiel Vanderhoeven                             30-JAN-2008
- *      Remember number of instructions left in current memory page, so
- *      that the translation-buffer doens't need to be consulted on every
- *      instruction fetch when the Icache is disabled.
- *
- * X-1.8        Camiel Vanderhoeven                             27-JAN-2008
- *      Comments.
- *
- * X-1.7        Camiel Vanderhoeven                             21-JAN-2008
- *      Fixed typo.
- *
- * X-1.6        Camiel Vanderhoeven                             18-JAN-2008
- *      Replaced sext_64 inlines with sext_u64_<bits> inlines for
- *      performance reasons (thanks to David Hittner for spotting this!);
- *
- * X-1.5        Camiel Vanderhoeven                             08-JAN-2008
- *      Removed last references to IDE disk read SRM replacement.
- *
- * X-1.4        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.3        Camiel Vanderhoeven                             12-DEC-2007
- *      Use disk base class for direct IDE access.
- *
- * X-1.2        Camiel Vanderhoeven                             10-DEC-2007
- *      Use configurator.
- *
- * X-1.1        Camiel Vanderhoeven                             2-DEC-2007
- *      Initial version in CVS.
- **/
 #include "AlphaCPU.hpp"
 #include "StdAfx.hpp"
 

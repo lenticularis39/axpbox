@@ -26,53 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains TCP/IP declarations used by the serial port emulator and lock-step
- * code. Different OS'es need different header files included, and some OS'es
- * miss certain functions or macro's we need. In this file, we try to take
- * away most of these differences.
- *
- * $Id: telnet.h,v 1.12 2008/03/26 19:25:40 iamcamiel Exp $
- *
- * X-1.12       Camiel Vanderhoeven                             26-MAR-2008
- *      Use config.h information.
- *
- * X-1.11       Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.10       Alex                                            20-FEB-2008
- *      GNU compiler support on Windows.
- *
- * X-1.9        Camiel Vanderhoeven                             04-JAN-2008
- *      Comments.
- *
- * X-1.8        Fang Zhe                                        04-JAN-2008
- *      Include sys/socket.h on Apple OS X.
- *
- * X-1.7        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.6        Brian Wheeler                                   1-DEC-2007
- *      Corrected an unsigned/signed issue in inet_aton.
- *
- * X-1.5        Camiel Vanderhoeven                             15-NOV-2007
- *      Replace winsock.h by winsock2.h.
- *
- * X-1.4        Camiel Vanderhoeven                             15-NOV-2007
- *      Added some includes for Linux.
- *
- * X-1.3        Camiel Vanderhoeven                             14-NOV-2007
- *      Added inet_aton.
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Camiel Vanderhoeven                             28-FEB-2007
- *      File created. Code was previously found in Serial.cpp and Serial.h
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #if !defined(INCLUDED_TELNET_H)
 #define INCLUDED_TELNET_H
 

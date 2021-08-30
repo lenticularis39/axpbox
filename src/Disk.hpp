@@ -26,59 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions for the disk base class.
- *
- * $Id: Disk.h,v 1.16 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.15       Camiel Vanderhoeven                             26-FEB-2008
- *      Remove private devid_string.
- *
- * X-1.14       David Leonard                                   20-FEB-2008
- *      Return SYSTEM RESOURCE FAILURE sense if dato/dati buffer size is
- *      exceeded.
- *
- * X-1.13       Camiel Vanderhoeven                             17-FEB-2008
- *      Set up sense data when error occurs.
- *
- * X-1.12       Camiel Vanderhoeven                             17-FEB-2008
- *      Added REQUEST_SENSE scsi command.
- *
- * X-1.11       Camiel Vanderhoeven                             13-JAN-2008
- *      Determine best-fitting C/H/S lay-out.
- *
- * X-1.10       Camiel Vanderhoeven                             12-JAN-2008
- *      Include SCSI engine, because this is common to both SCSI and ATAPI
- *      devices.
- *
- * X-1.9        Camiel Vanderhoeven                             09-JAN-2008
- *      Save disk state to state file.
- *
- * X-1.8        Camiel Vanderhoeven                             06-JAN-2008
- *      Support changing the block size (required for SCSI, ATAPI).
- *
- * X-1.7        Camiel Vanderhoeven                             04-JAN-2008
- *      64-bit file I/O.
- *
- * X-1.6        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.5        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.4        Camiel Vanderhoeven                             20-DEC-2007
- *      Close files and free memory when the emulator shuts down.
- *
- * X-1.3        Camiel Vanderhoeven                             19-DEC-2007
- *      Allow for reporting disk-size in bytes.
- *
- * X-1.2        Camiel Vanderhoeven                             18-DEC-2007
- *      Byte-sized transfers for SCSI controller.
- *
- * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__DISK_H__)
 #define __DISK_H__
 

@@ -26,32 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the PCI Device base class.
- *
- * $Id: PCIDevice.h,v 1.6 2008/04/29 08:42:59 iamcamiel Exp $
- *
- * X-1.6        Brian Wheeler                                   29-APR-2008
- *      Made some protected functions public for the benefit of the floppy
- *      controller.
- *
- * X-1.5        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.4        Camiel Vanderhoeven                             24-JAN-2008
- *      Added do_pci_read and do_pci_write. Thanks to David Hittner for
- *      suggesting this.
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__PCIDEVICE_H__)
 #define __PCIDEVICE_H__
 

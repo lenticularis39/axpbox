@@ -31,43 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains code for the bx_gui_c base class used for interfacing with
- * SDL and other device interfaces.
- *
- * $Id: gui.cpp,v 1.10 2008/03/26 19:19:53 iamcamiel Exp $
- *
- * X-1.10       Camiel Vanderhoeven                             26-MAR-2008
- *      Fix compiler warnings.
- *
- * X-1.9        Camiel Vanderhoeven                             16-MAR-2008
- *      Fixed threading problems with SDL (I hope).
- *
- * X-1.8        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.7        Camiel Vanderhoeven                             11-MAR-2008
- *      Named, debuggable mutexes.
- *
- * X-1.5        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.4        David Leonard                                   20-FEB-2008
- *      Avoid 'Xlib: unexpected async reply' errors on Linux/Unix/BSD's by
- *      adding some thread interlocking.
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Camiel Vanderhoeven                             7-DEC-2007
- *      Code cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
-
 //#define DEBUG_LOCKS
 //#define NO_LOCK_TIMEOUTS
 

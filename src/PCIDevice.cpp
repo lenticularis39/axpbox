@@ -26,65 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the code for the PCI device class.
- *
- * $Id: PCIDevice.cpp,v 1.18 2008/04/02 13:28:29 iamcamiel Exp $
- *
- * X-1.17       Camiel Vanderhoeven                             02-APR-2008
- *      Fixed compiler warnings.
- *
- * X-1.16       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.15       Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.14       Camiel Vanderhoeven                             13-FEB-2008
- *      Added more DEBUG_PCI messages.
- *
- * X-1.13       Camiel Vanderhoeven                             08-FEB-2008
- *      Show originating device name on memory errors.
- *
- * X-1.12       Camiel Vanderhoeven                             06-FEB-2008
- *      Fixed registration of ROM expansion address.
- *
- * X-1.11       Camiel Vanderhoeven                             24-JAN-2008
- *      Added do_pci_read and do_pci_write. Thanks to David Hittner for
- *      suggesting this.
- *
- * X-1.10       Fang Zhe                                        03-JAN-2008
- *      Fixed semicolon error.
- *
- * X-1.9        Camiel Vanderhoeven                             03-JAN-2008
- *      Attempt to make PCI base device endianess-correct.
- *
- * X-1.8        Camiel Vanderhoeven                             29-DEC-2007
- *      Avoid referencing uninitialized data.
- *
- * X-1.7        Camiel Vanderhoeven                             28-DEC-2007
- *      Throw exceptions rather than just exiting when errors occur.
- *
- * X-1.6        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.5        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.4        Camiel Vanderhoeven                             10-DEC-2007
- *      Translate a 64-bit PCI access into 2 32-bit accesses.
- *
- * X-1.3        Brian Wheeler                                   10-DEC-2007
- *      More verbose error reporting.
- *
- * X-1.2        Camiel Vanderhoeven                             10-DEC-2007
- *      Removed some printf's.
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS.
- **/
 #include "PCIDevice.hpp"
 #include "StdAfx.hpp"
 #include "System.hpp"

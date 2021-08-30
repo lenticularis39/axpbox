@@ -29,69 +29,6 @@
  * Anders Gavare.  All rights reserved.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated DEC 21143 NIC device.
- *
- * $Id: DEC21143.h,v 1.18 2008/05/31 15:47:09 iamcamiel Exp $
- *
- * X-1.18       Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.17       Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.16       Camiel Vanderhoeven                             13-MAR-2008
- *      Create init(), start_threads() and stop_threads() functions.
- *
- * X-1.15       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.14       Brian Wheeler                                   29-FEB-2008
- *      Compute SROM checksum. Tru64 needs this.
- *
- * X-1.13       David Hittner                                   26-FEB-2008
- *      Major rewrite. Real internal loopback support, ring queue for
- *      incoming packets, and various other improvements.
- *
- * X-1.12       Camiel Vanderhoeven                             24-JAN-2008
- *      Use new CPCIDevice::do_pci_read and CPCIDevice::do_pci_write.
- *
- * X-1.11       David Hittner                                   04-JAN-2008
- *      MAC address configurable.
- *
- * X-1.10       Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.9        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.8        Camiel Vanderhoeven                             10-DEC-2007
- *      Use configurator.
- *
- * X-1.7        Camiel Vanderhoeven                             2-DEC-2007
- *      Receive network data in a separate thread.
- *
- * X-1.6        Camiel Vanderhoeven                             1-DEC-2007
- *      Moved inclusion of StdAfx.h outside conditional block; necessary
- *      for using precompiled headers in Visual C++.
- *
- * X-1.5        Camiel Vanderhoeven                             17-NOV-2007
- *      Don't define REMOTE before including pcap.h; we want to be
- *      compatible.
- *
- * X-1.4        Camiel Vanderhoeven                             17-NOV-2007
- *      Cleanup.
- *
- * X-1.3        Camiel Vanderhoeven                             16-NOV-2007
- *      BPF filter used for perfect filtering.
- *
- * X-1.2        Camiel Vanderhoeven                             15-NOV-2007
- *      Use pcap for network access.
- *
- * X-1.1        Camiel Vanderhoeven                             14-NOV-2007
- *      Initial version for ES40 emulator.
- **/
 #if !defined(INCLUDED_DEC21143_H_)
 #define INCLUDED_DEC21143_H_
 

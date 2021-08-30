@@ -29,30 +29,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains the definitions for use with bx_..._gui_c classes used for
- * interfacing with SDL and other device interfaces.
- *
- * $Id: plugin.h,v 1.7 2008/03/14 15:31:29 iamcamiel Exp $
- *
- * X-1.5        Camiel Vanderhoeven                             20-JAN-2008
- *      Added X11 GUI.
- *
- * X-1.4        Camiel Vanderhoeven                             19-JAN-2008
- *      Added win32 GUI.
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Camiel Vanderhoeven                             10-DEC-2007
- *      Simplified this for use with ES40.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
-
 /////////////////////////////////////////////////////////////////////////
 //
 // This file provides macros and types needed for plugins.  It is based on

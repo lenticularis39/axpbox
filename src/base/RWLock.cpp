@@ -29,16 +29,6 @@
  * 2004-2006, Applied Informatics Software Engineering GmbH. and Contributors.
  */
 
-/**
- * $Id: RWLock.cpp,v 1.3 2008/06/12 06:58:24 iamcamiel Exp $
- *
- * X-1.2        Caolan McNamara                                 12-JUN-2008
- *      Fixes to build on Fedora 9 / gcc 4.3.0.
- *
- * X-1.1        Camiel Vanderhoeven                             31-MAY-2008
- *      Initial version for ES40 emulator.
- **/
-
 //
 // RWLock.cpp
 //

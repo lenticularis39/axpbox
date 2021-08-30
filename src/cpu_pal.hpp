@@ -26,67 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor PALmode instructions.
- * Based on HRM.
- *
- * $Id: cpu_pal.h,v 1.16 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.15       Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.14       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.13       Camiel Vanderhoeven                             30-JAN-2008
- *      Always use set_pc or add_pc to change the program counter.
- *
- * X-1.12       Camiel Vanderhoeven                             30-JAN-2008
- *      Remember number of instructions left in current memory page, so
- *      that the translation-buffer doens't need to be consulted on every
- *      instruction fetch when the Icache is disabled.
- *
- * X-1.11       Camiel Vanderhoeven                             25-JAN-2008
- *      Trap on unalogned memory access. The previous implementation where
- *      unaligned accesses were silently allowed could go wrong when page
- *      boundaries are crossed.
- *
- * X-1.10       Camiel Vanderhoeven                             18-JAN-2008
- *      Replaced sext_64 inlines with sext_u64_<bits> inlines for
- *      performance reasons (thanks to David Hittner for spotting this!);
- *
- * X-1.9        Camiel Vanderhoeven                             2-DEC-2007
- *      Changed the way translation buffers work, the way interrupts work.
- *
- * X-1.8        Camiel Vanderhoeven                             12-NOV-2007
- *      Fix Software Interrupt behaviour.
- *
- * X-1.7        Camiel Vanderhoeven                             30-OCT-2007
- *      IPR 0x2d identified as M_FIX (Mbox fixed behaviour)
- *
- * X-1.6        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.5        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.4        Camiel Vanderhoeven                             8-MAR-2007
- *      Different argument list for CTranslationBuffer methods, and for
- *      va_form function.
- *
- * X-1.3        Camiel Vanderhoeven                             3-MAR-2007
- *      Put 0x2d in HW_MTPR to get rid of error messages about this unknown
- *      IPR. WE STILL NEED TO FIND OUT WHAT THIS REGISTER DOES.
- *
- * X-1.2        Camiel Vanderhoeven                             22-FEB-2007
- *      Got rid of calls to get_asn.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- **/
 #define DO_HW_MFPR                                                             \
   if ((function & 0xc0) == 0x40) { /* PCTX */                                  \
     state.r[REG_1] = ((u64)state.asn << 39) | ((u64)state.astrr << 9) |        \

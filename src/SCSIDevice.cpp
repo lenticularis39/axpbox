@@ -26,19 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions for the SCSI device base class.
- *
- * $Id: SCSIDevice.cpp,v 1.3 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.2        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.1        Camiel Vanderhoeven                             12-JAN-2008
- *      Initial version in CVS.
- **/
 #include "SCSIDevice.hpp"
 #include "SCSIBus.hpp"
 

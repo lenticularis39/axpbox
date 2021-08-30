@@ -26,28 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions for the disk controller base class.
- *
- * $Id: DiskController.h,v 1.5 2008/04/29 08:03:21 iamcamiel Exp $
- *
- * X-1.5        Camiel Vanderhoeven                             29-APR-2008
- *      CDiskController is no longer a CPCIDevice. devices that are both
- *      should multiple inherit both.
- *
- * X-1.4        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.3        Camiel Vanderhoeven                             12-JAN-2008
- *      Made register_disk void and virtual.
- *
- * X-1.2        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             12-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__DISKCONTROLLER_H__)
 #define __DISKCONTROLLER_H__
 

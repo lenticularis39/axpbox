@@ -26,24 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the VGA base class.
- *
- * $Id: VGA.h,v 1.5 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.4        Camiel Vanderhoeven                             20-JAN-2008
- *      Added X11 GUI.
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Brian Wheeler                                   10-DEC-2007
- *      Made include's case-correct.
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(__VGA_H__)
 #define __VGA_H__
 

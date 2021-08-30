@@ -26,34 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated Keyboard and mouse devices and
- *controller.
- *
- * $Id: Keyboard.h,v 1.6 2008/05/31 15:47:10 iamcamiel Exp $
- *
- * X-1.6        Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.5        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.4        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.3        Camiel Vanderhoeven                             13-MAR-2008
- *      Create init(), start_threads() and stop_threads() functions.
- *
- * X-1.2        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.1        Camiel Vanderhoeven                             12-FEB-2008
- *      Created. Contains code previously found in AliM1543C.h
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #if !defined(INCLUDED_KEYBOARD_H)
 #define INCLUDED_KEYBOARD_H
 

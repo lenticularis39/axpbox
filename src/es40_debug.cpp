@@ -33,25 +33,6 @@
  *  SUCH DAMAGE.
  */
 
-/**
- * \file
- * Contains code for debugging.
- *
- * X-1.4        Camiel Vanderhoeven                             29-DEC-2007
- *      Compileable with older compilers (VC 6.0).
- *
- * X-1.3        Camiel Vanderhoeven                             28-DEC-2007
- *      Throw exceptions rather than just exiting when errors occur.
- *
- * X-1.2        Camiel Vanderhoeven                             15-NOV-2007
- *      Added newline at end to avoid warnings.
- *
- * X-1.1        Camiel Vanderhoeven                             14-NOV-2007
- *      Initial creation.
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
-
 /*****************************************************************************
  *
  *  NOTE:  debug(), fatal(), and debug_indentation() are not re-entrant.

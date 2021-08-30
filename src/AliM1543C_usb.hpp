@@ -26,28 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated Ali M1543C USB chipset part.
- *
- * $Id: AliM1543C_usb.h,v 1.6 2008/03/14 15:30:50 iamcamiel Exp $
- *
- * X-1.5        Brian wheeler                                   18-FEB-2008
- *      Implemented HCI register space.
- *
- * X-1.4        Camiel Vanderhoeven                             08-JAN-2008
- *      Comments.
- *
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.2        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS; this part was split off from the CAliM1543C
- *      class.
- **/
 #if !defined(INCLUDED_ALIM1543C_USB_H_)
 #define INCLUDED_ALIM1543C_USB_H_
 

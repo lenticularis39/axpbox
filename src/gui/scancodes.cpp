@@ -31,20 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains scancodes used to translate host keys to scancodes for the
- * emulated keyboard controller.
- *
- * $Id: scancodes.cpp,v 1.6 2008/03/24 11:58:21 iamcamiel Exp $
- *
- * X-1.2        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #include "../StdAfx.hpp"
 
 //#include "bochs.h"

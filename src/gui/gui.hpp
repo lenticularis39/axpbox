@@ -31,39 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * Contains the definitions for the bx_gui_c base class used for interfacing
- *with SDL and other device interfaces.
- *
- * $Id: gui.h,v 1.9 2008/03/14 15:31:29 iamcamiel Exp $
- *
- * X-1.8        Camiel Vanderhoeven                             11-MAR-2008
- *      Named, debuggable mutexes.
- *
- * X-1.7        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.6        David Leonard                                   20-FEB-2008
- *      Avoid 'Xlib: unexpected async reply' errors on Linux/Unix/BSD's by
- *      adding some thread interlocking.
- *
- * X-1.5        Camiel Vanderhoeven                             20-JAN-2008
- *      Avoid compiler warnings.
- *
- * X-1.4        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.3        Camiel Vanderhoeven                             10-DEC-2007
- *      Use Configurator.
- *
- * X-1.2        Camiel Vanderhoeven                             7-DEC-2007
- *      Code cleanup.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 #ifndef __GUI_H__
 #define __GUI_H__
 

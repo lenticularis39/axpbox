@@ -32,28 +32,6 @@
 
  */
 
-/**
- * \file
- * X-Windows GUI implementation. Allows use of gfx without SDL on Linux.
- *
- * $Id: gui_x11.cpp,v 1.5 2008/03/26 19:19:53 iamcamiel Exp $
- *
- * X-1.5        Camiel Vanderhoeven                             26-MAR-2008
- *      Fix compiler warnings.
- *
- * X-1.4        Pepito Grillo                                   15-MAR-2008
- *      Fixed FAILURE macro
- *
- * X-1.3        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting
- *
- * X-1.2        Camiel Vanderhoeven                             12-FEB-2008
- *      Moved keyboard code into it's own class (CKeyboard)
- *
- * X-1.1        Camiel Vanderhoeven                             20-JAN-2008
- *      Initial version for ES40 emulator.
- *
- **/
 #define XK_PUBLISHING
 #define XK_TECHNICAL
 

@@ -26,41 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated Symbios SCSI controller.
- *
- * $Id: Sym53C810.h,v 1.9 2008/05/31 15:47:14 iamcamiel Exp $
- *
- * X-1.9        Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.8        Camiel Vanderhoeven                             29-APR-2008
- *      CDiskController is no longer a CPCIDevice. devices that are both
- *      should multiple inherit both.
- *
- * X-1.7        Camiel Vanderhoeven                             25-MAR-2008
- *      Separate functions for different instructions, comments.
- *
- * X-1.6        Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.5        Camiel Vanderhoeven                             13-MAR-2008
- *      Create init(), start_threads() and stop_threads() functions.
- *
- * X-1.4       Camiel Vanderhoeven                             11-MAR-2008
- *      Named, debuggable mutexes.
- *
- * X-1.3        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.2        Camiel Vanderhoeven                             17-FEB-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             16-FEB-2008
- *      Created as a spinoff from 53C895 controller, as we couldn't get
- *      that chip to work properly with the OpenVMS driver.
- **/
 #if !defined(INCLUDED_SYM53C810_H_)
 #define INCLUDED_SYM53C810_H_
 

@@ -27,16 +27,6 @@
  */
 
 /**
- * \file
- * Configuration file creator.
- *
- * $Id: ShrinkingChoiceQuestion.h,v 1.1 2008/03/28 21:57:00 iamcamiel Exp $
- *
- * X-1.1        Camiel Vanderhoeven                             28-MAR-2008
- *      File created.
- **/
-
-/**
  * Question class implementing a "Shrinking Choice" question.
  *
  * A shrinking choice question is a multiple choice question

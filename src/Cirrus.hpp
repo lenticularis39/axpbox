@@ -26,53 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains the definitions for the emulated Cirrus CL GD-5434 Video Card
- *device.
- *
- * $Id: Cirrus.h,v 1.13 2008/05/31 15:47:09 iamcamiel Exp $
- *
- * X-1.13       Camiel Vanderhoeven                             31-MAY-2008
- *      Changes to include parts of Poco.
- *
- * X-1.12       Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.11       Camiel Vanderhoeven                             13-MAR-2008
- *      Create init(), start_threads() and stop_threads() functions.
- *
- * X-1.10       Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.9        David Leonard                                   20-FEB-2008
- *      Avoid 'Xlib: unexpected async reply' errors on Linux/Unix/BSD's by
- *      adding some thread interlocking.
- *
- * X-1.8        Camiel Vanderhoeven                             20-JAN-2008
- *      Added X11 GUI.
- *
- * X-1.7        Camiel Vanderhoeven                             08-JAN-2008
- *      Comments.
- *
- * X-1.6        Camiel Vanderhoeven                             02-JAN-2008
- *      Cleanup.
- *
- * X-1.5        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.4        Camiel Vanderhoeven                             17-DEC-2007
- *      SaveState file format 2.1
- *
- * X-1.3        Camiel Vabderhoeven                             11-DEC-2007
- *      Don't claim IO addresses 3d0..3d3, 3d6..3d9 and 3db..3df.
- *
- * X-1.2        Camiel Vabderhoeven                             11-DEC-2007
- *      Don't claim IO addresses 3b0..3b3, 3b6..3b9 and 3bb.
- *
- * X-1.1        Camiel Vanderhoeven                             10-DEC-2007
- *      Initial version in CVS.
- **/
 #if !defined(INCLUDED_Cirrus_H_)
 #define INCLUDED_Cirrus_H_
 

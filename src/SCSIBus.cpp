@@ -26,25 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains definitions for the SCSI bus class.
- *
- * $Id: SCSIBus.cpp,v 1.5 2008/03/14 15:30:51 iamcamiel Exp $
- *
- * X-1.4        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.3        Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.2        Camiel Vanderhoeven                             16-FEB-2008
- *      Owner of the SCSI bus is allowed to re-arbitrate for it.
- *
- * X-1.1        Camiel Vanderhoeven                             12-JAN-2008
- *      Initial version in CVS.
- **/
 #include "SCSIBus.hpp"
 #include "StdAfx.hpp"
 

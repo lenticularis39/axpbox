@@ -26,22 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor VAX compatibility instructions.
- *
- * X-1.3        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.2        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #define DO_RC                                                                  \
   state.r[REG_1] = state.bIntrFlag ? 1 : 0;                                    \
   state.bIntrFlag = false;

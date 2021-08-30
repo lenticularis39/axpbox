@@ -31,33 +31,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-/**
- * \file
- * This file is simply a list of SDL key symbols taken from <SDL/SDL_keysym.h>.
- * The order in this file is not important.  In sdl.cc, DEF_SDL_KEY() is
- * defined as a macro and then it includes this file to fill in all the data in
- * its key mapping table.
- *
- * The symbols, such as SDLK_RETURN, are used for two purposes.  They
- * are converted into a string (by the # operator in processor), which is
- * compared to the host key name in the keymap file.  Also, the value of
- * the symbol is inserted into the key mapping table.  Then the value is
- * compared with the keysym field of each key up/down event as it arrives.
- *
- * If you get undefined symbol errors in this file, it must mean that
- * your SDL library version doesn't define those same SDLK_* symbols in
- * <SDL/SDL_keysym.h>.  You can't fix it with #ifdef SDLK_SYM because
- * they are enums, so you'll just have to comment out the offending line.
- * The list was generated using symbols from SDL 1.2.3.
- *
- * $Id: sdlkeys.h,v 1.4 2008/03/14 15:31:29 iamcamiel Exp $
- * X-1.3        Camiel Vanderhoeven                             02-JAN-2008
- *      Comments.
- *
- * X-1.1        Camiel Vanderhoeven                             6-DEC-2007
- *      Initial version for ES40 emulator.
- *
- **/
 DEF_SDL_KEY(SDLK_UNKNOWN)
 DEF_SDL_KEY(SDLK_FIRST)
 DEF_SDL_KEY(SDLK_BACKSPACE)

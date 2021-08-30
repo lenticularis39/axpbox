@@ -29,36 +29,6 @@
  * Anders Gavare.  All rights reserved.
  */
 
-/**
- * \file
- * Contains macro's and prototypes for debugging.
- *
- * $Id: es40_debug.h,v 1.8 2008/03/14 15:30:52 iamcamiel Exp $
- *
- * X-1.7        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.6        Brian Wheeler                                   27-FEB-2008
- *      Avoid compiler warnings.
- *
- * X-1.5        Brian wheeler                                   26-FEB-2008
- *      Pause before throwing an exception.
- *
- * X-1.4        Camiel Vanderhoeven                             28-DEC-2007
- *      Throw exceptions rather than just exiting when errors occur.
- *
- * X-1.3        Camiel Vanderhoeven                             28-DEC-2007
- *      Keep the compiler happy.
- *
- * X-1.2        Camiel Vanderhoeven                             15-NOV-2007
- *      Included stdarg.h for Linux.
- *
- * X-1.1        Camiel Vanderhoeven                             14-NOV-2007
- *      Initial creation.
- *
- * \author Camiel Vanderhoeven (camiel@camicom.com / http://www.camicom.com)
- **/
 #include <stdarg.h>
 
 #if !defined(INCLUDED_DEBUG_H)

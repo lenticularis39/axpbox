@@ -26,51 +26,6 @@
  * serve the general public.
  */
 
-/**
- * \file
- * Contains code macros for the processor memory load/store instructions.
- * Based on ARM chapter 4.2.
- *
- * $Id: cpu_memory.h,v 1.12 2008/06/12 07:29:44 iamcamiel Exp $
- *
- * X-1.12       Camiel Vanderhoeven                             12-JUN-2008
- *      Support for last written and last read memory locations.
- *
- * X-1.10       Camiel Vanderhoeven                             14-MAR-2008
- *      Formatting.
- *
- * X-1.9        Camiel Vanderhoeven                             14-MAR-2008
- *   1. More meaningful exceptions replace throwing (int) 1.
- *   2. U64 macro replaces X64 macro.
- *
- * X-1.8        Camiel Vanderhoeven                             05-MAR-2008
- *      Multi-threading version.
- *
- * X-1.7        Camiel Vanderhoeven                             25-JAN-2008
- *      Trap on unalogned memory access. The previous implementation where
- *      unaligned accesses were silently allowed could go wrong when page
- *      boundaries are crossed.
- *
- * X-1.6        Camiel Vanderhoeven                             18-JAN-2008
- *      Replaced sext_64 inlines with sext_u64_<bits> inlines for
- *      performance reasons (thanks to David Hittner for spotting this!);
- *
- * X-1.5        Camiel Vanderhoeven                             2-DEC-2007
- *      Changed the way translation buffers work.
- *
- * X-1.4        Camiel Vanderhoeven                             11-APR-2007
- *      Moved all data that should be saved to a state file to a structure
- *      "state".
- *
- * X-1.3        Camiel Vanderhoeven                             30-MAR-2007
- *      Added old changelog comments.
- *
- * X-1.2        Camiel Vanderhoeven                             8-MAR-2007
- *      LDL and LDQ where the destination is R31 do not cause exceptions.
- *
- * X-1.1        Camiel Vanderhoeven                             18-FEB-2007
- *      File created. Contains code previously found in AlphaCPU.h
- **/
 #define DO_LDA state.r[REG_1] = state.r[REG_2] + DISP_16;
 
 #define DO_LDAH state.r[REG_1] = state.r[REG_2] + (DISP_16 << 16);
