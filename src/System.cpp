@@ -1693,7 +1693,7 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
     if (data & U64(0x00000000000000f0)) {
       for (int i = 0; i < iNumCPUs; i++) {
         if (data & (U64(0x10) << i)) {
-          acCPUs[i]->irq_h(2, false, 0);
+          acCPUs[i]->irq_h<2>();
 
           // printf("*** TIMER interrupt cleared for CPU %d\n",i);
         }
@@ -1704,7 +1704,7 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
     if (data & U64(0x0000000000000f00)) {
       for (int i = 0; i < iNumCPUs; i++) {
         if (data & (U64(0x100) << i)) {
-          acCPUs[i]->irq_h(3, false, 0);
+          acCPUs[i]->irq_h<3>();
           printf("*** IP interrupt cleared for CPU %d from CPU %d(@ %" PRIx64
                  ").\n",
                  i, cpu->get_cpuid(), cpu->get_pc() - 4);
@@ -1717,7 +1717,7 @@ void CSystem::cchip_csr_write(u32 a, u64 data, CSystemComponent *source) {
       for (int i = 0; i < iNumCPUs; i++) {
         if (data & (U64(0x1000) << i)) {
           state.cchip.misc |= U64(0x100) << i;
-          acCPUs[i]->irq_h(3, true, 0);
+          acCPUs[i]->irq_h<3, true>();
           printf("*** IP interrupt set for CPU %d from CPU %d(@ %" PRIx64 ")\n",
                  i, cpu->get_cpuid(), cpu->get_pc() - 4);
 
@@ -2053,7 +2053,7 @@ void CSystem::interrupt(int number, bool assert) {
     // timer int...
     state.cchip.misc |= 0xf0;
     for (i = 0; i < iNumCPUs; i++)
-      acCPUs[i]->irq_h(2, true, 0); // timer interrupt is immediate
+      acCPUs[i]->irq_h<2, true>(); // timer interrupt is immediate
   } else if (assert) {
 
     //    if (!(state.cchip.drir & (1i64<<number)))
@@ -2068,14 +2068,14 @@ void CSystem::interrupt(int number, bool assert) {
 
   for (i = 0; i < iNumCPUs; i++) {
     if (state.cchip.drir & state.cchip.dim[i] & U64(0x00ffffffffffffff))
-      acCPUs[i]->irq_h(1, true, 100); // device interrupts delayed by 100 clocks
+      acCPUs[i]->irq_h<1, true, 100>(); // device interrupts delayed by 100 clocks
     else
-      acCPUs[i]->irq_h(1, false, 0);
+      acCPUs[i]->irq_h<1>();
 
     if (state.cchip.drir & state.cchip.dim[i] & U64(0xfc00000000000000))
-      acCPUs[i]->irq_h(0, true, 100); // device interrupts delayed by 100 clocks
+      acCPUs[i]->irq_h<0, true, 100>(); // device interrupts delayed by 100 clocks
     else
-      acCPUs[i]->irq_h(0, false, 0);
+      acCPUs[i]->irq_h<0>();
   }
 }
 
@@ -2636,7 +2636,7 @@ void CSystem::panic(char *message, int flags) {
  **/
 void CSystem::clear_clock_int(int ProcNum) {
   state.cchip.misc &= ~(U64(0x10) << ProcNum);
-  acCPUs[ProcNum]->irq_h(2, false, 0);
+  acCPUs[ProcNum]->irq_h<2>();
 }
 
 #if defined(PROFILE)

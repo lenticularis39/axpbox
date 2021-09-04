@@ -217,15 +217,15 @@
       break;                                                                   \
                                                                                \
     case 0x02: /* ITB_IAP */                                                   \
-      tbiap(ACCESS_EXEC);                                                      \
+      tbiap<ACCESS_EXEC>();                                                    \
       break;                                                                   \
                                                                                \
     case 0x03: /* ITB_IA */                                                    \
-      tbia(ACCESS_EXEC);                                                       \
+      tbia<ACCESS_EXEC>();                                                     \
       break;                                                                   \
                                                                                \
     case 0x04: /* ITB_IS */                                                    \
-      tbis(state.r[REG_2], ACCESS_EXEC);                                       \
+      tbis<ACCESS_EXEC>(state.r[REG_2]);                                       \
       break;                                                                   \
                                                                                \
     case 0x09: /* CM */                                                        \
@@ -305,7 +305,7 @@
       break;                                                                   \
                                                                                \
     case 0x24: /* DTB_IS0 */                                                   \
-      tbis(state.r[REG_2], ACCESS_READ);                                       \
+      tbis<ACCESS_READ>(state.r[REG_2]);                                       \
       break;                                                                   \
                                                                                \
     case 0x25: /* DTB_ASN0 */                                                  \
@@ -338,15 +338,15 @@
       break;                                                                   \
                                                                                \
     case 0xa2: /* DTB_IAP */                                                   \
-      tbiap(ACCESS_READ);                                                      \
+      tbiap<ACCESS_READ>();                                                    \
       break;                                                                   \
                                                                                \
     case 0xa3: /* DTB_IA */                                                    \
-      tbia(ACCESS_READ);                                                       \
+      tbia<ACCESS_READ>();                                                     \
       break;                                                                   \
                                                                                \
     case 0xa4: /* DTB_IS1 */                                                   \
-      tbis(state.r[REG_2], ACCESS_READ);                                       \
+      tbis<ACCESS_READ>(state.r[REG_2]);                                       \
       break;                                                                   \
                                                                                \
     case 0xa5: /* DTB_ASN1 */                                                  \

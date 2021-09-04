@@ -200,7 +200,7 @@ inline u64 real_address(u64 address, CAlphaCPU *c, bool bIBOX) {
   if (bIBOX && (address & 1))
     return address & U64(0xfffffffffffffffc);
 
-  if (!(c->virt2phys(address, &a, ACCESS_READ | NO_CHECK | FAKE, &b, 0)))
+  if (!(c->virt2phys<ACCESS_READ | NO_CHECK | FAKE>(address, &a, &b, 0)))
     return a & (bIBOX ? U64(0xfffffffffffffffc) : U64(0xffffffffffffffff));
 
   return ((address & U64(0xfffffffff0000000)) == U64(0x0000000020000000))

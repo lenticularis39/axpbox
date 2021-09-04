@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(AXPBox VERSION 0.1)
 
@@ -158,8 +158,9 @@ if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -ggdb")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -ggdb")
     elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -flto")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O3 -DNDEBUG -flto")
     endif()
 endif()
 

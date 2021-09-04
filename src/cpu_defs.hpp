@@ -483,7 +483,7 @@ inline u64 fsqrt64(u64 asig, s32 exp) {
 #define DISP_21 (sext_u64_21(ins))
 
 #define DATA_PHYS_NT(addr, flags)                                              \
-  if (virt2phys(addr, &phys_address, flags, NULL, ins))                        \
+  if (virt2phys<flags>(addr, &phys_address, NULL, ins))                        \
     return;
 
 #define ALIGN_PHYS(a) (phys_address & ~((u64)((a)-1)))
@@ -495,7 +495,7 @@ inline u64 fsqrt64(u64 asig, s32 exp) {
     if ((a1 ^ a2) & ~U64(0x1fff)) /*page boundary crossed*/                    \
       pbc = true;                                                              \
   }                                                                            \
-  if (virt2phys(addr, &phys_address, flags, NULL, ins))                        \
+  if (virt2phys<flags>(addr, &phys_address, NULL, ins))                        \
     return;
 
 /**

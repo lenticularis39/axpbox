@@ -405,8 +405,8 @@ void CAlphaCPU::init() {
   skip_memtest_hack = myCfg->get_bool_value("skip_memtest_hack", false);
   skip_memtest_counter = 0;
 
-  tbia(ACCESS_READ);
-  tbia(ACCESS_EXEC);
+  tbia<ACCESS_READ>();
+  tbia<ACCESS_EXEC>();
 
   //  state.fpcr = U64(0x8ff0000000000000);
   state.fpen = true;
@@ -414,7 +414,7 @@ void CAlphaCPU::init() {
   state.smc = 1;
 
   // SROM imitation...
-  add_tb(0, 0, U64(0xff61), ACCESS_READ);
+  add_tb<ACCESS_READ>(0, 0, U64(0xff61));
 
 #if defined(IDB)
   bListing = false;
@@ -1626,32 +1626,24 @@ int CAlphaCPU::RestoreState(FILE *f) {
  * \param flags   ACCESS_EXEC determines which translation buffer to use.
  * \return        Number of matching entry, or -1 if no match found.
  **/
-int CAlphaCPU::FindTBEntry(u64 virt, int flags) {
+template <int flags>
+int CAlphaCPU::FindTBEntry(const u64 virt) {
 
   // Use ITB (tb[1]) if ACCESS_EXEC is set, otherwise use DTB (tb[0])
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
-  int asn = (flags & ACCESS_EXEC) ? state.asn : state.asn0;
+  constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
+  constexpr int rw = (!!(flags & ACCESS_WRITE)) ? 1 : 0;
 
-  int rw = (flags & ACCESS_WRITE) ? 1 : 0;
+  const int asn = (!!(flags & ACCESS_EXEC)) ? state.asn : state.asn0;
 
   // Try last match first; this is a good quess, especially in the ITB
-  int i = state.last_found_tb[t][rw];
+  const int i = state.last_found_tb[t][rw];
   if (state.tb[t][i].valid &&
       !((state.tb[t][i].virt ^ virt) & state.tb[t][i].match_mask) &&
       (state.tb[t][i].asm_bit || (state.tb[t][i].asn == asn)))
     return i;
 
   // Otherwise, loop through the TB entries to find a match.
-  for (i = 0; i < TB_ENTRIES; i++) {
-    if (state.tb[t][i].valid &&
-        !((state.tb[t][i].virt ^ virt) & state.tb[t][i].match_mask) &&
-        (state.tb[t][i].asm_bit || (state.tb[t][i].asn == asn))) {
-      state.last_found_tb[t][rw] = i;
-      return i;
-    }
-  }
-
-  return -1;
+  return findTBEntryUnrolled<t, rw>(virt, asn);
 }
 
 /**
@@ -1697,15 +1689,15 @@ int CAlphaCPU::FindTBEntry(u64 virt, int flags) {
  *                help (in this case state.pc contains the address of the
  *                next instruction to execute (PALcode or OS entry point).
  **/
-int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
-                         u32 ins) {
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
+template <int flags>
+int CAlphaCPU::virt2phys(u64 virt, u64 *phys, bool *asm_bit, u32 ins) {
+  constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
   int i;
   int res;
 
-  int spe = (flags & ACCESS_EXEC) ? state.i_ctl_spe : state.m_ctl_spe;
+  int spe = (!!(flags & ACCESS_EXEC)) ? state.i_ctl_spe : state.m_ctl_spe;
   int cm = (flags & ALT) ? state.alt_cm : state.cm;
-  bool forreal = !(flags & FAKE);
+  constexpr bool forreal = !(flags & FAKE);
 
 #if defined IDB
   if (bListing) {
@@ -1784,7 +1776,7 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
   }
 
   // try to find it in the translation buffer
-  i = FindTBEntry(virt, flags);
+  i = FindTBEntry<flags>(virt);
 
   if (i < 0) // not found, either trap to PALcode, or try to load the TB entry
              // and try again.
@@ -1796,11 +1788,11 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 
       // transfer execution to PALcode
       state.exc_addr = state.current_pc;
-      if (flags & VPTE) {
+      if constexpr (!!(flags & VPTE)) {
         state.fault_va = virt;
         state.exc_sum = (u64)REG_1 << 8;
         set_pc(state.pal_base + DTBM_DOUBLE_3 + 1);
-      } else if (flags & ACCESS_EXEC) {
+      } else if constexpr (!!(flags & ACCESS_EXEC)) {
         set_pc(state.pal_base + ITB_MISS + 1);
       } else {
         state.fault_va = virt;
@@ -1816,32 +1808,32 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
       return -1;
     } else // VMS PALcode
     {
-      if (flags & RECUR) // we already tried this
+      if constexpr (!!(flags & RECUR)) // we already tried this
       {
         printf("Translationbuffer RECUR lookup failed!\n");
         return -1;
       }
 
       state.exc_addr = state.current_pc;
-      if (flags & VPTE) {
+      if constexpr (!!(flags & VPTE)) {
 
         // try to handle the double miss. If this needs to transfer control
         // to the OS, it will return non-zero value.
-        if ((res = vmspal_ent_dtbm_double_3(flags)))
+        if ((res = vmspal_ent_dtbm_double_3<flags>()))
           return res;
 
         // Double miss succesfully handled. Try to get the physical address
         // again.
-        return virt2phys(virt, phys, flags | RECUR, asm_bit, ins);
-      } else if (flags & ACCESS_EXEC) {
+        return virt2phys<flags | RECUR>(virt, phys, asm_bit, ins);
+      } else if constexpr (!!(flags & ACCESS_EXEC)) {
 
         // try to handle the ITB miss. If this needs to transfer control
         // to the OS, it will return non-zero value.
-        if ((res = vmspal_ent_itbm(flags)))
+        if ((res = vmspal_ent_itbm()))
           return res;
 
         // ITB miss succesfully handled. Try to get the physical address again.
-        return virt2phys(virt, phys, flags | RECUR, asm_bit, ins);
+        return virt2phys<flags | RECUR>(virt, phys, asm_bit, ins);
       } else {
         state.fault_va = virt;
         state.exc_sum = (u64)REG_1 << 8;
@@ -1853,12 +1845,12 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 
         // try to handle the single miss. If this needs to transfer control
         // to the OS, it will return non-zero value.
-        if ((res = vmspal_ent_dtbm_single(flags)))
+        if ((res = vmspal_ent_dtbm_single<flags>()))
           return res;
 
         // Single miss succesfully handled. Try to get the physical address
         // again.
-        return virt2phys(virt, phys, flags | RECUR, asm_bit, ins);
+        return virt2phys<flags | RECUR>(virt, phys, asm_bit, ins);
       }
     }
   }
@@ -1873,7 +1865,7 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
         printf("entry %d - ", i);
   }
 #endif
-  if (!(flags & NO_CHECK)) {
+  if constexpr (!(flags & NO_CHECK)) {
 
     // check if requested access is allowed
     if (!state.tb[t][i].access[flags & ACCESS_WRITE][cm]) {
@@ -1884,13 +1876,13 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 #endif
           printf("acv\n");
 #endif
-      if (flags & ACCESS_EXEC) {
+      if constexpr (!!(flags & ACCESS_EXEC)) {
 
         // handle I-stream access violation
         state.exc_addr = state.current_pc;
         state.exc_sum = 0;
         if (state.pal_vms) {
-          if ((res = vmspal_ent_iacv(flags)))
+          if ((res = vmspal_ent_iacv()))
             return res;
         } else {
           set_pc(state.pal_base + IACV + 1);
@@ -1908,7 +1900,7 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
             ((opcode == 0x1b || opcode == 0x1f) ? opcode - 0x18 : opcode) << 4 |
             (flags & ACCESS_WRITE) | 2;
         if (state.pal_vms) {
-          if ((res = vmspal_ent_dfault(flags)))
+          if ((res = vmspal_ent_dfault<flags>()))
             return res;
         } else {
           set_pc(state.pal_base + DFAULT + 1);
@@ -1926,13 +1918,13 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
 #endif
           printf("fault\n");
 #endif
-      if (flags & ACCESS_EXEC) {
+      if constexpr (!!(flags & ACCESS_EXEC)) {
 
         // handle I-stream access fault
         state.exc_addr = state.current_pc;
         state.exc_sum = 0;
         if (state.pal_vms) {
-          if ((res = vmspal_ent_iacv(flags)))
+          if ((res = vmspal_ent_iacv()))
             return res;
         } else {
           set_pc(state.pal_base + IACV + 1);
@@ -1948,9 +1940,9 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
         u32 opcode = I_GETOP(ins);
         state.mm_stat =
             ((opcode == 0x1b || opcode == 0x1f) ? opcode - 0x18 : opcode) << 4 |
-            (flags & ACCESS_WRITE) | ((flags & ACCESS_WRITE) ? 8 : 4);
+            (flags & ACCESS_WRITE) | ((!!(flags & ACCESS_WRITE)) ? 8 : 4);
         if (state.pal_vms) {
-          if ((res = vmspal_ent_dfault(flags)))
+          if ((res = vmspal_ent_dfault<flags>()))
             return res;
         } else {
           set_pc(state.pal_base + DFAULT + 1);
@@ -1999,14 +1991,15 @@ int CAlphaCPU::virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit,
  * \param pte     Translation in DTB_PTE format (see add_tb_d).
  * \param flags   ACCESS_EXEC determines which translation buffer to use.
  **/
-void CAlphaCPU::add_tb(u64 virt, u64 pte_phys, u64 pte_flags, int flags) {
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
-  int rw = (flags & ACCESS_WRITE) ? 1 : 0;
+template <int flags>
+void CAlphaCPU::add_tb(const u64 virt, const u64 pte_phys, const u64 pte_flags) {
+  constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
+  constexpr int rw = (!!(flags & ACCESS_WRITE)) ? 1 : 0;
   u64 match_mask = 0;
   u64 keep_mask = 0;
   u64 phys_mask = 0;
   int i;
-  int asn = (flags & ACCESS_EXEC) ? state.asn : state.asn0;
+  int asn = (!!(flags & ACCESS_EXEC)) ? state.asn : state.asn0;
 
   switch (pte_flags & 0x60) // granularity hint
   {
@@ -2035,7 +2028,7 @@ void CAlphaCPU::add_tb(u64 virt, u64 pte_phys, u64 pte_flags, int flags) {
     break;
   }
 
-  i = FindTBEntry(virt, flags);
+  i = FindTBEntry<flags>(virt);
 
   if (i < 0) {
     i = state.next_tb[t];
@@ -2116,7 +2109,7 @@ void CAlphaCPU::add_tb(u64 virt, u64 pte_phys, u64 pte_flags, int flags) {
  * \param pte     Translation in DTB_PTE format.
  **/
 void CAlphaCPU::add_tb_d(u64 virt, u64 pte) {
-  add_tb(virt, pte >> (32 - 13), pte, ACCESS_READ);
+  add_tb<ACCESS_READ>(virt, pte >> (32 - 13), pte);
 }
 
 /**
@@ -2140,7 +2133,7 @@ void CAlphaCPU::add_tb_d(u64 virt, u64 pte) {
  * \param pte     Translation in ITB_PTE format.
  **/
 void CAlphaCPU::add_tb_i(u64 virt, u64 pte) {
-  add_tb(virt, pte, pte & 0xf70, ACCESS_EXEC);
+  add_tb<ACCESS_EXEC>(virt, pte, pte & 0xf70);
 }
 
 /**
@@ -2150,8 +2143,9 @@ void CAlphaCPU::add_tb_i(u64 virt, u64 pte) {
  *
  * \param flags   ACCESS_EXEC determines which translation buffer to use.
  **/
-void CAlphaCPU::tbia(int flags) {
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
+template <int flags>
+void CAlphaCPU::tbia() {
+  constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
   int i;
   for (i = 0; i < TB_ENTRIES; i++)
     state.tb[t][i].valid = false;
@@ -2168,8 +2162,9 @@ void CAlphaCPU::tbia(int flags) {
  *
  * \param flags   ACCESS_EXEC determines which translation buffer to use.
  **/
-void CAlphaCPU::tbiap(int flags) {
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
+template <int flags>
+void CAlphaCPU::tbiap() {
+  constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
   int i;
   for (i = 0; i < TB_ENTRIES; i++)
     if (!state.tb[t][i].asm_bit)
@@ -2182,11 +2177,13 @@ void CAlphaCPU::tbiap(int flags) {
  * \param virt    Virtual address for which the entry should be invalidated.
  * \param flags   ACCESS_EXEC determines which translation buffer to use.
  **/
-void CAlphaCPU::tbis(u64 virt, int flags) {
-  int t = (flags & ACCESS_EXEC) ? 1 : 0;
-  int i = FindTBEntry(virt, flags);
-  if (i >= 0)
+template <int flags>
+void CAlphaCPU::tbis(u64 virt) {
+  int i = FindTBEntry<flags>(virt);
+  if (i >= 0) {
+    constexpr int t = (!!(flags & ACCESS_EXEC)) ? 1 : 0;
     state.tb[t][i].valid = false;
+  }
 }
 
 //\}
@@ -2318,3 +2315,23 @@ const char *IPR_NAME[] = {
     "?1111.1111?",
 };
 #endif
+
+// Explicitly instantiate template functions for cases where they are called
+// from outside this compilation unit. This is clearly very ugly and would be
+// avoided if the functions were defined inline in the .hpp file. That would
+// cause more code churn however because many of these function definitions
+// make extensive use of macros that are defined in the .cpp file.
+
+template int CAlphaCPU::virt2phys<ACCESS_READ | ALT | PROBE>(u64, u64*, bool*, u32);
+template int CAlphaCPU::virt2phys<ACCESS_WRITE | ALT | PROBE | PROBEW>(u64, u64*, bool*, u32);
+template int CAlphaCPU::virt2phys<NO_CHECK | VPTE | PROBE>(u64, u64*, bool*, u32);
+template int CAlphaCPU::virt2phys<NO_CHECK | VPTE | PROBE | PROBEW>(u64, u64*, bool*, u32);
+
+template void CAlphaCPU::tbia<ACCESS_READ>();
+template void CAlphaCPU::tbia<ACCESS_EXEC>();
+
+template void CAlphaCPU::tbiap<ACCESS_READ>();
+template void CAlphaCPU::tbiap<ACCESS_EXEC>();
+
+template void CAlphaCPU::tbis<ACCESS_READ>(u64);
+template void CAlphaCPU::tbis<ACCESS_EXEC>(u64);

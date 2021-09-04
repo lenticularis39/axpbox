@@ -260,7 +260,8 @@ public:
   void flush_icache_asm();
   virtual int SaveState(FILE *f);
   virtual int RestoreState(FILE *f);
-  void irq_h(int number, bool assert, int delay);
+  template <int number, bool assert = false, int delay = 0>
+  void irq_h();
   int get_cpuid();
   void flush_icache();
 
@@ -306,7 +307,8 @@ public:
   void listing(u64 from, u64 to);
   void listing(u64 from, u64 to, u64 mark);
 #endif
-  int virt2phys(u64 virt, u64 *phys, int flags, bool *asm_bit, u32 instruction);
+  template <int flags>
+  int virt2phys(u64 virt, u64 *phys, bool *asm_bit, u32 instruction);
 
   virtual void init();
   virtual void start_threads();
@@ -318,14 +320,19 @@ private:
   CSemaphore mySemaphore;
   bool StopThread;
 
-  int get_icache(u64 address, u32 *data);
-  int FindTBEntry(u64 virt, int flags);
-  void add_tb(u64 virt, u64 pte_phys, u64 pte_flags, int flags);
-  void add_tb_i(u64 virt, u64 pte);
-  void add_tb_d(u64 virt, u64 pte);
-  void tbia(int flags);
-  void tbiap(int flags);
-  void tbis(u64 virt, int flags);
+  int get_icache(const u64 address, u32 *const data);
+  template <int flags>
+  int FindTBEntry(const u64 virt);
+  template <int flags>
+  void add_tb(const u64 virt, const u64 pte_phys, const u64 pte_flags);
+  void add_tb_i(const u64 virt, const u64 pte);
+  void add_tb_d(const u64 virt, const u64 pte);
+  template <int flags>
+  void tbia();
+  template <int flags>
+  void tbiap();
+  template <int flags>
+  void tbis(const u64 virt);
 
   /* Floating Point routines */
   u64 ieee_lds(u32 op);
@@ -414,11 +421,14 @@ private:
   void vmspal_call_write_unq();
 
   /* VMS PALcode entry: */
-  int vmspal_ent_dtbm_double_3(int flags);
-  int vmspal_ent_dtbm_single(int flags);
-  int vmspal_ent_itbm(int flags);
-  int vmspal_ent_iacv(int flags);
-  int vmspal_ent_dfault(int flags);
+  template <int flags>
+  int vmspal_ent_dtbm_double_3();
+  template <int flags>
+  int vmspal_ent_dtbm_single();
+  int vmspal_ent_itbm();
+  int vmspal_ent_iacv();
+  template <int flags>
+  int vmspal_ent_dfault();
   int vmspal_ent_ext_int(int ei);
   int vmspal_ent_sw_int(int si);
   int vmspal_ent_ast_int(int ast);
@@ -572,6 +582,20 @@ private:
 #endif
 
   void skip_memtest();
+
+  template <int t, int rw, int tbIndex = 0>
+  int findTBEntryUnrolled(const u64 virt, const int asn) {
+    if constexpr (tbIndex < TB_ENTRIES) {
+      if (state.tb[t][tbIndex].valid &&
+          !((state.tb[t][tbIndex].virt ^ virt) & state.tb[t][tbIndex].match_mask) &&
+          (state.tb[t][tbIndex].asm_bit || (state.tb[t][tbIndex].asn == asn))) {
+        state.last_found_tb[t][rw] = tbIndex;
+        return tbIndex;
+      }
+      return findTBEntryUnrolled<t, rw, tbIndex + 1>(virt, asn);
+    }
+    return -1;
+  }
 };
 
 /** Translate raw register (0..31) number to a number that takes PALshadow
@@ -636,7 +660,7 @@ inline void CAlphaCPU::set_PAL_BASE(u64 pb) {
  * code, that relies on the correct instruction stream to
  * remain in the cache.
  **/
-inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
+inline int CAlphaCPU::get_icache(const u64 address, u32 *const data) {
   u64 v_a;
   u64 p_a;
   int result;
@@ -673,7 +697,7 @@ inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
       p_a = v_a & ~U64(0x1);
       asm_bit = true;
     } else {
-      result = virt2phys(v_a, &p_a, ACCESS_EXEC, &asm_bit, 0);
+      result = virt2phys<ACCESS_EXEC>(v_a, &p_a, &asm_bit, 0);
       if (result)
         return result;
     }
@@ -707,7 +731,7 @@ inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
     state.rem_ins_in_page = 1;
   } else {
     if (!state.rem_ins_in_page) {
-      result = virt2phys(address, &state.pc_phys, ACCESS_EXEC, &asm_bit, 0);
+      result = virt2phys<ACCESS_EXEC>(address, &state.pc_phys, &asm_bit, 0);
       if (result)
         return result;
       state.rem_ins_in_page = 2048 - ((((u32)address) >> 2) & 2047);
@@ -752,27 +776,31 @@ inline int CAlphaCPU::get_cpuid() { return state.iProcNum; }
 /**
  * Assert or release an external interrupt line to the cpu.
  **/
-inline void CAlphaCPU::irq_h(int number, bool assert, int delay) {
-  bool active = (state.eir & (U64(0x1) << number)) || state.irq_h_timer[number];
-  if (assert && !active) {
-    if (delay) {
-      state.irq_h_timer[number] = delay;
-      state.check_timers = true;
-    } else {
-      state.eir |= (U64(0x1) << number);
-      state.check_int = true;
-    }
-
-    return;
-  }
-
-  if (!assert && active) {
-    state.eir &= ~(U64(0x1) << number);
-    state.irq_h_timer[number] = 0;
-    state.check_timers = false;
-    for (int i = 0; i < 6; i++) {
-      if (state.irq_h_timer[i])
+template <int number, bool assert, int delay>
+void CAlphaCPU::irq_h() {
+  constexpr auto mask = U64(0x1) << number;
+  const bool active = (state.eir & mask) || state.irq_h_timer[number];
+  if constexpr (assert) {
+    if (!active) {
+      if constexpr (delay) {
+        state.irq_h_timer[number] = delay;
         state.check_timers = true;
+      } else {
+        state.eir |= mask;
+        state.check_int = true;
+      }
+    }
+  } else {
+    if (active) {
+      state.eir &= ~mask;
+      state.irq_h_timer[number] = 0;
+      state.check_timers = false;
+      for (size_t i = 0; i < std::size(state.irq_h_timer); i++) {
+        if (state.irq_h_timer[i]) {
+          state.check_timers = true;
+          break;
+        }
+      }
     }
   }
 }
@@ -865,7 +893,7 @@ inline u64 CAlphaCPU::get_prbr(void) {
     v_prbr = cSystem->ReadMem(state.r[21 + 32] + 0xa8, 64, this);
   else
     v_prbr = cSystem->ReadMem(0x70a8 + (0x200 * get_cpuid()), 64, this);
-  if (virt2phys(v_prbr, &p_prbr, ACCESS_READ | FAKE | NO_CHECK, &b, 0))
+  if (virt2phys<ACCESS_READ | FAKE | NO_CHECK>(v_prbr, &p_prbr, &b, 0))
     p_prbr = v_prbr;
   if ((u64)p_prbr > (u64)(U64(0x1) << cSystem->get_memory_bits()))
     p_prbr = 0;
@@ -884,7 +912,7 @@ inline u64 CAlphaCPU::get_hwpcb(void) {
     v_pcb = cSystem->ReadMem(state.r[21 + 32] + 0x10, 64, this);
   else
     v_pcb = cSystem->ReadMem(0x7010 + (0x200 * get_cpuid()), 64, this);
-  if (virt2phys(v_pcb, &p_pcb, ACCESS_READ | NO_CHECK | FAKE, &b, 0))
+  if (virt2phys<ACCESS_READ | NO_CHECK | FAKE>(v_pcb, &p_pcb, &b, 0))
     p_pcb = v_pcb;
   if (p_pcb > (u64)(U64(0x1) << cSystem->get_memory_bits()))
     p_pcb = 0;

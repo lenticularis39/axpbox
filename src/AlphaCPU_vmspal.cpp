@@ -141,23 +141,23 @@
 #define hw_stq(a, b) cSystem->WriteMem(a & ~U64(0x7), 64, b, this)
 #define hw_stl(a, b) cSystem->WriteMem(a & ~U64(0x3), 32, b, this)
 #define stq(a, b)                                                              \
-  if (virt2phys(a, &phys_address, ACCESS_WRITE, NULL, 0))                      \
+  if (virt2phys<ACCESS_WRITE>(a, &phys_address, NULL, 0))                      \
     return -1;                                                                 \
   cSystem->WriteMem(phys_address, 64, b, this);
 #define ldq(a, b)                                                              \
-  if (virt2phys(a, &phys_address, ACCESS_READ, NULL, 0))                       \
+  if (virt2phys<ACCESS_READ>(a, &phys_address, NULL, 0))                       \
     return -1;                                                                 \
   b = cSystem->ReadMem(phys_address, 64, this);
 #define stl(a, b)                                                              \
-  if (virt2phys(a, &phys_address, ACCESS_WRITE, NULL, 0))                      \
+  if (virt2phys<ACCESS_WRITE>(a, &phys_address, NULL, 0))                      \
     return -1;                                                                 \
   cSystem->WriteMem(phys_address, 32, b, this);
 #define ldl(a, b)                                                              \
-  if (virt2phys(a, &phys_address, ACCESS_READ, NULL, 0))                       \
+  if (virt2phys<ACCESS_READ>(a, &phys_address, NULL, 0))                       \
     return -1;                                                                 \
   b = sext_u64_32(cSystem->ReadMem(phys_address, 32, this));
 #define ldb(a, b)                                                              \
-  if (virt2phys(a, &phys_address, ACCESS_READ, NULL, 0))                       \
+  if (virt2phys<ACCESS_READ>(a, &phys_address, NULL, 0))                       \
     return -1;                                                                 \
   b = (char)(cSystem->ReadMem(phys_address, 8, this));
 #define hw_ldq(a, b) b = cSystem->ReadMem(a & ~U64(0x7), 64, this)
@@ -468,8 +468,8 @@ void CAlphaCPU::vmspal_call_mfpr_tbchk() { r0 = U64(0x8000000000000000); }
  * Implementation of CALL_PAL MTPR_TBIA opcode.
  **/
 void CAlphaCPU::vmspal_call_mtpr_tbia() {
-  tbia(ACCESS_READ);
-  tbia(ACCESS_EXEC);
+  tbia<ACCESS_READ>();
+  tbia<ACCESS_EXEC>();
   flush_icache();
 }
 
@@ -477,8 +477,8 @@ void CAlphaCPU::vmspal_call_mtpr_tbia() {
  * Implementation of CALL_PAL MTPR_TBIAP opcode.
  **/
 void CAlphaCPU::vmspal_call_mtpr_tbiap() {
-  tbiap(ACCESS_READ);
-  tbiap(ACCESS_EXEC);
+  tbiap<ACCESS_READ>();
+  tbiap<ACCESS_EXEC>();
   flush_icache_asm();
 }
 
@@ -486,8 +486,8 @@ void CAlphaCPU::vmspal_call_mtpr_tbiap() {
  * Implementation of CALL_PAL MTPR_TBIS opcode.
  **/
 void CAlphaCPU::vmspal_call_mtpr_tbis() {
-  tbis(r16, ACCESS_READ);
-  tbis(r16, ACCESS_EXEC);
+  tbis<ACCESS_READ>(r16);
+  tbis<ACCESS_EXEC>(r16);
 }
 
 /**
@@ -547,12 +547,12 @@ void CAlphaCPU::vmspal_call_mtpr_usp() {
 /**
  * Implementation of CALL_PAL MTPR_TBISD opcode.
  **/
-void CAlphaCPU::vmspal_call_mtpr_tbisd() { tbis(r16, ACCESS_READ); }
+void CAlphaCPU::vmspal_call_mtpr_tbisd() { tbis<ACCESS_READ>(r16); }
 
 /**
  * Implementation of CALL_PAL MTPR_TBISI opcode.
  **/
-void CAlphaCPU::vmspal_call_mtpr_tbisi() { tbis(r16, ACCESS_EXEC); }
+void CAlphaCPU::vmspal_call_mtpr_tbisi() { tbis<ACCESS_EXEC>(r16); }
 
 /**
  * Implementation of CALL_PAL MFPR_ASTEN opcode.
@@ -619,10 +619,10 @@ void CAlphaCPU::vmspal_call_prober() {
   hw_stq(p21 + 0x140, state.pc);
   hw_stq(p21 + 0x148, p4);
 
-  if (virt2phys(r16, &pa, ACCESS_READ | ALT | PROBE, NULL, 0) < 0)
+  if (virt2phys<ACCESS_READ | ALT | PROBE>(r16, &pa, NULL, 0) < 0)
     return;
 
-  if (virt2phys(r16 + r17, &pa, ACCESS_READ | ALT | PROBE, NULL, 0) < 0)
+  if (virt2phys<ACCESS_READ | ALT | PROBE>(r16 + r17, &pa, NULL, 0) < 0)
     return;
 
   r0 = 1;
@@ -645,10 +645,10 @@ void CAlphaCPU::vmspal_call_probew() {
   state.alt_cm = (int)p4;
   hw_stq(p21 + 0x140, state.pc);
   hw_stq(p21 + 0x148, p4);
-  if (virt2phys(r16, &pa, ACCESS_WRITE | ALT | PROBE | PROBEW, NULL, 0) < 0)
+  if (virt2phys<ACCESS_WRITE | ALT | PROBE | PROBEW>(r16, &pa, NULL, 0) < 0)
     return;
 
-  if (virt2phys(r16 + r17, &pa, ACCESS_WRITE | ALT | PROBE | PROBEW, NULL, 0) <
+  if (virt2phys<ACCESS_WRITE | ALT | PROBE | PROBEW>(r16 + r17, &pa, NULL, 0) <
       0)
     return;
 
@@ -1122,7 +1122,8 @@ int CAlphaCPU::vmspal_ent_ast_int(int ast) {
 /**
  * Entry point for Single Data Translation Buffer Miss.
  **/
-int CAlphaCPU::vmspal_ent_dtbm_single(int flags) {
+template <int flags>
+int CAlphaCPU::vmspal_ent_dtbm_single() {
   u64 pte_phys;
   u64 t25;
   u64 t26;
@@ -1158,14 +1159,12 @@ int CAlphaCPU::vmspal_ent_dtbm_single(int flags) {
   }
 
   p4 &= ~U64(0x7);
-  if (virt2phys(p4, &pte_phys,
-                ACCESS_READ | NO_CHECK | VPTE | (flags & (PROBE | PROBEW)),
-                NULL, 0))
+  if (virt2phys<ACCESS_READ | NO_CHECK | VPTE | (flags & (PROBE | PROBEW))>(p4, &pte_phys, NULL, 0))
     return -1;
   p4 = cSystem->ReadMem(pte_phys, 64, this);
 
   if (!test_bit_64(p4, 0)) {
-    if (flags & PROBE) {
+    if constexpr (!!(flags & PROBE)) {
       t25 = U64(0x30000);
       p4 |= t25;
       t26 = p5 & 1; // write or read?
@@ -1241,7 +1240,7 @@ int CAlphaCPU::vmspal_ent_dtbm_single(int flags) {
 /**
  * Entry point for Instruction Translation Buffer Miss.
  **/
-int CAlphaCPU::vmspal_ent_itbm(int flags) {
+int CAlphaCPU::vmspal_ent_itbm() {
   u64 pte_phys;
 
   p4 = va_form(state.exc_addr, true);
@@ -1259,7 +1258,7 @@ int CAlphaCPU::vmspal_ent_itbm(int flags) {
   }
 
   p4 &= ~U64(0x7);
-  if (virt2phys(p4, &pte_phys, ACCESS_READ | NO_CHECK | VPTE, NULL, 0))
+  if (virt2phys<ACCESS_READ | NO_CHECK | VPTE>(p4, &pte_phys, NULL, 0))
     return -1;
   p4 = cSystem->ReadMem(pte_phys, 64, this);
 
@@ -1295,7 +1294,8 @@ int CAlphaCPU::vmspal_ent_itbm(int flags) {
 /**
  * Entry point for Double Data Translation Buffer Miss.
  **/
-int CAlphaCPU::vmspal_ent_dtbm_double_3(int flags) {
+template <int flags>
+int CAlphaCPU::vmspal_ent_dtbm_double_3() {
   u64 t25;
   u64 t26;
 
@@ -1325,7 +1325,7 @@ int CAlphaCPU::vmspal_ent_dtbm_double_3(int flags) {
   p5 = p7 >> 0x10;
   t26 = state.pal_base;
 
-  if (flags & PROBE) // in PALmode!!
+  if constexpr (!!(flags & PROBE)) // in PALmode!!
   {
     p4 = t25 & ~U64(0x30000);
     t26 = p5 & 1; // write or read?
@@ -1405,7 +1405,7 @@ int CAlphaCPU::vmspal_ent_dtbm_double_3(int flags) {
 /**
  * Entry point for IStream Access Violation
  **/
-int CAlphaCPU::vmspal_ent_iacv(int flags) {
+int CAlphaCPU::vmspal_ent_iacv() {
   p6 = state.current_pc;
   p4 = 1;
   p5 = 0x80;
@@ -1428,14 +1428,15 @@ int CAlphaCPU::vmspal_ent_iacv(int flags) {
 /**
  * Entry point for DStream Fault.
  **/
-int CAlphaCPU::vmspal_ent_dfault(int flags) {
+template <int flags>
+int CAlphaCPU::vmspal_ent_dfault() {
   u64 t25;
 
   u64 t26;
   p6 = state.current_pc;
   p7 = state.exc_sum;
   p5 = state.mm_stat;
-  if (flags & PROBE) {
+  if constexpr (!!(flags & PROBE)) {
     hw_stq(p21 + 0xd0, p23);
     p23 = p6;
     t26 = p6 & ~U64(0x3);
@@ -1445,7 +1446,7 @@ int CAlphaCPU::vmspal_ent_dfault(int flags) {
     if (!t25) {
       t25 = p5 & 8;
       p7 = t25 ? 0xb0 : 0xa0;
-      tbis(p6, ACCESS_READ);
+      tbis<ACCESS_READ>(p6);
     }
 
     hw_stq(p21 + 0x158, p7);
@@ -1469,7 +1470,7 @@ int CAlphaCPU::vmspal_ent_dfault(int flags) {
     if (!t25) {
       t25 = p5 & 8;
       p7 = t25 ? 0xb0 : 0xa0;
-      tbis(p6, ACCESS_READ);
+      tbis<ACCESS_READ>(p6);
     }
 
     hw_stq(p21 + 0x158, p7);
@@ -1492,7 +1493,7 @@ int CAlphaCPU::vmspal_ent_dfault(int flags) {
   p7 = 0x80;
   if (!(state.mm_stat & 2)) {
     p7 = (state.mm_stat & 4) ? 0xa0 : 0xb0;
-    tbis(p20, ACCESS_READ);
+    tbis<ACCESS_READ>(p20);
   }
 
   hw_stq(p21 + 0x158, p7);
@@ -1504,3 +1505,43 @@ int CAlphaCPU::vmspal_ent_dfault(int flags) {
 }
 
 //\}
+
+// Explicitly instantiate template functions for cases where they are called
+// from outside this compilation unit. This is clearly very ugly and would be
+// avoided if the functions were defined inline in the .hpp file. That would
+// cause more code churn however because many of these function definitions
+// make extensive use of macros that are defined in the .cpp file.
+
+template int CAlphaCPU::vmspal_ent_dtbm_single<ACCESS_READ>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ACCESS_WRITE>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<NO_CHECK>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ALT>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<NO_CHECK | ALT>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ALT | PROBE>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ACCESS_WRITE | ALT | PROBE | PROBEW>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ACCESS_WRITE | RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<NO_CHECK | RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<NO_CHECK | ALT | RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ALT | RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ALT | RECUR | PROBE>();
+template int CAlphaCPU::vmspal_ent_dtbm_single<ACCESS_WRITE | ALT | RECUR | PROBE | PROBEW>();
+
+template int CAlphaCPU::vmspal_ent_dfault<ACCESS_READ>();
+template int CAlphaCPU::vmspal_ent_dfault<ACCESS_WRITE>();
+template int CAlphaCPU::vmspal_ent_dfault<ALT>();
+template int CAlphaCPU::vmspal_ent_dfault<ALT | PROBE>();
+template int CAlphaCPU::vmspal_ent_dfault<ACCESS_WRITE | ALT | PROBE | PROBEW>();
+template int CAlphaCPU::vmspal_ent_dfault<RECUR>();
+template int CAlphaCPU::vmspal_ent_dfault<ACCESS_WRITE | RECUR>();
+template int CAlphaCPU::vmspal_ent_dfault<ALT | RECUR>();
+template int CAlphaCPU::vmspal_ent_dfault<NO_CHECK | VPTE | FAKE | RECUR | PROBE>();
+template int CAlphaCPU::vmspal_ent_dfault<ACCESS_WRITE | ALT | RECUR | PROBE | PROBEW>();
+template int CAlphaCPU::vmspal_ent_dfault<ALT | RECUR | PROBE>();
+
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE>();
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE | PROBE>();
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE | PROBE | PROBEW>();
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE | RECUR>();
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE | RECUR | PROBE>();
+template int CAlphaCPU::vmspal_ent_dtbm_double_3<NO_CHECK | VPTE | RECUR | PROBE | PROBEW>();
