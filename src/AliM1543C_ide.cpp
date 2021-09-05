@@ -808,6 +808,7 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
 
   SEL_STATUS(index).debug_status_update = true;
 #endif
+  CDisk* pDisk;
   switch (address) {
   case REG_COMMAND_DATA:
     if (!SEL_STATUS(index).drq) {
@@ -885,8 +886,9 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
     break;
 
   case REG_COMMAND_COMMAND:
+    pDisk = SEL_DISK(index);
     theAli->pic_deassert(1, 6 + index); // interrupt is cleared on write.
-    if (!SEL_DISK(index)) {
+    if (!pDisk) {
 #ifdef DEBUG_IDE
       printf("%%IDE-I-NODEV: Command to non-existing device %d.%d. cmd=%x\n",
              index, CONTROLLER(index).selected, data);
@@ -927,7 +929,7 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
 
       // this is a nop, so we cancel everything that's pending and
       // pretend that this operation got done super fast!
-      if (SEL_DISK(index))
+      if (pDisk)
         command_aborted(index, data);
     }
     break;
@@ -1245,11 +1247,13 @@ void CAliM1543C_ide::identify_drive(int index, bool packet) {
   CONTROLLER(index).data_ptr = 0;
   CONTROLLER(index).data_size = 256;
 
+  auto pDisk{ SEL_DISK(index) };
+
   // The data here was taken from T13/1153D revision 18
   if (!packet) {
 
     // flags:  0x0080 = removable, 0x0040 = fixed.
-    CONTROLLER(index).data[0] = SEL_DISK(index)->cdrom() ? 0x0080 : 0x0040;
+    CONTROLLER(index).data[0] = pDisk->cdrom() ? 0x0080 : 0x0040;
   } else {
 
     // flags: 15-14: 10=atapi, 11=reserved; 12-8: packet set; 7:
@@ -1258,40 +1262,40 @@ void CAliM1543C_ide::identify_drive(int index, bool packet) {
   }
 
   // logical cylinders
-  if (SEL_DISK(index)->get_cylinders() > 16383)
+  if (pDisk->get_cylinders() > 16383)
     CONTROLLER(index).data[1] = 16383;
   else
-    CONTROLLER(index).data[1] = (u16)(SEL_DISK(index)->get_cylinders());
+    CONTROLLER(index).data[1] = (u16)(pDisk->get_cylinders());
 
   // logical heads
-  CONTROLLER(index).data[3] = (u16)(SEL_DISK(index)->get_heads());
+  CONTROLLER(index).data[3] = (u16)(pDisk->get_heads());
 
   // logical sectors per logical track
-  CONTROLLER(index).data[6] = (u16)(SEL_DISK(index)->get_sectors());
+  CONTROLLER(index).data[6] = (u16)(pDisk->get_sectors());
 
   // serial number
   strcpy(serial_number, "                    ");
-  i = strlen(SEL_DISK(index)->get_serial());
+  i = strlen(pDisk->get_serial());
   i = (i > 20) ? 20 : i;
-  memcpy(model_number, SEL_DISK(index)->get_serial(), i);
+  memcpy(model_number, pDisk->get_serial(), i);
   for (i = 0; i < 10; i++)
     CONTROLLER(index).data[10 + i] =
         (serial_number[i * 2] << 8) | serial_number[i * 2 + 1];
 
   // firmware revision
   strcpy(rev_number, "        ");
-  i = strlen(SEL_DISK(index)->get_rev());
+  i = strlen(pDisk->get_rev());
   i = (i > 8) ? 8 : i;
-  memcpy(model_number, SEL_DISK(index)->get_rev(), i);
+  memcpy(model_number, pDisk->get_rev(), i);
   for (i = 0; i < 4; i++)
     CONTROLLER(index).data[23 + i] =
         (rev_number[i * 2] << 8) | rev_number[i * 2 + 1];
 
   // model number
   strcpy(model_number, "                                        ");
-  i = strlen(SEL_DISK(index)->get_model());
+  i = strlen(pDisk->get_model());
   i = (i > 40) ? 40 : i;
-  memcpy(model_number, SEL_DISK(index)->get_model(), i);
+  memcpy(model_number, pDisk->get_model(), i);
   for (i = 0; i < 20; i++)
     CONTROLLER(index).data[i + 27] =
         (model_number[i * 2] << 8) | model_number[i * 2 + 1];
@@ -1316,13 +1320,13 @@ void CAliM1543C_ide::identify_drive(int index, bool packet) {
   CONTROLLER(index).data[53] = 7;
 
   // geometry
-  CONTROLLER(index).data[54] = (u16)(SEL_DISK(index)->get_cylinders());
-  CONTROLLER(index).data[55] = (u16)(SEL_DISK(index)->get_heads());
-  CONTROLLER(index).data[56] = (u16)(SEL_DISK(index)->get_sectors());
+  CONTROLLER(index).data[54] = (u16)(pDisk->get_cylinders());
+  CONTROLLER(index).data[55] = (u16)(pDisk->get_heads());
+  CONTROLLER(index).data[56] = (u16)(pDisk->get_sectors());
   CONTROLLER(index).data[57] =
-      (u16)(SEL_DISK(index)->get_chs_size() >> 0) & 0xFFFF;
+      (u16)(pDisk->get_chs_size() >> 0) & 0xFFFF;
   CONTROLLER(index).data[58] =
-      (u16)(SEL_DISK(index)->get_chs_size() >> 16) & 0xFFFF;
+      (u16)(pDisk->get_chs_size() >> 16) & 0xFFFF;
 
   // multiple sector setting (valid, 1 sector per interrupt)
   if (SEL_PER_DRIVE(index).multiple_size != 0) {
@@ -1333,9 +1337,9 @@ void CAliM1543C_ide::identify_drive(int index, bool packet) {
 
   // lba capacity
   CONTROLLER(index).data[60] =
-      (u16)(SEL_DISK(index)->get_lba_size() >> 0) & 0xFFFF;
+      (u16)(pDisk->get_lba_size() >> 0) & 0xFFFF;
   CONTROLLER(index).data[61] =
-      (u16)(SEL_DISK(index)->get_lba_size() >> 16) & 0xFFFF;
+      (u16)(pDisk->get_lba_size() >> 16) & 0xFFFF;
 
   // multiword dma capability (10-8: modes selected, 2-0, modes
   // supported)
@@ -1373,14 +1377,14 @@ void CAliM1543C_ide::identify_drive(int index, bool packet) {
   CONTROLLER(index).data[81] = 0x0017;
 
   // command set supported (cdrom = nop,packet,removable; disk=nop)
-  CONTROLLER(index).data[82] = SEL_DISK(index)->cdrom() ? 0x4014 : 0x4000;
+  CONTROLLER(index).data[82] = pDisk->cdrom() ? 0x4014 : 0x4000;
 
   // command sets supported(no additional command sets)
   CONTROLLER(index).data[83] = 0x4000;
   CONTROLLER(index).data[84] = 0x4000;
 
   // command sets enabled.
-  CONTROLLER(index).data[85] = SEL_DISK(index)->cdrom() ? 0x4014 : 0x4000;
+  CONTROLLER(index).data[85] = pDisk->cdrom() ? 0x4014 : 0x4000;
   CONTROLLER(index).data[86] = 0x4000;
   CONTROLLER(index).data[87] = 0x4000;
 
@@ -1440,7 +1444,10 @@ void CAliM1543C_ide::check_state() {
 }
 
 void CAliM1543C_ide::execute(int index) {
-  if (SEL_DISK(index) == NULL && SEL_COMMAND(index).current_command != 0x90) {
+
+  auto pDisk{ SEL_DISK(index) };
+
+  if (pDisk == NULL && SEL_COMMAND(index).current_command != 0x90) {
 
     // this device doesn't exist (and its not execute device
     // diagnostic)
@@ -1467,7 +1474,7 @@ void CAliM1543C_ide::execute(int index) {
       break;
 
     case 0x08: // device reset
-      if (SEL_DISK(index)->cdrom() || 1) {
+      if (pDisk->cdrom() || 1) {
 
         // the spec says that non-packet devices must not respond
         // to device reset.  However, by allowing it, Tru64
@@ -1486,7 +1493,7 @@ void CAliM1543C_ide::execute(int index) {
         SEL_STATUS(index).drq = false;   // bit 3
         SEL_STATUS(index).bit_2 = false; // bit 2
         SEL_STATUS(index).err = false;   // bit 0
-        if (SEL_DISK(index)->cdrom()) {
+        if (pDisk->cdrom()) {
           SEL_STATUS(index).fault = false;       // bit 5
           SEL_STATUS(index).drive_ready = false; // per step "m2"
         } else {
@@ -1533,10 +1540,10 @@ void CAliM1543C_ide::execute(int index) {
                     (SEL_REGISTERS(index).cylinder_no << 8) |
                     SEL_REGISTERS(index).sector_no;
 
-          SEL_DISK(index)->seek_block(lba);
-          SEL_DISK(index)->read_blocks(&(CONTROLLER(index).data[0]), 1);
+          pDisk->seek_block(lba);
+          pDisk->read_blocks(&(CONTROLLER(index).data[0]), 1);
 #if defined(ES40_BIG_ENDIAN)
-          for (int i = 0; i < SEL_DISK(index)->get_block_size() / sizeof(u16);
+          for (int i = 0; i < pDisk->get_block_size() / sizeof(u16);
                i++)
             CONTROLLER(index).data[i] = endian_16(CONTROLLER(index).data[i]);
 #endif
@@ -1552,7 +1559,7 @@ void CAliM1543C_ide::execute(int index) {
           SEL_REGISTERS(index).sector_count--;
           if (SEL_REGISTERS(index).sector_count == 0) {
             SEL_COMMAND(index).command_in_progress = false;
-            if (SEL_DISK(index)->cdrom())
+            if (pDisk->cdrom())
               set_signature(index, CONTROLLER(index).selected); // per 9.1
           } else {
 
@@ -1579,7 +1586,7 @@ void CAliM1543C_ide::execute(int index) {
       if (SEL_COMMAND(index).command_cycle == 0) {
 
         // this is our first time through
-        if (SEL_DISK(index)->cdrom() || SEL_DISK(index)->ro()) {
+        if (pDisk->cdrom() || pDisk->ro()) {
           printf("%%IDE-W-RO: Write attempt to read-only disk %d.%d.\n", index,
                  CONTROLLER(index).selected);
           command_aborted(index, SEL_COMMAND(index).current_command);
@@ -1607,16 +1614,16 @@ void CAliM1543C_ide::execute(int index) {
             {
               u16 data[IDE_BUFFER_SIZE];
 
-              SEL_DISK(index)->seek_block(lba);
+              pDisk->seek_block(lba);
               for (int i = 0;
-                   i < SEL_DISK(index)->get_block_size() / sizeof(u16); i++)
+                   i < pDisk->get_block_size() / sizeof(u16); i++)
                 data[i] = endian_16(CONTROLLER(index).data[i]);
-              SEL_DISK(index)->write_blocks(&(data[0]), 1);
+              pDisk->write_blocks(&(data[0]), 1);
             }
 
 #else
-            SEL_DISK(index)->seek_block(lba);
-            SEL_DISK(index)->write_blocks(&(CONTROLLER(index).data[0]), 1);
+            pDisk->seek_block(lba);
+            pDisk->write_blocks(&(CONTROLLER(index).data[0]), 1);
 #endif
             SEL_STATUS(index).busy = false;
             SEL_STATUS(index).drive_ready = true;
@@ -1658,7 +1665,7 @@ void CAliM1543C_ide::execute(int index) {
      * non-packet (no w/packet
      */
     case 0x70: // seek
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         SEL_STATUS(index).busy = false;
@@ -1677,21 +1684,21 @@ void CAliM1543C_ide::execute(int index) {
      */
     case 0x91: // initialize device parameters
       SEL_COMMAND(index).command_in_progress = false;
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
 #ifdef DEBUG_IDE
         printf("Original c: %d, h: %d, s: %d\n",
-               SEL_DISK(index)->get_cylinders(), SEL_DISK(index)->get_heads(),
-               SEL_DISK(index)->get_sectors());
+               pDisk->get_cylinders(), pDisk->get_heads(),
+               pDisk->get_sectors());
         printf("Requested c: %d, h: %d, s: %d\n",
                SEL_REGISTERS(index).cylinder_no,
                SEL_REGISTERS(index).head_no + 1,
                SEL_REGISTERS(index).sector_count);
 #endif
-        if (SEL_DISK(index)->get_heads() ==
+        if (pDisk->get_heads() ==
                 (SEL_REGISTERS(index).head_no + 1) &&
-            SEL_DISK(index)->get_sectors() ==
+            pDisk->get_sectors() ==
                 SEL_REGISTERS(index).sector_count) {
 
           // use the default translation -- ok!
@@ -1722,7 +1729,7 @@ void CAliM1543C_ide::execute(int index) {
        * derived from ATA/ATAPI-5 (D1321R3) instead of the -4
        * documenation.  State names were taken from that document.
        */
-      if (!SEL_DISK(index)->cdrom()) {
+      if (!pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         if (SEL_REGISTERS(index).features & 0x02) {
@@ -1944,7 +1951,7 @@ void CAliM1543C_ide::execute(int index) {
       break;
 
     case 0xa1: // identify packet device
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         identify_drive(index, true);
         SEL_STATUS(index).busy = false;
         SEL_STATUS(index).drive_ready = true;
@@ -1960,7 +1967,7 @@ void CAliM1543C_ide::execute(int index) {
       break;
 
     case 0xc4: // read multiple
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         if (SEL_COMMAND(index).command_cycle == 0) {
@@ -2003,8 +2010,8 @@ void CAliM1543C_ide::execute(int index) {
                    CONTROLLER(index).data_size / 256,
                    SEL_REGISTERS(index).sector_count);
 #endif
-            SEL_DISK(index)->seek_block(lba);
-            SEL_DISK(index)->read_blocks(
+            pDisk->seek_block(lba);
+            pDisk->read_blocks(
                 &(CONTROLLER(index).data[0]),
                 CONTROLLER(index).data_size /
                     256); // actual number of blocks we want.
@@ -2022,7 +2029,7 @@ void CAliM1543C_ide::execute(int index) {
             // prepare for next sector
             if (SEL_REGISTERS(index).sector_count == 0) {
               SEL_COMMAND(index).command_in_progress = false;
-              if (SEL_DISK(index)->cdrom())
+              if (pDisk->cdrom())
                 set_signature(index, CONTROLLER(index).selected); // per 9.1
             } else {
 
@@ -2047,13 +2054,13 @@ void CAliM1543C_ide::execute(int index) {
       break;
 
     case 0xc5: // write multiple
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         if (SEL_COMMAND(index).command_cycle == 0) {
 
           // this is our first time through
-          if (SEL_DISK(index)->ro()) {
+          if (pDisk->ro()) {
             printf("%%IDE-W-RO: Write attempt to read-only disk %d.%d.\n",
                    index, CONTROLLER(index).selected);
             command_aborted(index, SEL_COMMAND(index).current_command);
@@ -2091,16 +2098,16 @@ void CAliM1543C_ide::execute(int index) {
               {
                 u16 data[IDE_BUFFER_SIZE];
 
-                SEL_DISK(index)->seek_block(lba);
+                pDisk->seek_block(lba);
                 for (int i = 0; i < CONTROLLER(index).data_size; i++)
                   data[i] = endian_16(CONTROLLER(index).data[i]);
-                SEL_DISK(index)->write_blocks(
+                pDisk->write_blocks(
                     &(data[0]), CONTROLLER(index).data_size / 256);
               }
 
 #else
-              SEL_DISK(index)->seek_block(lba);
-              SEL_DISK(index)->write_blocks(&(CONTROLLER(index).data[0]),
+              pDisk->seek_block(lba);
+              pDisk->write_blocks(&(CONTROLLER(index).data[0]),
                                             CONTROLLER(index).data_size / 256);
 #endif
               SEL_STATUS(index).busy = false;
@@ -2151,7 +2158,7 @@ void CAliM1543C_ide::execute(int index) {
       break;
 
     case 0xc6: // set multiple mode
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
       } else {
         SEL_PER_DRIVE(index).multiple_size = SEL_REGISTERS(index).sector_count;
@@ -2171,7 +2178,7 @@ void CAliM1543C_ide::execute(int index) {
 
     case 0xc8: // read dma
     case 0xc9: // read dma (old)
-      if (SEL_DISK(index)->cdrom()) {
+      if (pDisk->cdrom()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
         SEL_COMMAND(index).command_in_progress = false;
       } else {
@@ -2188,9 +2195,9 @@ void CAliM1543C_ide::execute(int index) {
                   (SEL_REGISTERS(index).cylinder_no << 8) |
                   SEL_REGISTERS(index).sector_no;
 
-        SEL_DISK(index)->seek_block(lba);
+        pDisk->seek_block(lba);
 
-        SEL_DISK(index)->read_blocks(&(CONTROLLER(index).data[0]),
+        pDisk->read_blocks(&(CONTROLLER(index).data[0]),
                                      SEL_REGISTERS(index).sector_count);
 
         u8 *ptr = (u8 *)(&CONTROLLER(index).data[0]);
@@ -2208,11 +2215,11 @@ void CAliM1543C_ide::execute(int index) {
 
     case 0xca: // write dma
     case 0xcb: // write dma (old)
-      if (SEL_DISK(index)->cdrom() || SEL_DISK(index)->ro()) {
+      if (pDisk->cdrom() || pDisk->ro()) {
         command_aborted(index, SEL_COMMAND(index).current_command);
         SEL_COMMAND(index).command_in_progress = false;
       } else {
-        if (SEL_DISK(index)->ro()) {
+        if (pDisk->ro()) {
           printf("%%IDE-W-RO: DMA Write attempt to read-only disk %d.%d.\n",
                  index, CONTROLLER(index).selected);
           command_aborted(index, SEL_COMMAND(index).current_command);
@@ -2233,8 +2240,8 @@ void CAliM1543C_ide::execute(int index) {
                     (SEL_REGISTERS(index).cylinder_no << 8) |
                     SEL_REGISTERS(index).sector_no;
 
-          SEL_DISK(index)->seek_block(lba);
-          SEL_DISK(index)->write_blocks(&(CONTROLLER(index).data[0]),
+          pDisk->seek_block(lba);
+          pDisk->write_blocks(&(CONTROLLER(index).data[0]),
                                         SEL_REGISTERS(index).sector_count);
           SEL_COMMAND(index).command_in_progress = false;
           SEL_STATUS(index).drive_ready = true;
@@ -2259,7 +2266,7 @@ void CAliM1543C_ide::execute(int index) {
 #endif
 
     case 0xec: // identify
-      if (!SEL_DISK(index)->cdrom()) {
+      if (!pDisk->cdrom()) {
         identify_drive(index, false);
         SEL_STATUS(index).busy = false;
         SEL_STATUS(index).drive_ready = true;
