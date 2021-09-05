@@ -782,7 +782,7 @@ void CAlphaCPU::irq_h() {
   const bool active = (state.eir & mask) || state.irq_h_timer[number];
   if constexpr (assert) {
     if (!active) {
-      if constexpr (delay) {
+      if constexpr (delay > 0) {
         state.irq_h_timer[number] = delay;
         state.check_timers = true;
       } else {
