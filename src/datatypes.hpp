@@ -75,8 +75,16 @@ typedef u64 u_int64_t;
  * Sign-extend an 8-bit value to 64 bits.
  **/
 inline u64 sext_u64_8(u64 a) {
+#if defined(ES40_BIG_ENDIAN)
   return (((a)&U64(0x0000000000000080)) ? ((a) | U64(0xffffffffffffff00))
-                                        : ((a)&U64(0x00000000000000ff)));
+                                        : ((a) & U64(0x00000000000000ff)));
+#else
+  // Optimised implementation for LE machines of this hotpath inline
+  // function. The implementation above compiles to three opcodes but
+  // the following compiles to just one movsx? opcode.
+  auto aa = static_cast<s64>(*reinterpret_cast<s8*>(&a));
+  return *reinterpret_cast<u64*>(&aa);
+#endif
 }
 
 /**
@@ -84,7 +92,7 @@ inline u64 sext_u64_8(u64 a) {
  **/
 inline u64 sext_u64_12(u64 a) {
   return (((a)&U64(0x0000000000000800)) ? ((a) | U64(0xfffffffffffff000))
-                                        : ((a)&U64(0x0000000000000fff)));
+                                        : ((a) & U64(0x0000000000000fff)));
 }
 
 /**
@@ -92,15 +100,23 @@ inline u64 sext_u64_12(u64 a) {
  **/
 inline u64 sext_u64_13(u64 a) {
   return (((a)&U64(0x0000000000001000)) ? ((a) | U64(0xffffffffffffe000))
-                                        : ((a)&U64(0x0000000000001fff)));
+                                        : ((a) & U64(0x0000000000001fff)));
 }
 
 /**
  * Sign-extend an 16-bit value to 64 bits.
  **/
 inline u64 sext_u64_16(u64 a) {
+#if defined(ES40_BIG_ENDIAN)
   return (((a)&U64(0x0000000000008000)) ? ((a) | U64(0xffffffffffff0000))
-                                        : ((a)&U64(0x000000000000ffff)));
+                                        : ((a) & U64(0x000000000000ffff)));
+#else
+  // Optimised implementation for LE machines of this hotpath inline
+  // function. The implementation above compiles to three opcodes but
+  // the following compiles to just one movsx? opcode.
+  auto aa = static_cast<s64>(*reinterpret_cast<s16*>(&a));
+  return *reinterpret_cast<u64*>(&aa);
+#endif
 }
 
 /**
@@ -108,15 +124,23 @@ inline u64 sext_u64_16(u64 a) {
  **/
 inline u64 sext_u64_21(u64 a) {
   return (((a)&U64(0x0000000000100000)) ? ((a) | U64(0xffffffffffe00000))
-                                        : ((a)&U64(0x00000000001fffff)));
+                                        : ((a) & U64(0x00000000001fffff)));
 }
 
 /**
  * Sign-extend a 32-bit value to 64 bits.
  **/
 inline u64 sext_u64_32(u64 a) {
+#if defined(ES40_BIG_ENDIAN)
   return (((a)&U64(0x0000000080000000)) ? ((a) | U64(0xffffffff00000000))
-                                        : ((a)&U64(0x00000000ffffffff)));
+                                        : ((a) & U64(0x00000000ffffffff)));
+#else
+  // Optimised implementation for LE machines of this hotpath inline
+  // function. The implementation above compiles to three opcodes but
+  // the following compiles to just one movsx? opcode.
+  auto aa = static_cast<s64>(*reinterpret_cast<s32*>(&a));
+  return *reinterpret_cast<u64*>(&aa);
+#endif
 }
 
 /**
@@ -124,7 +148,7 @@ inline u64 sext_u64_32(u64 a) {
  **/
 inline u64 sext_u64_48(u64 a) {
   return (((a)&U64(0x0000800000000000)) ? ((a) | U64(0xffff000000000000))
-                                        : ((a)&U64(0x0000ffffffffffff)));
+                                        : ((a) & U64(0x0000ffffffffffff)));
 }
 
 inline bool test_bit_64(u64 x, int bit) {
