@@ -771,6 +771,12 @@ int CDisk::do_scsi_command() {
     do_scsi_error(SCSI_OK);
   } break;
 
+  case SCSICMD_START_STOP_UNIT:
+    // TODO: Implement properly
+    // https://github.com/lenticularis39/axpbox/issues/36
+    do_scsi_error(SCSI_OK);
+    break;
+
   case SCSICMD_MODE_SENSE:
   case SCSICMD_MODE_SENSE_10:
 #if defined(DEBUG_SCSI)
