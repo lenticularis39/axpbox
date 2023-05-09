@@ -200,7 +200,7 @@ jobs:
     - name: Upload AXPbox Binary
       uses: actions/upload-artifact@v1
       with:
-        name: AXPbox-osx-x86-10.15-appleclang-${{ env.BUILD_DATE }}
+        name: AXPbox-osx-x86-12-appleclang-${{ env.BUILD_DATE }}
         path: ${{runner.workspace}}/build/axpbox 
       env:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
