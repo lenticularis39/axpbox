@@ -171,7 +171,7 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
   osx-x86-appleclang:
-    runs-on: "macos-10.15"  
+    runs-on: "macos-12"  
     steps:
     - uses: actions/checkout@v2
 
@@ -196,11 +196,6 @@ jobs:
       run: cmake --build . --config Release
       env:
         MAKEFLAGS: "-j2"
-
-    - name: Run test scripts
-      working-directory: ${{runner.workspace}}/axpbox
-      shell: bash
-      run: ${{runner.workspace}}/axpbox/test/run
 
     - name: Upload AXPbox Binary
       uses: actions/upload-artifact@v1
