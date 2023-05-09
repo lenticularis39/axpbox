@@ -163,15 +163,6 @@ inline char printable(char c) {
   return '.';
 }
 
-// Different OS'es define different functions to access 64-bit files
-#if defined(HAVE_FOPEN64)
-#define fopen_large fopen64
-#elif defined(HAVE_FOPEN)
-#define fopen_large fopen
-#else
-#error "Need fopen"
-#endif
-
 #if defined(HAVE__FSEEKI64)
 #define fseek_large _fseeki64
 #elif defined(HAVE_FSEEKO64)

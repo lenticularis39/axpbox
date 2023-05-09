@@ -24,6 +24,9 @@ endif()
 find_package(Threads REQUIRED)
 target_link_libraries(axpbox Threads::Threads)
 
+# Path to additional CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 # Configuration options
 include(CheckSymbolExists)
 include(CheckIncludeFile)
@@ -31,6 +34,7 @@ include(CheckLibraryExists)
 include(CheckTypeSize)
 include(CheckIncludeFiles)
 include(TestBigEndian)
+include(CheckLargeFiles)
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
@@ -114,6 +118,9 @@ check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
 check_include_file("pcap.h" HAVE_PCAP)
 check_include_file("SDL/SDL.h" HAVE_SDL)
 check_include_file("X11/X.h" HAVE_X11)
+# Large file support (fopen64 / disk files > 2 GB)
+AXPBOX_TEST_LARGE_FILES(HAVE_LARGE_FILES)
+
 
 
 if (DISABLE_PCAP STREQUAL "yes")
@@ -161,6 +168,12 @@ if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
     endif()
+endif()
+
+if(HAVE_LARGE_FILES)
+    message(STATUS "Large file support enabled")
+else()
+    message(WARNING "Building without large file graphics support")
 endif()
 
 find_package(Git)
