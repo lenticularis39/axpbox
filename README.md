@@ -8,6 +8,12 @@ The emulator supports SCSI, IDE, serial ports, Ethernet (using PCAP) and [VGA gr
 
 OpenVMS 8.4 desktop in AXPbox. [Here is a wiki page showing you how to get this CDE desktop running](https://github.com/lenticularis39/axpbox/wiki/GUI-Desktop-Environment-(CDE))
 
+## Getting AXPbox
+
+Pre-built binaries for generic Linux amd64, Windows 10 amd64 and macOS amd64 are available for each release, and also as artifacts produced for each commit in CI. T2 SDE has an [official package](http://t2sde.org/packages/axpbox) for AXPbox, and openSUSE's Emulators project has an [AXPbox package](https://build.opensuse.org/package/show/Emulators/axpbox), too. The former gets updated the same day when a release happens, while requests are submitted now the latter that undergo approval of Emulators maintainers.
+
+You can also build from source using CMake; you need a C++ 11 compiler, optional dependencies are PCAP for networking and SDL or X11 for graphics support.
+
 ## Usage
 
 First invoke the interactive configuration file generator:
