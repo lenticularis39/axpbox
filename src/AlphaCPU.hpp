@@ -494,8 +494,12 @@ inline int CAlphaCPU::get_icache(u64 address, u32 *data) {
         return result;
     }
 
-    memcpy(state.icache[state.next_icache].data, cSystem->PtrToMem(p_a),
+    char* addr = cSystem->PtrToMem(p_a);
+    if(addr)
+      memcpy(state.icache[state.next_icache].data, addr,
            ICACHE_LINE_SIZE * 4);
+    else
+      printf("PtrToMem(p_a) == nullptr! Address: %lu.\n", p_a);
 
     state.icache[state.next_icache].valid = true;
     state.icache[state.next_icache].asn = state.asn;
