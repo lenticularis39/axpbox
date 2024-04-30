@@ -323,6 +323,25 @@ void CS3Trio64::init() {
   state.sequencer.reset2 = 1;
   state.sequencer.extended_mem = 1; // display mem greater than 64K
   state.sequencer.odd_even = 1;     // use sequential addressing mode
+  state.sequencer.sr8 = 0; // unlock extended sequencer, default 00h on powerup
+  state.sequencer.sr9 = 0; // Extended Sequencer Register 9 (SR9)
+  state.sequencer.srA = 0; // External Bus Request Control (SRA)
+  state.sequencer.srB = 0; // Miscellaneous Extended Sequencer Register (SRB)
+  state.sequencer.sr10 = 0; // CLK Value Low Register (UNLK_EXSR) (SR10)
+  state.sequencer.sr11 = 0; // MCLK Value High Register (SR11)
+  state.sequencer.sr12 = 0; // DCLK Value Low Register (SR12)
+  state.sequencer.sr13 = 0; // DCLK Value High Register (SR13)
+  state.sequencer.sr14 = 0; // CLKSYN Control 1 Register (SR14)
+  state.sequencer.sr14 = 0; // CLKSYN Control 1 Register (SR14)
+  state.sequencer.sr15 = 0; // CLKSYN Control 2 Register (SR15)
+  state.sequencer.sr15 = 0; // CLKSYN Control 2 Register (SR15)
+  state.sequencer.sr18 = 0; // RAMDAC/CLKSYN Control Register (SR18)
+  state.sequencer.sr18 = 0; // RAMDAC/CLKSYN Control Register (SR18)
+  state.sequencer.sr1a = 0; // not sure what's going on here with these, 86box says to (internal use maybe?)
+  state.sequencer.sr1a = 0; // not sure what's going on here with these, 86box says to (internal use maybe?)
+  state.sequencer.sr1b = 0; // just throw the value in here if (svga->seqaddr >= 0x10 && svga->seqaddr < 0x20) {
+  state.sequencer.sr1b = 0; // just throw the value in here if (svga->seqaddr >= 0x10 && svga->seqaddr < 0x20) {
+
 
   state.memsize = 0x40000;
   state.memory = new u8[state.memsize];
@@ -330,12 +349,14 @@ void CS3Trio64::init() {
 
   state.last_bpp = 8;
 
+  state.CRTC.reg[0x70] = 0;
   state.CRTC.reg[0x09] = 16;
+  state.CRTC.reg[0x2E] = 0x11;   // Device low ID register, 0x10 for Trio32, 0x11 for Trio64
+  state.CRTC.reg[0x30] = 0xE1;   // Chip ID/REV Register (CHIP-ID/REV) (CR30) - 0xE1H on powerup.
+  state.CRTC.reg[0x36] = 0x1A; // Configuration 1 Register (CONF_REG1) (CR36) - set per 86box for PCI startup
+  state.CRTC.reg[0x40] = 0x30; // System Configuration Register (SYS_CNFG) (CR40) - 0x30H on powerup.
   state.graphics_ctrl.memory_mapping = 3; // color text mode
   state.vga_mem_updated = 1;
-
-  printf("%s: $Id: S3Trio64.cpp,v 1.20 2008/05/31 15:47:10 iamcamiel Exp $\n",
-         devid_string);
 }
 
 /**
@@ -713,6 +734,12 @@ u32 CS3Trio64::io_read(u32 address, int dsize) {
     data = read_b_3c5();
     break;
 
+  case 0x3c6:
+    data = read_b_3c6();
+    break;
+
+  case 0x3C7:
+  case 0x3C8:
   case 0x3c9:
     data = read_b_3c9();
     break;
@@ -789,6 +816,9 @@ void CS3Trio64::io_write_b(u32 address, u8 data) {
     write_b_3c2(data);
     break;
 
+  case 0x3c3: // do nothing, we're not writing anything. VGA subsystem setup.
+    break;
+
   case 0x3c4:
     write_b_3c4(data);
     break;
@@ -819,6 +849,10 @@ void CS3Trio64::io_write_b(u32 address, u8 data) {
 
   case 0x3cf:
     write_b_3cf(data);
+    break;
+
+  case 0x3da:
+    write_b_3da(data);
     break;
 
   case 0x3b4:
@@ -1320,11 +1354,15 @@ void CS3Trio64::write_b_3c5(u8 value) {
   u8 charmap1;
   u8 charmap2;
 
+#ifdef DEBUG_VGA
+  printf("VGA: 3c5 WRITE INDEX=0x%02x BINARY VALUE=" PRINTF_BINARY_PATTERN_INT8 " HEX VALUE=0x%02x\n", state.sequencer.index, PRINTF_BYTE_TO_BINARY_INT8(value), value);
+#endif
+
   switch (state.sequencer.index) {
   // Sequencer: reset register
-  case 0:
+  case 0x00:
 #if defined(DEBUG_VGA)
-    printf("write 0x3c5: sequencer reset: value=0x%02x   \n", (unsigned)value);
+    printf("write 0x3c5: sequencer reset: value=0x%02x   \n", (unsigned) value);
 #endif
     if (state.sequencer.reset1 && ((value & 0x01) == 0)) {
       state.sequencer.char_map_select = 0;
@@ -1340,7 +1378,7 @@ void CS3Trio64::write_b_3c5(u8 value) {
     break;
 
   // Sequencer: clocking mode register
-  case 1:
+  case 0x01:
 #if defined(DEBUG_VGA)
     printf("io write 3c5=%02x: clocking mode reg: ignoring   \n",
            (unsigned)value);
@@ -1350,14 +1388,14 @@ void CS3Trio64::write_b_3c5(u8 value) {
     break;
 
   // Sequencer: map mask register
-  case 2:
+  case 0x02:
     state.sequencer.map_mask = (value & 0x0f);
     for (i = 0; i < 4; i++)
       state.sequencer.map_mask_bit[i] = (value >> i) & 0x01;
     break;
 
   // Sequencer: character map select register
-  case 3:
+  case 0x03:
     state.sequencer.char_map_select = value;
     charmap1 = value & 0x13;
     if (charmap1 > 3)
@@ -1378,7 +1416,7 @@ void CS3Trio64::write_b_3c5(u8 value) {
     break;
 
   // Sequencer: memory mode register
-  case 4:
+  case 0x4:
     state.sequencer.extended_mem = (value >> 1) & 0x01;
     state.sequencer.odd_even = (value >> 2) & 0x01;
     state.sequencer.chain_four = (value >> 3) & 0x01;
@@ -1389,6 +1427,70 @@ void CS3Trio64::write_b_3c5(u8 value) {
     printf("  odd_even %u   \n", (unsigned)state.sequencer.odd_even);
     printf("  chain_four %u   \n", (unsigned)state.sequencer.chain_four);
 #endif
+    break;
+
+  case 0x09:
+    state.sequencer.sr9 = value & 0x80;  // only one bit used, rest reserved
+    break;
+
+  case 0x08: // Unlock Extended Sequencer (SR8)
+    state.sequencer.sr8 = value;
+    break;
+
+  case 0x0A: // External Bus Request Control Register (SRA)
+    state.sequencer.srA = value;
+    break;
+
+  case 0x0B: // // Miscellaneous Extended Sequencer Register (SRB)
+    state.sequencer.srB = value;
+    break;
+
+  case 0x10: // CLK Value Low Register (UNLK_EXSR) (SR10)
+    state.sequencer.sr10 = value;
+    break;
+
+  case 0x11: // MCLK Value High Register (SR11)
+    state.sequencer.sr11 = value;
+    break;
+
+  case 0x12: // DCLK Value Low Register(SR12)
+    state.sequencer.sr12 = value;
+    break;
+
+  case 0x13: // DCLK Value High Register (SR13)
+    state.sequencer.sr13 = value;
+    break;
+
+  case 0x14:  // CLKSYN Control 1 Register SR14
+    state.sequencer.sr14 = value;
+    break;
+
+  case 0x15:  // CLKSYN Control 2 Register SR15
+    state.sequencer.sr15 = value;
+    break;
+
+  case 0x18: // RAMDAC/CLKSYN Control Register (SR18)
+    state.sequencer.sr18 = value;
+    break;
+
+  /* NOT DOCUMENTED - Sequence Register 1A & 1B - 86box for handling this is
+
+   if (svga->seqaddr >= 0x10 && svga->seqaddr < 0x20) {
+       svga->seqregs[svga->seqaddr] = val;
+       switch (svga->seqaddr) {
+          case 0x12:
+          case 0x13:
+              svga_recalctimings(svga);
+              return;
+          default:
+              break;  */
+
+  case 0x1A:
+    state.sequencer.sr1a = value;
+    break;
+
+  case 0x1B:
+    state.sequencer.sr1b = value;
     break;
 
   default:
@@ -1413,6 +1515,12 @@ void CS3Trio64::write_b_3c6(u8 value) {
   // state.pel.mask should be and'd with final value before
   // indexing into color register state.pel.data[]
 }
+
+u8 CS3Trio64::read_b_3c6()
+{
+  return state.pel.mask;
+}
+
 
 /**
  * Write VGA DAC Address Read Mode register (0x3c7)
@@ -2372,14 +2480,31 @@ void CS3Trio64::write_b_3d4(u8 value) {
  **/
 void CS3Trio64::write_b_3d5(u8 value) {
 
-  /* CRTC Registers */
-  if (state.CRTC.address > 0x18) {
-#if defined(DEBUG_VGA)
-    printf("write: invalid CRTC register 0x%02x ignored",
-           (unsigned)state.CRTC.address);
-#endif
-    return;
-  }
+
+  #ifdef DEBUG_VGA
+    printf("VGA: 3d5 WRITE CRTC register=0x%02x BINARY VALUE=" PRINTF_BINARY_PATTERN_INT8 " HEX VALUE=0x%02x\n", state.CRTC.address, PRINTF_BYTE_TO_BINARY_INT8(value), value);
+  #endif
+    int mask = 0;
+    /* CRTC Registers */
+    if((state.CRTC.address > 0x18) && (state.CRTC.address != 0x36) && (state.CRTC.address != 0x38) && (state.CRTC.address != 0x39) && \
+        (state.CRTC.address != 0x42) && (state.CRTC.address != 0x66) && (state.CRTC.address != 0x6b) && (state.CRTC.address != 0x6c) && \
+        (state.CRTC.address != 0x5c) && (state.CRTC.address != 0x42) && (state.CRTC.address != 0x40) && (state.CRTC.address != 0x31) && \
+        (state.CRTC.address != 0x50) && (state.CRTC.address != 51))
+    {
+  #if defined(DEBUG_VGA)
+      printf("VGA 3D5 Write WARNING: UNVERIFIED CRTC register 0x%02x but still written\n",
+             (unsigned) state.CRTC.address);
+  #endif
+    }
+
+    if (state.CRTC.address > 0x70)
+    {
+  #if defined(DEBUG_VGA)
+      printf("write: invalid CRTC register 0x%02x ignored\n",
+             (unsigned)state.CRTC.address);
+  #endif
+      return;
+    }
 
   if (state.CRTC.write_protect && (state.CRTC.address < 0x08)) {
     if (state.CRTC.address == 0x07) {
@@ -2466,6 +2591,38 @@ void CS3Trio64::write_b_3d5(u8 value) {
       state.line_compare &= 0x300;
       state.line_compare |= state.CRTC.reg[0x18];
       redraw_area(0, 0, old_iWidth, old_iHeight);
+      break;
+
+    case 0x31:  // Memory Configuration Register (MEM_CFG) (CR31)
+      break;
+
+    case 0x36:  // Configuration 1 Register (CONF_REG1) (CR36)
+      break;
+
+    case 0x38:  // unlock S3 VGA registers (CR30 - CR3C)
+    case 0x39:  // unlock System Control, System Extension, and Strapping registers (CR40-CR4F, CR50-CR6D)
+    case 0x40:  // System Control Register (SYS_CTRL) (CR40)
+      break;
+
+    case 0x42: // Mode Control Register (MODE_CTL) (CR42)
+      break;
+
+    case 0x50: // Extended System Cont 1 Register (EXT_SCTL_1) (CR50)
+      break; // FIXME: Might need some logic here. 86box code vid_s3 line 2646
+
+    case 0x51: // Extended System Cont 2 Register (EXT_SCTL_2) (CR51)
+      break; // FIXME: Might need logic here. 86box code vid_s3 line 2701
+
+    case 0x5c: // Extended RAMDAC Control Register (EX_DAC_CT) (CR55)
+      break;
+
+    case 0x66: // Extended Miscellaneous Control 1 Register (EXT-MISC-1) (CR66) - we don't do anything here
+      break;
+
+    case 0x6b: // Extended BIOS Flag 3 Register (EBIOS-FLG3) (CR6B) - Internal firmware reserved
+      break;
+
+    case 0x6c: // Extended BIOS Flag 4 Register (EBIOS-FLG4) (CR6C) - Internal firmware reserved
       break;
     }
   }
@@ -2589,34 +2746,45 @@ u8 CS3Trio64::read_b_3c4() { return state.sequencer.index; }
  **/
 u8 CS3Trio64::read_b_3c5() {
   switch (state.sequencer.index) {
-  case 0: /* sequencer: reset */
+  case 0x0: /* sequencer: reset */
 #if defined(DEBUG_VGA)
     BX_DEBUG(("io read 0x3c5: sequencer reset"));
 #endif
     return (state.sequencer.reset1 ? 1 : 0) | (state.sequencer.reset2 ? 2 : 0);
-    break;
 
-  case 1: /* sequencer: clocking mode */
+  case 0x1: /* sequencer: clocking mode */
 #if defined(DEBUG_VGA)
     BX_DEBUG(("io read 0x3c5: sequencer clocking mode"));
 #endif
     return state.sequencer.reg1;
-    break;
 
-  case 2: /* sequencer: map mask register */
+  case 0x2: /* sequencer: map mask register */
     return state.sequencer.map_mask;
-    break;
 
-  case 3: /* sequencer: character map select register */
+  case 0x3: /* sequencer: character map select register */
     return state.sequencer.char_map_select;
-    break;
 
-  case 4: /* sequencer: memory mode register */
+  case 0x4: /* sequencer: memory mode register */
     return (state.sequencer.extended_mem << 1) |
            (state.sequencer.odd_even << 2) | (state.sequencer.chain_four << 3);
-    break;
+
+  case 0x9:
+    return state.sequencer.sr9;
+
+  case 0xA:  // External Bus Request Control Register (SRA)
+    return state.sequencer.srA;
+
+  case 0x10:        /* sequencer: SR10 */
+    return state.sequencer.sr10;
+
+  case 0x12:
+    return state.sequencer.sr12;
+
+  case 0x15:
+    return state.sequencer.sr15;
 
   default:
+    printf("FAIL VGA: 3c5 READ INDEX=0x%02x %d\n", state.sequencer.index, state.sequencer.index);
     FAILURE_1(NotImplemented, "io read 0x3c5: index %u unhandled",
               (unsigned)state.sequencer.index);
   }
@@ -2763,12 +2931,38 @@ u8 CS3Trio64::read_b_3d4() { return state.CRTC.address; }
  * For a description of CRTC Registers, see CCirrus::write_b_3d4.
  **/
 u8 CS3Trio64::read_b_3d5() {
-  if (state.CRTC.address > 0x18) {
+  if((state.CRTC.address > 0x18) && (state.CRTC.address != 0x2e) && (state.CRTC.address != 0x2f) && (state.CRTC.address != 0x36) && \
+    (state.CRTC.address != 0x40) && (state.CRTC.address != 0x42) && (state.CRTC.address != 0x30) && (state.CRTC.address != 0x6b) && \
+    (state.CRTC.address != 0x6c) && (state.CRTC.address != 0x67))
+  {
     FAILURE_1(NotImplemented, "io read: invalid CRTC register 0x%02x   \n",
               (unsigned)state.CRTC.address);
   }
 
-  return state.CRTC.reg[state.CRTC.address];
+  switch (state.CRTC.address)
+  {
+  case 0x2e: // Chip ID for S3, 0x11 == Trio64 (rev 00h) / Trio64V+ (rev 40h)
+#ifdef DEBUG_VGA
+    printf("VGA: CRTC CHIP ID READ 0x2E HARDCODED 0x11 For TRIO64\n");
+#endif
+    return 0x11;
+
+  case 0x2f: // Revision ID, low byte of the PCI ID, in our case for Trio64, this will just be 0x00
+#ifdef DEBUG_VGA
+    printf("VGA: CRTC CHIP REVISION ID READ 0x2F HARDCODED 0x11 FOR TRIO64\n");
+#endif
+    return 0x00;
+    break;
+
+
+    return state.CRTC.reg[state.CRTC.address];
+  default:
+#ifdef DEBUG_VGA
+    printf("VGA: 3d5 READ CRTC register=0x%02x BINARY VALUE=" PRINTF_BINARY_PATTERN_INT8 " HEX VALUE=0x%02x\n", state.CRTC.address, \
+           PRINTF_BYTE_TO_BINARY_INT8(state.CRTC.reg[state.CRTC.address]), state.CRTC.reg[state.CRTC.address]);
+#endif
+    return state.CRTC.reg[state.CRTC.address];
+  }
 }
 
 /**
@@ -2794,6 +2988,11 @@ u8 CS3Trio64::read_b_3d5() {
  *                           register, to generate an interrupt at the start of
  *the vertical retrace. \endcode
  **/
+// above comment applies to the read, not this write function
+void CS3Trio64::write_b_3da(u8 value) {
+  state.port3da = value;
+}
+
 u8 CS3Trio64::read_b_3da() {
 
   /* Input Status 1 (color emulation modes) */
