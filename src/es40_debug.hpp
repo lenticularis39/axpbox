@@ -29,74 +29,47 @@
  * Anders Gavare.  All rights reserved.
  */
 
-#include <stdarg.h>
+#pragma once
+#include "base/Exception.hpp"
+#include <cstdarg>
 
 #if !defined(INCLUDED_DEBUG_H)
 #define INCLUDED_DEBUG_H
+#endif
 
-#define DEBUG_BUFSIZE 1024
-#define FAILMSG_BUFSIZE 8000
-#define DEBUG_INDENTATION 4
-
-#ifdef HAVE___FUNCTION__
-#define FAILURE(cls, error_msg)                                                \
-  {                                                                            \
-    char where_msg[FAILMSG_BUFSIZE];;                                                       \
-    sprintf(where_msg, "%s, line %i, function '%s'", __FILE__, __LINE__,       \
-            __FUNCTION__);                                                     \
-    throw C##cls##Exception(error_msg, where_msg);                             \
+#define FAILURE(cls, error_msg, ...)                                           \
+  {                                                                             \
+    char what_msg[8000];                                             \
+    int ret = snprintf(what_msg, sizeof(what_msg), error_msg, ##__VA_ARGS__);    \
+    if (ret < 0 || ret >= sizeof(what_msg)) {                                   \
+        throw CRuntimeException("Error constructing error message");           \
+    }                                                                             \
+    char where_msg[8000];                                            \
+    ret = snprintf(where_msg, sizeof(where_msg), "%s, line %i", __FILE__, __LINE__); \
+    if (ret < 0 || ret >= sizeof(where_msg)) {                                  \
+        throw CRuntimeException("Error constructing error message");           \
+    }                                                                           \
+    throw C##cls##Exception(what_msg, where_msg);                               \
   }
-
-#else
-#define FAILURE(cls, error_msg)                                                \
-  {                                                                            \
-    char where_msg[FAILMSG_BUFSIZE];                                           \
-    sprintf(where_msg, "%s, line %i", __FILE__, __LINE__);                     \
-    throw C##cls##Exception(error_msg, where_msg);                             \
-  }
-#endif /*  !HAVE___FUNCTION__  */
 
 #define FAILURE_1(cls, error_msg, a)                                           \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a);                                           \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a)
 
 #define FAILURE_2(cls, error_msg, a, b)                                        \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a, b);                                        \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a, b)
 
 #define FAILURE_3(cls, error_msg, a, b, c)                                     \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a, b, c);                                     \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a, b, c)
 
 #define FAILURE_4(cls, error_msg, a, b, c, d)                                  \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a, b, c, d);                                  \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a, b, c, d)
 
 #define FAILURE_5(cls, error_msg, a, b, c, d, e)                               \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a, b, c, d, e);                               \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a, b, c, d, e)
 
 #define FAILURE_6(cls, error_msg, a, b, c, d, e, f)                            \
-  {                                                                            \
-    char what_msg[FAILMSG_BUFSIZE];                                            \
-    sprintf(what_msg, error_msg, a, b, c, d, e, f);                            \
-    FAILURE(cls, what_msg);                                                    \
-  }
+  FAILURE(cls, error_msg, a, b, c, d, e, f)
+
 
 #define CHECK_ALLOCATION(ptr)                                                  \
   {                                                                            \
@@ -115,7 +88,3 @@
     }                                                                          \
   }
 
-void debug_indentation(int diff);
-void debug(char *fmt, ...);
-void fatal(char *fmt, ...);
-#endif
