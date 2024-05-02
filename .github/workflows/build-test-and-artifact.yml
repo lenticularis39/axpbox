@@ -139,28 +139,52 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+
+
+    - name: Create npcap sdk folder
+      working-directory: ${{runner.workspace}}\
+      run: mkdir pcap
+
+    - name: Download npcap sdk
+      working-directory: ${{runner.workspace}}\pcap
+      run: curl -o ./npcap-sdk-1.13.zip https://npcap.com/dist/npcap-sdk-1.13.zip
+
+    - name: unzip npcap sdk
+      working-directory: ${{runner.workspace}}\pcap
+      run: unzip npcap-sdk-1.13.zip
+
     - name: Get current date
       id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+      run: echo "name=date::$(date +'%Y-%m-%dT%H%M')" >> $GITHUB_OUTPUT
 
     - name: Create build environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: cmake -E make_directory ${{runner.workspace}}\build
 
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release 
-      
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release  -DPCAP_INCLUDE_DIR="${{runner.workspace}}/pcap/Include/"  -DPCAP_LIBRARY="${{runner.workspace}}/pcap/Lib/x64/wpcap.lib"
+
     - name: Build
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}\build
       shell: bash
       run: cmake --build . --config Release
       env:
         MAKEFLAGS: "-j2"
 
     - name: Test run
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}\build
       run: ${{runner.workspace}}\build\Release\axpbox.exe
+
+    - name: install netcat 
+      uses: crazy-max/ghaction-chocolatey@v3
+      with:
+        args: install netcat
+
+    - name: Run rom tests script
+      working-directory: ${{runner.workspace}}\axpbox\test\rom\
+      run: ${{runner.workspace}}\axpbox\test\rom\test.ps1
+
 
     - name: Upload AXPbox Binary
       uses: actions/upload-artifact@v1
@@ -168,7 +192,7 @@ jobs:
         name: AXPbox-windows-x86-msvc-${{ env.BUILD_DATE }}.exe
         path: ${{runner.workspace}}\build\Release\axpbox.exe
       env:
-        BUILD_DATE: ${{ steps.date.outputs.date }} 
+        BUILD_DATE: ${{ steps.date.outputs.date }}
 
   osx-x86-appleclang:
     runs-on: "macos-12"  
