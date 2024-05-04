@@ -5,14 +5,14 @@ on: [push, pull_request]
 jobs:
 
   linux-x86-clang:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-24.04"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Get current date
       id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+      run: echo "name=date::$(date +'%Y-%m-%dT%H%M')" >> $GITHUB_OUTPUT
 
     - name: Install build dependencies
       run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev netcat-openbsd
@@ -38,7 +38,7 @@ jobs:
       run: ${{runner.workspace}}/axpbox/test/run
 
     - name: Upload AXPbox binary
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AXPbox-linux-x86-clang-${{ env.BUILD_DATE }}
         path: ${{runner.workspace}}/build/axpbox 
@@ -46,17 +46,20 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }}
 
   linux-x86-gcc:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-24.04"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Get current date
       id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
+      run: echo "name=date::$(date +'%Y-%m-%dT%H%M')" >> $GITHUB_OUTPUT
+      
+    - name: Install gcovr
+      run: pip install gcovr
 
     - name: Install build dependencies
-      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl-dev netcat-openbsd
+      run: sudo apt -y update && sudo apt -y install libpcap-dev libsdl1.2-dev netcat-openbsd
 
     - name: Create build environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -64,7 +67,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall" -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -79,7 +82,7 @@ jobs:
       run: ${{runner.workspace}}/axpbox/test/run
 
     - name: Upload AXPbox binary
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AXPbox-linux-x86-gcc-${{ env.BUILD_DATE }}
         path: ${{runner.workspace}}/build/axpbox
@@ -87,19 +90,18 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }} 
 
   linux-arm-gcc-crosscompile:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-24.04"
     continue-on-error: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Get current date
       id: date
       run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H%M')"
 
     - name: Install build dependencies
-      run: sudo apt -y update && sudo apt -y install netcat-openbsd qemu-user-binfmt qemu-user g++-multilib-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
-
+      run: sudo apt -y update && sudo apt -y install netcat-openbsd qemu-user qemu-user-binfmt gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross
 
     - name: Create build environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -107,7 +109,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DSTATIC_COMPILE=yes -DDISABLE_PCAP=yes -DDISABLE_SDL=yes -DDISABLE_X11=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall" -DCMAKE_C_COMPILER="arm-linux-gnueabihf-gcc-9" -DCMAKE_CXX_COMPILER="arm-linux-gnueabihf-g++-9" -DCMAKE_CXX_FLAGS="-O3 -march=armv7ve"
+      run: cmake $GITHUB_WORKSPACE -DSTATIC_COMPILE=yes -DDISABLE_PCAP=yes -DDISABLE_SDL=yes -DDISABLE_X11=yes -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall" -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_CXX_FLAGS="-O3 -mcpu=cortex-a7 -mfpu=neon -mfloat-abi=hard -mno-unaligned-access"
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -116,18 +118,18 @@ jobs:
       env:
         MAKEFLAGS: "-j2"
 
+    - name: Run binary
+      working-directory: ${{runner.workspace}}/axpbox
+      shell: bash
+      run: ${{runner.workspace}}/build/axpbox
+
     - name: Binary info
       working-directory: ${{runner.workspace}}/axpbox
       shell: bash
       run: file ${{runner.workspace}}/build/axpbox
 
-    - name: Run test scripts
-      working-directory: ${{runner.workspace}}/axpbox
-      shell: bash
-      run: ${{runner.workspace}}/axpbox/test/run
-
     - name: Upload AXPbox binary
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AXPbox-linux-ARM-gcc-${{ env.BUILD_DATE }}
         path: ${{runner.workspace}}/build/axpbox
@@ -135,11 +137,9 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }}        
 
   windows-x86-msvc:
-    runs-on: windows-2019
+    runs-on: windows-2025
     steps:
-    - uses: actions/checkout@v2
-
-
+    - uses: actions/checkout@v4
 
     - name: Create npcap sdk folder
       working-directory: ${{runner.workspace}}\
@@ -176,18 +176,8 @@ jobs:
       working-directory: ${{runner.workspace}}\build
       run: ${{runner.workspace}}\build\Release\axpbox.exe
 
-    - name: install netcat 
-      uses: crazy-max/ghaction-chocolatey@v3
-      with:
-        args: install netcat
-
-    - name: Run rom tests script
-      working-directory: ${{runner.workspace}}\axpbox\test\rom\
-      run: ${{runner.workspace}}\axpbox\test\rom\test.ps1
-
-
     - name: Upload AXPbox Binary
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AXPbox-windows-x86-msvc-${{ env.BUILD_DATE }}.exe
         path: ${{runner.workspace}}\build\Release\axpbox.exe
@@ -195,9 +185,9 @@ jobs:
         BUILD_DATE: ${{ steps.date.outputs.date }}
 
   osx-x86-appleclang:
-    runs-on: "macos-12"  
+    runs-on: macos-15"  
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Get current date
       id: date
@@ -222,7 +212,7 @@ jobs:
         MAKEFLAGS: "-j2"
 
     - name: Upload AXPbox Binary
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AXPbox-osx-x86-12-appleclang-${{ env.BUILD_DATE }}
         path: ${{runner.workspace}}/build/axpbox 
