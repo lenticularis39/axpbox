@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-project(AXPBox VERSION 0.1)
+project(AXPBox VERSION 1.1.3)
 
 # Source files
 file(GLOB srcs src/*.cpp src/base/*.cpp src/gui/*.cpp)
@@ -10,6 +10,10 @@ list(REMOVE_ITEM srcs ${include_sources})
 
 add_executable(axpbox ${srcs} src/Main.cpp)
 target_include_directories(axpbox PRIVATE src src/base src/gui ${CMAKE_BINARY_DIR}/src)
+
+# Path to additional CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
   add_definitions(-DNOMINMAX -D_WIN32_WINNT=0x0A00 -DLANG_CXX11 -DCOMPILER_MSVC -D__VERSION__=\"MSVC\")
   add_definitions(-DWIN32 -DOS_WIN -D_MBCS -DWIN64 -DWIN32_LEAN_AND_MEAN -DNOGDI -DPLATFORM_WINDOWS)
@@ -23,9 +27,6 @@ endif()
 
 find_package(Threads REQUIRED)
 target_link_libraries(axpbox Threads::Threads)
-
-# Path to additional CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Configuration options
 include(CheckSymbolExists)
@@ -115,17 +116,30 @@ check_symbol_exists(_stricasecmp "string.h" HAVE__STRICASECMP)
 check_symbol_exists(_stricmp "string.h" HAVE__STRICMP)
 
 # Features
-check_include_file("pcap.h" HAVE_PCAP)
 check_include_file("SDL/SDL.h" HAVE_SDL)
 check_include_file("X11/X.h" HAVE_X11)
 # Large file support (fopen64 / disk files > 2 GB)
 AXPBOX_TEST_LARGE_FILES(HAVE_LARGE_FILES)
 
-
-
 if (DISABLE_PCAP STREQUAL "yes")
-    set(HAVE_PCAP 0)
+    set(WANT_PCAP 0)
+else()
+    set(WANT_PCAP 1)
 endif()
+
+if(WANT_PCAP)
+    find_package(PCAP)
+    if(PCAP_FOUND)
+        message(STATUS "pcap found. Networking support enabled")
+        include_directories(${PCAP_INCLUDE_DIR})
+        target_link_libraries(axpbox ${PCAP_LIBRARY})
+    else()
+        message(STATUS "pcap not found. Networking support disabled")
+    endif()
+else()
+    message(STATUS "pcap disabled. Networking support disabled")
+endif()
+
 if (DISABLE_SDL STREQUAL "yes")
     set(HAVE_SDL 0)
 endif()
@@ -133,12 +147,6 @@ if (DISABLE_X11 STREQUAL "yes")
     set(HAVE_X11 0)
 endif()
 
-if(HAVE_PCAP)
-    target_link_libraries(axpbox pcap)
-    message(STATUS "pcap found. Networking support enabled")
-else()
-    message(WARNING "pcap not found. Building without network support")
-endif()
 if(HAVE_SDL)
     target_link_libraries(axpbox SDL)
     message(STATUS "sdl found. SDL graphics support enabled")
