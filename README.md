@@ -34,7 +34,7 @@ Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wi
 - OpenVMS host support was dropped
 - es40 and es40_cfg were merged into one executable (axpbox)
 - The code was cleaned to compile without warnings on most compilers
-- Code modernizing, replacing POCO framework parts by native C++ counterparts not available in 2008 (std::threads, etc)
+- Code modernizing, replacing POCO framework parts by native C++11 counterparts not available in 2008 (std::threads, etc)
 - Incorporate various patches from other es40 forks, for example, added MC146818 periodic interrupt to allow netbsd to boot and install, skip_memtest for faster booting.
 - Bug fixes, less segfaults, overall less crashes. 
 - [More](https://github.com/lenticularis39/axpbox/wiki/) documentation and usage information on the various features and operating systems
@@ -48,5 +48,4 @@ Please read the [Installation Guide](https://github.com/lenticularis39/axpbox/wi
 - Multiple CPU system emulation
 - Running on big endian platforms
 - Some SCSI and IDE commands
-- Networking for a longer time (breaks after a couple minutes)
 - Copying large files between IDE CD-ROM to IDE hard drive (this usually doesn't affect OpenVMS installation)
