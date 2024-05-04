@@ -639,23 +639,26 @@ void CSerial::WaitForConnection() {
 
   state.serial_cycles = 0;
 
-  // Send some control characters to the telnet client to handle
-  // character-at-a-time mode.
-  sprintf(buffer, telnet_options, IAC, DO, TELOPT_ECHO);
-  this->write(buffer);
+  if (state.iNumber != 1) // don't send if serial #1, kgdb support
+  {
+      // Send some control characters to the telnet client to handle
+      // character-at-a-time mode.
+      sprintf(buffer, telnet_options, IAC, DO, TELOPT_ECHO);
+      this->write(buffer);
 
-  sprintf(buffer, telnet_options, IAC, DO, TELOPT_NAWS);
-  write(buffer);
+      sprintf(buffer, telnet_options, IAC, DO, TELOPT_NAWS);
+      write(buffer);
 
-  sprintf(buffer, telnet_options, IAC, DO, TELOPT_LFLOW);
-  this->write(buffer);
+      sprintf(buffer, telnet_options, IAC, DO, TELOPT_LFLOW);
+      this->write(buffer);
 
-  sprintf(buffer, telnet_options, IAC, WILL, TELOPT_ECHO);
-  this->write(buffer);
+      sprintf(buffer, telnet_options, IAC, WILL, TELOPT_ECHO);
+      this->write(buffer);
 
-  sprintf(buffer, telnet_options, IAC, WILL, TELOPT_SGA);
-  this->write(buffer);
+      sprintf(buffer, telnet_options, IAC, WILL, TELOPT_SGA);
+      this->write(buffer);
 
-  sprintf(s, "This is serial port #%d on ES40 Emulator\r\n", state.iNumber);
-  this->write(s);
+      sprintf(s, "This is serial port #%d on the AXPBox Emulator\r\n", state.iNumber);
+      this->write(s);
+  }
 }

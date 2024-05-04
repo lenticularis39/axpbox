@@ -327,6 +327,7 @@ void CS3Trio64::init() {
   state.sequencer.sr9 = 0; // Extended Sequencer Register 9 (SR9)
   state.sequencer.srA = 0; // External Bus Request Control (SRA)
   state.sequencer.srB = 0; // Miscellaneous Extended Sequencer Register (SRB)
+  state.sequencer.srD = 0; // Extended Sequencer Register (EX_SR_D) (SRD) 00H poweron
   state.sequencer.sr10 = 0; // CLK Value Low Register (UNLK_EXSR) (SR10)
   state.sequencer.sr11 = 0; // MCLK Value High Register (SR11)
   state.sequencer.sr12 = 0; // DCLK Value Low Register (SR12)
@@ -2774,6 +2775,12 @@ u8 CS3Trio64::read_b_3c5() {
   case 0xA:  // External Bus Request Control Register (SRA)
     return state.sequencer.srA;
 
+  case 0x0b:
+    return state.sequencer.srB;
+
+  case 0x0D:
+    return state.sequencer.srD;
+
   case 0x10:        /* sequencer: SR10 */
     return state.sequencer.sr10;
 
@@ -2782,6 +2789,9 @@ u8 CS3Trio64::read_b_3c5() {
 
   case 0x15:
     return state.sequencer.sr15;
+
+  case 0x18:
+    return state.sequencer.sr18;
 
   default:
     printf("FAIL VGA: 3c5 READ INDEX=0x%02x %d\n", state.sequencer.index, state.sequencer.index);
@@ -2931,9 +2941,9 @@ u8 CS3Trio64::read_b_3d4() { return state.CRTC.address; }
  * For a description of CRTC Registers, see CCirrus::write_b_3d4.
  **/
 u8 CS3Trio64::read_b_3d5() {
-  if((state.CRTC.address > 0x18) && (state.CRTC.address != 0x2e) && (state.CRTC.address != 0x2f) && (state.CRTC.address != 0x36) && \
-    (state.CRTC.address != 0x40) && (state.CRTC.address != 0x42) && (state.CRTC.address != 0x30) && (state.CRTC.address != 0x6b) && \
-    (state.CRTC.address != 0x6c) && (state.CRTC.address != 0x67))
+  if((state.CRTC.address > 0x70) && (state.CRTC.address != 0x2e) && (state.CRTC.address != 0x2f) && (state.CRTC.address != 0x36) &&  
+     (state.CRTC.address != 0x40) && (state.CRTC.address != 0x42) && (state.CRTC.address != 0x30) && (state.CRTC.address != 0x31) &&     
+     (state.CRTC.address != 0x32) && (state.CRTC.address != 0x6b) && (state.CRTC.address != 0x6c) && (state.CRTC.address != 0x67))
   {
     FAILURE_1(NotImplemented, "io read: invalid CRTC register 0x%02x   \n",
               (unsigned)state.CRTC.address);

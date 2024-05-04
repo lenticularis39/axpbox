@@ -201,6 +201,7 @@ private:
       u8 sr8; // unlock extended sequencer (SR8)
       u8 srA; // External Bus Request Control (SRA)
       u8 srB; // Miscellaneous Extended Sequencer Register (SRB)
+      u8 srD; // Extended Sequencer Register (EX_SR_D) (SRD)      
       u8    sr10; // CLK Value Low Register (UNLK_EXSR) (SR10)
       u8    sr11; // MCLK Value High Register (SR11)
       u8    sr12; // DCLK Value Low Register (SR12)
