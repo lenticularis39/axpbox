@@ -1828,7 +1828,7 @@ void CAliM1543C_ide::execute(int index) {
               // set the next block to read.
               // increment the lba.
               SEL_REGISTERS(index).sector_no +=
-                  CONTROLLER(index).data_size * 256; // # sectors read.
+                  CONTROLLER(index).data_size / 256; // # sectors read.
               if (SEL_REGISTERS(index).sector_no > 255) {
                 SEL_REGISTERS(index).sector_no = 0;
                 SEL_REGISTERS(index).cylinder_no++;
