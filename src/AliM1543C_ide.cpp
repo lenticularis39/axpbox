@@ -736,10 +736,20 @@ void CAliM1543C_ide::ide_command_write(int index, u32 address, int dsize,
 u32 CAliM1543C_ide::ide_control_read(int index, u32 address) {
   u32 data = 0;
   switch (address) {
-  case 0: {
-    SCOPED_READ_LOCK(mtRegisters[index]);
-    data = SEL_STATUS(index).alt_status;
-  }
+  case 0:
+    // Compute status live from current state rather than using cached
+    // alt_status, to avoid stale values when the controller thread has
+    // updated status fields but not yet called UPDATE_ALT_STATUS.
+    // Unlike get_status(), this does not affect index_pulse or clear interrupts.
+    if (SEL_DISK(index)) {
+      data = (SEL_STATUS(index).busy ? 0x80 : 0x00) |
+             (SEL_STATUS(index).drive_ready ? 0x40 : 0x00) |
+             (SEL_STATUS(index).fault ? 0x20 : 0x00) |
+             (SEL_STATUS(index).seek_complete ? 0x10 : 0x00) |
+             (SEL_STATUS(index).drq ? 0x08 : 0x00) |
+             (SEL_STATUS(index).index_pulse ? 0x02 : 0x00) |
+             (SEL_STATUS(index).err ? 0x01 : 0x00);
+    }
 #ifdef DEBUG_IDE_REG_CONTROL
     static u32 last_data = 0;
     if (last_data != data) {
@@ -1368,7 +1378,8 @@ void CAliM1543C_ide::execute(int index) {
             }
           }
         }
-
+        
+        UPDATE_ALT_STATUS(index);
         raise_interrupt(index);
       }
       break;
@@ -1828,7 +1839,7 @@ void CAliM1543C_ide::execute(int index) {
               // set the next block to read.
               // increment the lba.
               SEL_REGISTERS(index).sector_no +=
-                  CONTROLLER(index).data_size * 256; // # sectors read.
+                  CONTROLLER(index).data_size / 256; // # sectors read.
               if (SEL_REGISTERS(index).sector_no > 255) {
                 SEL_REGISTERS(index).sector_no = 0;
                 SEL_REGISTERS(index).cylinder_no++;
