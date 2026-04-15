@@ -634,6 +634,29 @@ void CConfigurator::initialize() {
                 myValue);
     pt++;
     pcidev = atoi(pt);
+
+    // Validate PCI slot assignments.
+    // On the Tsunami chipset, certain PCI slots are reserved for system-internal
+    // devices (ali, ali_ide, ali_usb). User devices (SCSI controllers, VGA, NIC)
+    // must go on free slots: pci0.1-pci0.4 or pci1.1-pci1.6.
+    // Placing devices on wrong slots causes the SRM firmware to malfunction
+    // (e.g. SCSI disks not detected, device conflicts).
+    if (pcibus == 0) {
+      bool is_system_device = (myClassId == c_ali || myClassId == c_ali_ide ||
+                               myClassId == c_ali_usb);
+      if (!is_system_device) {
+        if (pcidev == 0)
+          FAILURE_2(Configuration,
+                    "%s (%s): PCI slot pci0.0 is reserved and cannot be used for "
+                    "add-in devices. Use pci0.1 through pci0.4",
+                    myName, myValue);
+        if (pcidev == 7 || pcidev == 15 || pcidev == 19)
+          FAILURE_3(Configuration,
+                    "%s (%s): PCI slot pci0.%d is reserved for a system-internal "
+                    "device. Use pci0.1 through pci0.4 for add-in devices",
+                    myName, myValue, pcidev);
+      }
+    }
   }
 
   if (myClassId == c_floppy) {
