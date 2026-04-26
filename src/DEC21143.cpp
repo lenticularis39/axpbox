@@ -32,7 +32,7 @@
 
 #include "StdAfx.hpp"
 
-#if defined(HAVE_PCAP)
+#if defined(HAVE_PCAP) || defined(__linux__)
 #include "DEC21143.hpp"
 #include "System.hpp"
 
@@ -236,84 +236,14 @@ CDEC21143::CDEC21143(CConfigurator *confg, CSystem *c, int pcibus, int pcidev)
  * Initialize the network device.
  **/
 void CDEC21143::init() {
-  pcap_if_t *alldevs;
-
-  pcap_if_t *d;
-  u_int inum;
-  u_int i = 0;
-  char errbuf[PCAP_ERRBUF_SIZE];
-  char *cfg;
-
   add_function(0, dec21143_cfg_data, dec21143_cfg_mask);
 
-  cfg = myCfg->get_text_value("adapter");
-  if (!cfg) {
-    printf("\n%s: Choose a network adapter to connect to:\n", devid_string);
-    if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-      FAILURE_1(Runtime, "Error in pcap_findalldevs_ex: %s", errbuf);
-    }
+  net_backend = create_network_backend(myCfg);
+  if (!net_backend)
+    FAILURE(Runtime, "Failed to create network backend");
 
-    /* Print the list */
-    for (d = alldevs; d; d = d->next) {
-      printf("%d. %s\n    ", ++i, d->name);
-      if (d->description)
-        printf(" (%s)\n", d->description);
-      else
-        printf(" (No description available)\n");
-    }
-
-    if (i == 0)
-      FAILURE(Runtime, "No network interfaces found");
-
-    if (i == 1)
-      inum = 1;
-    else {
-      inum = 0;
-      while (inum < 1 || inum > i) {
-        printf("%%NIC-Q-NICNO: Enter the interface number (1-%d):", i);
-        (void)!scanf("%d", &inum);
-      }
-    }
-
-    /* Jump to the selected adapter */
-    for (d = alldevs, i = 0; i < inum - 1; d = d->next, i++)
-      ;
-
-    cfg = d->name;
-  }
-
-#if defined(WIN32)
-
-  // Opening with pcap_open on Windows allows specification of
-  // PCAP_OPENFLAG_NOCAPTURE_LOCAL, which stops the pcap device from seeing it's
-  // own transmitted packets.
-  //
-  // This is important because:
-  //    1. Real ethernet cards don't reflect packets except while in loopback
-  //    mode(s).
-  //    2. Reflecting all packets increases inbound packet processing and host
-  //    load.
-  //    3. DECNET Phase IV will think a reflected packet is from another node
-  //            that has the same DECNET Phase IV address (AA-xx-xx-xx-xx-xx),
-  //            and will panic on startup and abort.
-  //    4. Libpcap doesn't reflect packets, and we want winpcap/libpcap
-  //    processing to be identical.
-  // Loopback packets are handled via direct entry in the receive queue.
-  if ((fp = pcap_open(cfg, 65536 /*snaplen: capture entire packets */,
-                      PCAP_OPENFLAG_PROMISCUOUS |
-                          PCAP_OPENFLAG_NOCAPTURE_LOCAL /*promiscuous */,
-                      10 /*read timeout: 10ms. */, 0 /* auth structure */,
-                      errbuf)) == NULL) // connect to pcap...
-#else
-  if ((fp = pcap_open_live(cfg, 65536 /*snaplen: capture entire packets */,
-                           1 /*promiscuous */, 1 /*read timeout: 1ms. */,
-                           errbuf)) == nullptr) // connect to pcap...
-#endif
-    FAILURE_2(Runtime, "Error opening adapter %s:\n %s", cfg, errbuf);
-
-  if (pcap_setnonblock(fp, 1, errbuf) == PCAP_ERROR)
-    FAILURE_2(Runtime, "Error setting adapter %s non-blocking:\n %s", cfg,
-              errbuf);
+  if (!net_backend->init(devid_string, myCfg))
+    FAILURE(Runtime, "Failed to initialize network backend");
 
   // set default mac = Digital ethernet prefix: 08-00-2B + hexified "ES40" + nic
   // number
@@ -325,7 +255,7 @@ void CDEC21143::init() {
   state.mac[5] = nic_num++;
 
   // set assigned mac
-  cfg = myCfg->get_text_value("mac");
+  char *cfg = myCfg->get_text_value("mac");
   if (cfg) {
     const char *mac_chars = "0123456789abcdefABCDEF-.:";
     const char *hex_chars = "0123456789abcdefABCDEF";
@@ -409,7 +339,10 @@ void CDEC21143::stop_threads() {
 CDEC21143::~CDEC21143() {
   stop_threads();
 
-  pcap_close(fp);
+  if (net_backend) {
+    net_backend->close();
+    delete net_backend;
+  }
   delete rx_queue;
 }
 
@@ -445,16 +378,16 @@ void CDEC21143::check_state() {
 }
 
 void CDEC21143::receive_process() {
-  struct pcap_pkthdr *packet_header;
-  const u_char *packet_data = NULL;
+  const u8 *packet_data = NULL;
+  int packet_len = 0;
 
   // if receive process active
   if (state.reg[CSR_OPMODE / 8] & OPMODE_SR) {
 
     // get packets from host nic if not in internal loopback mode
     if (!(state.reg[CSR_OPMODE / 8] & OPMODE_OM_INTLOOP)) {
-      while (pcap_next_ex(fp, &packet_header, &packet_data) > 0) {
-        rx_queue->add_tail(packet_data, packet_header->caplen, calc_crc, true);
+      while (net_backend->receive(&packet_data, &packet_len) > 0) {
+        rx_queue->add_tail(packet_data, packet_len, calc_crc, true);
         state.reg[CSR_SIASTAT / 8] |= SIASTAT_TRA; // set 10bT activity
       }
     }
@@ -1276,9 +1209,8 @@ int CDEC21143::dec21143_tx() {
       // if not in internal loopback mode, transmit packet to wire
       if (!(state.reg[CSR_OPMODE / 8] & OPMODE_OM_INTLOOP)) {
 
-        // printf("pcap send: %d bytes   \n", state.tx.cur_buf_len);
-        if (pcap_sendpacket(fp, state.tx.cur_buf, state.tx.cur_buf_len))
-          printf("Error sending the packet: %s\n", pcap_geterr(fp));
+        // printf("net send: %d bytes   \n", state.tx.cur_buf_len);
+        net_backend->send(state.tx.cur_buf, state.tx.cur_buf_len);
       }
 
       // if in internal or external loopback mode, add packet to read queue
@@ -1344,13 +1276,7 @@ int CDEC21143::dec21143_tx() {
 
 void CDEC21143::SetupFilter() {
   u8 mac[16][6];
-  char mac_txt[16][20];
-  char filter[1000];
   int i;
-  int j;
-  int numUnique;
-  int unique[16];
-  bool u;
 #if defined(DEBUG_NIC_FILTER)
   printf("Building a filter...\n");
 #endif
@@ -1361,10 +1287,9 @@ void CDEC21143::SetupFilter() {
     mac[i][3] = state.setup_filter[i * 12 + 5];
     mac[i][4] = state.setup_filter[i * 12 + 8];
     mac[i][5] = state.setup_filter[i * 12 + 9];
-    sprintf(mac_txt[i], "%02x:%02x:%02x:%02x:%02x:%02x", mac[i][0], mac[i][1],
-            mac[i][2], mac[i][3], mac[i][4], mac[i][5]);
 #if defined(DEBUG_NIC_FILTER)
-    printf("MAC[%d] = %s. \n", i, mac_txt[i]);
+    printf("MAC[%d] = %02x:%02x:%02x:%02x:%02x:%02x. \n", i, mac[i][0],
+           mac[i][1], mac[i][2], mac[i][3], mac[i][4], mac[i][5]);
 #endif
   }
 
@@ -1384,47 +1309,9 @@ void CDEC21143::SetupFilter() {
     printf("filtering.\n");
   }
 #endif
-  numUnique = 0;
-  for (i = 0; i < 16; i++) {
-    u = true;
-    for (j = 0; j < numUnique; j++) {
-      if (mac[i][0] == mac[unique[j]][0] && mac[i][1] == mac[unique[j]][1] &&
-          mac[i][2] == mac[unique[j]][2] && mac[i][3] == mac[unique[j]][3] &&
-          mac[i][4] == mac[unique[j]][4] && mac[i][5] == mac[unique[j]][5]) {
-        u = false;
-        break;
-      }
-    }
 
-    if (u) {
-      unique[numUnique] = i;
-      numUnique++;
-    }
-  }
-
-#if defined(DEBUG_NIC_FILTER)
-  for (i = 0; i < numUnique; i++)
-    printf("Unique MAC[%d] = %s. \n", i, mac_txt[unique[i]]);
-#endif
-  filter[0] = '\0';
-
-  // strcat(filter,"ether broadcast");
-  // There must be at least one unique item; at least the mac of the card
-  strcat(filter, "ether dst ");
-  strcat(filter, mac_txt[unique[0]]);
-  for (i = 1; i < numUnique; i++) {
-    strcat(filter, " or ether dst ");
-    strcat(filter, mac_txt[unique[i]]);
-  }
-
-#if defined(DEBUG_NIC_FILTER)
-  printf("FILTER = %s.   \n", filter);
-#endif
-  if (pcap_compile(fp, &fcode, filter, 1, 0xffffffff) < 0)
-    FAILURE_1(Logic, "Unable to compile the packet filter (%s)", filter);
-
-  if (pcap_setfilter(fp, &fcode) < 0)
-    FAILURE(Runtime, "Error setting the filter.");
+  bool promiscuous = (state.reg[CSR_OPMODE / 8] & OPMODE_PR) != 0;
+  net_backend->set_filter(mac, 16, promiscuous);
 }
 
 /**
@@ -1633,4 +1520,4 @@ int CDEC21143::RestoreState(FILE *f) {
   printf("%s: %ld bytes restored.\n", devid_string, ss);
   return 0;
 }
-#endif // defined(HAVE_PCAP)
+#endif // defined(HAVE_PCAP) || defined(__linux__)

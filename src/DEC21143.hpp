@@ -35,11 +35,8 @@
 #include "DEC21143_mii.hpp"
 #include "DEC21143_tulipreg.hpp"
 #include "PCIDevice.hpp"
-#if defined(WIN32)
-#define HAVE_REMOTE
-#endif
 #include "Ethernet.hpp"
-#include <pcap.h>
+#include "NetworkBackend.hpp"
 
 /**
  * \brief Emulated DEC 21143 NIC device.
@@ -90,8 +87,7 @@ private:
   void set_rx_state(int rx_state);
 
   CPacketQueue *rx_queue;
-  pcap_t *fp;
-  struct bpf_program fcode;
+  CNetworkBackend *net_backend;
   bool calc_crc;
 
   /// The state structure contains all elements that need to be saved to the

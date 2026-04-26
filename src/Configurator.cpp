@@ -49,7 +49,7 @@
 #include "Radeon.h"
 #endif
 #include "gui/plugin.hpp"
-#if defined(HAVE_PCAP)
+#if defined(HAVE_PCAP) || defined(__linux__)
 #include "DEC21143.hpp"
 #endif
 #include "Sym53C810.hpp"
@@ -608,11 +608,11 @@ void CConfigurator::initialize() {
                 myName);
   }
 
-#if !defined(HAVE_PCAP)
+#if !defined(HAVE_PCAP) && !defined(__linux__)
   if (myFlags & IS_NIC)
     FAILURE_2(Configuration,
-              "Class %s for %s needs compilation with libpcap support", myValue,
-              myName);
+              "Class %s for %s needs networking support (libpcap or Linux TAP)",
+              myValue, myName);
 #endif
   if (myFlags & IS_PCI) {
     if (strncmp(myName, "pci", 3))
@@ -753,7 +753,7 @@ void CConfigurator::initialize() {
 #endif
     break;
 
-#if defined(HAVE_PCAP)
+#if defined(HAVE_PCAP) || defined(__linux__)
 
   case c_dec21143:
     myDevice =
