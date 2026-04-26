@@ -676,7 +676,7 @@ int main_cfg(int argc, char *argv[]) {
   card_q.setExplanation("Choose what PCI card you'd like to add. Choose none "
                         "if you have no more cards to add.");
   card_q.addAnswer("none", "", "No more cards to add");
-#if defined(HAVE_PCAP)
+#if defined(HAVE_PCAP) || defined(__linux__)
   card_q.addAnswer("nic", "dec21143", "DEC 21143 Network Interface (1 max)");
 #endif
   card_q.addAnswer("scsi", "sym53c810",
@@ -720,36 +720,69 @@ int main_cfg(int argc, char *argv[]) {
        */
       card_q.dropChoice("nic");
 
+#if defined(HAVE_PCAP) || defined(__linux__)
+      MultipleChoiceQuestion type_q;
+      type_q.setQuestion("What network backend type should be used?");
+      type_q.setExplanation("pcap uses libpcap (promiscuous capture); tap uses "
+                            "Linux TAP device (bridgeable, host-reachable).");
 #if defined(HAVE_PCAP)
-      MultipleChoiceQuestion if_q;
-      if_q.setQuestion("What host network interface should we connect to "
-                       "(answer ? for a list)?");
-      if_q.setExplanation("Choose 'list' to get a list at run-time.");
-      if_q.addAnswer("list", "", "Get a list at run-time");
+      type_q.addAnswer("pcap", "pcap", "libpcap (capture host interface)");
+      type_q.setDefault("pcap");
+#endif
+#if defined(__linux__)
+      type_q.addAnswer("tap", "tap",
+                        "Linux TAP (virtual interface, bridgeable)");
+#if !defined(HAVE_PCAP)
+      type_q.setDefault("tap");
+#endif
+#endif
+      string net_type = type_q.ask();
+      os << "    type = \"" << net_type << "\";\n";
 
-      /* Get a list of network interfaces and
-       * add them to the list.
-       */
-      pcap_if_t *alldevs;
-      pcap_if_t *d;
-      char errbuf[PCAP_ERRBUF_SIZE];
+      if (net_type == "pcap") {
+#if defined(HAVE_PCAP)
+        MultipleChoiceQuestion if_q;
+        if_q.setQuestion("What host network interface should we connect to "
+                         "(answer ? for a list)?");
+        if_q.setExplanation("Choose 'list' to get a list at run-time.");
+        if_q.addAnswer("list", "", "Get a list at run-time");
 
-      if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-        /* No devices to add.
-         */
-        printf("Error in pcap_findalldevs_ex: %s", errbuf);
-      } else {
-        int i = 1;
-        for (d = alldevs; d; d = d->next) {
-          // if_q.addAnswer(i2s(i),d->name, string(d->name) + "(" +
-          // string(d->description) + ")");
-          if_q.addAnswer(i2s(i), d->name, d->name);
-          i++;
+        pcap_if_t *alldevs;
+        pcap_if_t *d;
+        char errbuf[PCAP_ERRBUF_SIZE];
+
+        if (pcap_findalldevs(&alldevs, errbuf) == -1) {
+          printf("Error in pcap_findalldevs_ex: %s", errbuf);
+        } else {
+          int i = 1;
+          for (d = alldevs; d; d = d->next) {
+            if_q.addAnswer(i2s(i), d->name, d->name);
+            i++;
+          }
         }
-      }
 
-      if (if_q.ask() != "")
-        os << "    adapter = \"" << if_q.getAnswer() << "\";\n";
+        if (if_q.ask() != "")
+          os << "    adapter = \"" << if_q.getAnswer() << "\";\n";
+#endif
+      } else if (net_type == "tap") {
+        FreeTextQuestion tap_q;
+        tap_q.setQuestion("What TAP device name should be used?");
+        tap_q.setExplanation(
+            "The TAP device will be created if it doesn't exist "
+            "(requires CAP_NET_ADMIN or root).");
+        tap_q.setDefault("tap0");
+        os << "    adapter = \"" << tap_q.ask() << "\";\n";
+
+        FreeTextQuestion bridge_q;
+        bridge_q.setQuestion(
+            "Bridge to add TAP device to (leave empty for none)?");
+        bridge_q.setExplanation(
+            "If specified, the TAP device will be added to this bridge.");
+        bridge_q.setDefault("");
+        string bridge = bridge_q.ask();
+        if (!bridge.empty())
+          os << "    bridge = \"" << bridge << "\";\n";
+      }
 
       FreeTextQuestion mac_q;
       mac_q.setQuestion("What should the NIC's MAC address be?");
