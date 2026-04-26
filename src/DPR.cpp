@@ -76,6 +76,21 @@ void CDPR::init() {
 
     // powerup time BCD:
     time_t now = time(NULL);
+
+    // Check for absolute time override at system level
+    char *faketime = myCfg->get_text_value("time");
+    if (faketime) {
+      struct tm ft;
+      memset(&ft, 0, sizeof(ft));
+      ft.tm_isdst = -1;
+      if (sscanf(faketime, "%d-%d-%d %d:%d:%d", &ft.tm_year, &ft.tm_mon,
+                 &ft.tm_mday, &ft.tm_hour, &ft.tm_min, &ft.tm_sec) >= 3) {
+        ft.tm_year -= 1900;
+        ft.tm_mon -= 1;
+        now = mktime(&ft);
+      }
+    }
+
     struct tm *t = localtime(&now);
     state.ram[i * 0x20 + 0x10] = ToBCD(t->tm_hour);
     state.ram[i * 0x20 + 0x11] = ToBCD(t->tm_min);
