@@ -300,6 +300,41 @@ struct tm CAliM1543C::get_time() {
   bool offset_present = false;
   long offset;
 
+  // Check for absolute time override: "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
+  // Read from system-level config (sys0 block)
+  char *faketime = myCfg->get_myParent()->get_text_value("time");
+  if (faketime) {
+    struct tm ft;
+    memset(&ft, 0, sizeof(ft));
+    ft.tm_isdst = -1; // let mktime figure it out
+    int n = sscanf(faketime, "%d-%d-%d %d:%d:%d", &ft.tm_year, &ft.tm_mon,
+                   &ft.tm_mday, &ft.tm_hour, &ft.tm_min, &ft.tm_sec);
+    if (n >= 3) {
+      ft.tm_year -= 1900;
+      ft.tm_mon -= 1;
+      time_raw = mktime(&ft);
+      if (time_raw == (time_t)-1) {
+        FAILURE_1(Configuration, "Invalid time value: %s", faketime);
+      }
+      // Apply timezone conversion and return
+      if (timezone.rfind("utc") == 0) {
+        gmtime_s(&time_out, &time_raw);
+      } else {
+#ifdef _WIN32
+        localtime_s(&time_out, &time_raw);
+#else
+        localtime_s(&time_raw, &time_out);
+#endif
+      }
+      return time_out;
+    } else {
+      FAILURE_1(Configuration,
+                "Invalid time format: %s (use YYYY-MM-DD or "
+                "YYYY-MM-DD HH:MM:SS)",
+                faketime);
+    }
+  }
+
   // Get raw time
   time(&time_raw);
 
