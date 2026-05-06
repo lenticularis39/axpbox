@@ -1585,7 +1585,13 @@ void CSym53C810::execute_bm_op() {
          table_indirect, opcode, scsi_phase);
 #endif
   // Compare phase
-  if (check_phase(scsi_phase) > 0) {
+  int phase_ok = check_phase(scsi_phase);
+  if (phase_ok == 0) {
+    RAISE(SIST0, MA);
+    return;
+  }
+
+  if (phase_ok > 0) {
 #if defined(DEBUG_SYM_SCRIPTS)
     printf("SYM: Ready for transfer.\n");
 #endif
@@ -1615,7 +1621,7 @@ void CSym53C810::execute_bm_op() {
     printf("SYM: %08x: MOVE Start/count %x, %x\n", R32(DSP) - 8, start, count);
 #endif
     R32(DNAD) = start;
-    SET_DBC(count); // page 5-32
+    SET_DBC(count);
     if (count == 0) {
 
       // printf("SYM: Count equals zero!\n");
@@ -1623,35 +1629,58 @@ void CSym53C810::execute_bm_op() {
       return;
     }
 
-    if ((size_t)count > scsi_expected_xfer(0)) {
+    for (;;) {
+      size_t expected = scsi_expected_xfer(0);
+      u32 remaining = GET_DBC();
+      u32 xfer = remaining;
+
+      if ((size_t)xfer > expected) {
 #if defined(DEBUG_SYM_SCRIPTS)
-      printf("SYM: xfer %d bytes, max %d expected, in phase %d.\n", count,
-             scsi_expected_xfer(0), scsi_phase);
+        printf("SYM: xfer %d bytes, max %zu expected, in phase %d.\n", xfer,
+               expected, scsi_phase);
 #endif
-      count = (u32)scsi_expected_xfer(0);
+        xfer = (u32)expected;
+      }
+
+      if (xfer == 0) {
+        RAISE(SIST0, MA);
+        return;
+      }
+
+      u8 *scsi_data_ptr = (u8 *)scsi_xfer_ptr(0, xfer);
+      u8 *org_sdata_ptr = scsi_data_ptr;
+
+      switch (scsi_phase) {
+      case SCSI_PHASE_COMMAND:
+      case SCSI_PHASE_DATA_OUT:
+      case SCSI_PHASE_MSG_OUT:
+        do_pci_read(R32(DNAD), scsi_data_ptr, 1, xfer);
+        R32(DNAD) += xfer;
+        break;
+
+      case SCSI_PHASE_STATUS:
+      case SCSI_PHASE_DATA_IN:
+      case SCSI_PHASE_MSG_IN:
+        do_pci_write(R32(DNAD), scsi_data_ptr, 1, xfer);
+        R32(DNAD) += xfer;
+        break;
+      }
+
+      SET_DBC(remaining - xfer);
+      R8(SFBR) = *org_sdata_ptr;
+      scsi_xfer_done(0);
+
+      if (GET_DBC() == 0)
+        return;
+
+      phase_ok = check_phase(scsi_phase);
+      if (phase_ok <= 0) {
+        if (phase_ok == 0) {
+          RAISE(SIST0, MA);
+        }
+        return;
+      }
     }
-
-    u8 *scsi_data_ptr = (u8 *)scsi_xfer_ptr(0, count);
-    u8 *org_sdata_ptr = scsi_data_ptr;
-
-    switch (scsi_phase) {
-    case SCSI_PHASE_COMMAND:
-    case SCSI_PHASE_DATA_OUT:
-    case SCSI_PHASE_MSG_OUT:
-      do_pci_read(R32(DNAD), scsi_data_ptr, 1, count);
-      R32(DNAD) += count;
-      break;
-
-    case SCSI_PHASE_STATUS:
-    case SCSI_PHASE_DATA_IN:
-    case SCSI_PHASE_MSG_IN:
-      do_pci_write(R32(DNAD), scsi_data_ptr, 1, count);
-      R32(DNAD) += count;
-      break;
-    }
-
-    R8(SFBR) = *org_sdata_ptr;
-    scsi_xfer_done(0);
     return;
   }
 }
