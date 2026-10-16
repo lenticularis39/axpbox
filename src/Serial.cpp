@@ -70,6 +70,40 @@ int iCounter = 0;
 
 //#define DEBUG_SERIAL 1
 
+/*
+ * A socket number that means "no socket".
+ *
+ * INVALID_SOCKET cannot serve as this sentinel on POSIX: telnet.hpp defines it
+ * as 1 there, while the socket calls report failure as -1.  Comparing an
+ * accept() result against INVALID_SOCKET therefore treats an error code as a
+ * successful connection, and the device then selects() on descriptor -1 for the
+ * rest of the run -- see WaitForConnection() and execute().
+ */
+static const int64_t NO_SOCKET = -1;
+
+static inline bool is_socket(int64_t s) {
+#if defined(_WIN32)
+  // winsock reports an invalid socket as (SOCKET)(~0), which is a positive
+  // number once widened, so the range test alone is not enough there.
+  return s >= 0 && s != (int64_t)INVALID_SOCKET;
+#else
+  return s >= 0;
+#endif
+}
+
+/* Close a socket and clear the variable holding it, so the same descriptor
+ * cannot be closed or written to twice. */
+static inline void close_socket(int64_t &s) {
+  if (s < 0)
+    return;
+#if defined(_WIN32)
+  closesocket((SOCKET)s);
+#else
+  close((int)s);
+#endif
+  s = NO_SOCKET;
+}
+
 /**
  * Constructor.
  **/
@@ -102,8 +136,8 @@ void CSerial::init() {
     // SERIAL.SYS conclude "no UART here" and skip further probing/polling.
     state.rcvW = 0;
     state.rcvR = 0;
-    listenSocket = INVALID_SOCKET;
-    connectSocket = INVALID_SOCKET;
+    listenSocket = NO_SOCKET;
+    connectSocket = NO_SOCKET;
     printf("%s: disabled - guest will see no UART at this address.\n",
            devid_string);
     return;
@@ -139,8 +173,8 @@ void CSerial::init() {
     in_subneg = false;
     stageLen = 0;
     myThread = nullptr;
-    listenSocket = INVALID_SOCKET;
-    connectSocket = INVALID_SOCKET;
+    listenSocket = NO_SOCKET;
+    connectSocket = NO_SOCKET;
     printf("%s: null_attach - TX discarded, RX always empty.\n", devid_string);
     return;
   }
@@ -156,9 +190,22 @@ void CSerial::init() {
 
   socklen_t nAddressSize = sizeof(struct sockaddr_in);
 
+  /* Writing to a client that has already gone away raises SIGPIPE, whose
+   * default action is to terminate the process.  The emulator therefore used to
+   * die outright whenever the guest transmitted to a connection the client had
+   * reset.  With it ignored, send() returns EPIPE and write() drops the client
+   * instead. */
+#if !defined(_WIN32)
+  signal(SIGPIPE, SIG_IGN);
+#endif
+
   listenSocket = (int)socket(AF_INET, SOCK_STREAM, 0);
-  if (listenSocket == INVALID_SOCKET) {
-    printf("Could not open socket to listen on!\n");
+  if (!is_socket(listenSocket)) {
+    printf("%%SRL-F-SOCKETFAIL: %s: cannot create a socket to listen on (%s)\n",
+           devid_string, strerror(errno));
+    listenSocket = NO_SOCKET;
+    connectSocket = NO_SOCKET;
+    return;
   }
 
   Address.sin_addr.s_addr = inet_addr(listenAddress);
@@ -170,8 +217,20 @@ void CSerial::init() {
   int optval = 1;
   setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&optval,
              sizeof(optval));
-  bind(listenSocket, (struct sockaddr *)&Address, sizeof(Address));
-  listen(listenSocket, 8);
+
+  /* bind() and listen() used to be unchecked: with the port already taken the
+   * emulator printed "Waiting for connection on port N" and then waited on a
+   * socket that was never listening, which reads as a hung console rather than
+   * as the configuration error it is. */
+  if (bind(listenSocket, (struct sockaddr *)&Address, sizeof(Address)) < 0)
+    printf("%%SRL-W-BINDFAIL: %s: cannot bind port %d (%s) - the serial port "
+           "will not be reachable.\n", devid_string, listenPort,
+           strerror(errno));
+
+  if (listen(listenSocket, 8) < 0)
+    printf("%%SRL-W-LISTENFAIL: %s: cannot listen on port %d (%s) - the serial "
+           "port will not be reachable.\n", devid_string, listenPort,
+           strerror(errno));
 
   printf("%s: Waiting for connection on port %d.\n", devid_string, listenPort);
 
@@ -241,8 +300,13 @@ void CSerial::stop_threads() {
   if (myThread) {
     sprintf(buffer, "srl%d", state.iNumber);
     printf(" %s", buffer);
-    if (!acceptingSocket)
-      myThread->join();
+    /* Join unconditionally.  This used to be guarded on !acceptingSocket,
+     * because a thread parked in a blocking accept() would never notice
+     * StopThread and the join would hang -- and skipping the join then handed
+     * a still-joinable std::thread to ~thread, which calls std::terminate.  The
+     * accept() loop in WaitForConnection() is polled with a timeout now, so the
+     * thread always comes back within that timeout and the join completes. */
+    myThread->join();
     myThread = nullptr;
   }
 }
@@ -446,10 +510,43 @@ void CSerial::eval_interrupts() {
 void CSerial::write(const char *s, int dsize) {
   if (disabled || null_attach)
     return; // null_attach: drop TX silently; no socket to send on
+  if (!is_socket(connectSocket))
+    return; // no client attached: nothing to transmit to
+  if (txBroken.load())
+    return; // already reported; the I/O thread will drop the client
+
   int val = send(connectSocket, s, dsize, 0);
+  if (val >= 0)
+    return;
+
+  /* The client is gone -- EPIPE after it reset the connection, ENOTCONN once
+   * the descriptor is closed.  The return value used to be discarded, so the
+   * emulator kept believing it had a client and transmitted into a dead
+   * descriptor for the rest of the run, and a guest that only ever transmits
+   * (a console sitting at a prompt that nobody reads) never noticed.
+   *
+   * The descriptor is deliberately not closed here.  write() runs on the CPU
+   * thread while the socket belongs to this device's I/O thread; recording the
+   * failure and letting execute() tear the connection down keeps the whole
+   * lifetime of the descriptor on one thread. */
+  txBroken.store(true);
+  printf("%%SRL-W-SENDFAIL: cannot transmit on serial port %d (%s).\n",
+         state.iNumber, strerror(errno));
 }
 
 void CSerial::write_cstr(const char *s) { write(s, (int)strlen(s)); }
+
+/**
+ * drop_client  —  Release the client socket and return to "no client".
+ *
+ * Call from the I/O thread only: connectSocket is owned by that thread, and
+ * write() on the CPU thread reports a dead peer through txBroken instead of
+ * closing it here.
+ **/
+void CSerial::drop_client() {
+  close_socket(connectSocket);
+  txBroken.store(false);
+}
 
 /**
  * receive  — Push data into the FIFO.  Returns number of bytes consumed.
@@ -559,6 +656,16 @@ void CSerial::serial_menu() {
   write_cstr("     4. Load state from autosave.axp and continue\r\n");
 #endif
   while (!exitLoop) {
+    /* The client can have gone away between the <BREAK> arriving and the menu
+     * running; select() on descriptor -1 is undefined, and with nfds 0 it would
+     * time out after 60s having read nothing. */
+    if (!is_socket(connectSocket)) {
+      printf("%%SRL-W-NOCLIENT: <BREAK> on serial port %d with no console "
+             "attached; continuing emulation.\n",
+             state.iNumber);
+      break;
+    }
+
     FD_ZERO(&readset);
     FD_SET(connectSocket, &readset);
     tv.tv_sec = 60;
@@ -642,6 +749,22 @@ void CSerial::execute() {
       return;
     }
 
+    /* No client attached, or the last transmit proved the client is gone: drop
+     * it and wait for a new one.
+     *
+     * Both tests matter.  Without the first, select() below is called with
+     * nfds == 0, which returns 0 immediately and never reports a readable
+     * client, so this thread spins here for the rest of the run and
+     * WaitForConnection() is never reached again -- the console is dead until
+     * the emulator is restarted.  (FD_SET() on descriptor -1 is undefined
+     * behaviour as well.)  Without the second, a guest that only ever
+     * transmits keeps a dead descriptor attached indefinitely. */
+    if (!is_socket(connectSocket) || txBroken.load()) {
+      drop_client();
+      WaitForConnection();
+      return;
+    }
+
     FD_ZERO(&readset);
     FD_SET(connectSocket, &readset);
     tv.tv_sec = 0;
@@ -662,6 +785,7 @@ void CSerial::execute() {
                state.iNumber);
         printf("-SRL-I-WAITFOR: Waiting for a new connection on port %d.\n",
                listenPort);
+        drop_client();
         WaitForConnection();
         return;
       }
@@ -942,15 +1066,73 @@ void CSerial::WaitForConnection() {
   Address.sin_port = htons((u16)listenPort);
   Address.sin_family = AF_INET;
 
-  //  Wait until we have a connection
-  connectSocket = INVALID_SOCKET;
-  while (connectSocket == INVALID_SOCKET) {
-    acceptingSocket = true;
-    connectSocket =
-        (int)accept(listenSocket, (struct sockaddr *)&Address, &nAddressSize);
-    acceptingSocket = false;
+  /* Release the client we had before taking the next one.  Nothing in this file
+   * ever closed a client socket, so every reconnect leaked a descriptor and
+   * left a CLOSE_WAIT behind; once the process ran out of descriptors accept()
+   * started failing, and the error path below treated that as a connection. */
+  close_socket(connectSocket);
+
+  if (!is_socket(listenSocket))
+    return; // init() could not listen: there is nothing to accept on
+
+  //  Wait until we have a connection.
+  //
+  //  accept() is polled rather than blocked in.  The select() timeout is what
+  //  lets this loop notice StopThread, so stop_threads() can join the I/O
+  //  thread instead of abandoning a joinable std::thread.
+  while (!is_socket(connectSocket)) {
+    if (StopThread)
+      return;
+
+    fd_set readset;
+    struct timeval tv;
+    FD_ZERO(&readset);
+    FD_SET(listenSocket, &readset);
+    tv.tv_sec = 0;
+    tv.tv_usec = 250000;
+    if (select((int)listenSocket + 1, &readset, NULL, NULL, &tv) <= 0)
+      continue; // timeout, or EINTR from Ctrl-C: re-check StopThread
+
+    int64_t candidate =
+        (int64_t)accept(listenSocket, (struct sockaddr *)&Address,
+                        &nAddressSize);
+    if (is_socket(candidate)) {
+      connectSocket = candidate;
+      break;
+    }
+
+#if defined(_WIN32)
+    int err = WSAGetLastError();
+    const int err_intr = WSAEINTR, err_aborted = WSAECONNABORTED,
+              err_nomem = WSAEMFILE;
+#else
+    int err = errno;
+    const int err_intr = EINTR, err_aborted = ECONNABORTED, err_nomem = EMFILE;
+#endif
+    // A client that gives up mid-handshake is normal on a busy console and says
+    // nothing about the health of the listener.
+    if (err == err_intr || err == err_aborted)
+      continue;
+
+    /* Anything else -- typically EMFILE, we are out of descriptors -- used to
+     * fall straight out of this loop as though it were a connection, leaving
+     * connectSocket holding an error code.  Report it and back off rather than
+     * spinning on a failing accept(). */
+    if (err != err_nomem) {
+      printf("%%SRL-W-ACCEPTFAIL: %s: accept() on port %d failed (%s).\n",
+             devid_string, listenPort, strerror(err));
+      continue;
+    }
+
+    printf("%%SRL-W-ACCEPTFAIL: %s: accept() on port %d failed (%s) - out of "
+           "descriptors; retrying.\n", devid_string, listenPort, strerror(err));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
+  if (!is_socket(connectSocket))
+    return; // asked to stop before any client arrived
+
+  txBroken.store(false);
   iac_carry_len = 0;
   in_subneg = false;
   stageLen = 0;

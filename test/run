@@ -30,6 +30,7 @@ message "[test] This is the AXPbox test script"
 
 run_test rom
 run_test disk/unwritable
+run_test serial/reconnect
 
 if [ "$success" -ne "0" ]
 then

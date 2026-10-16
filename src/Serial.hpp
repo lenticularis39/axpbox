@@ -67,13 +67,20 @@ public:
 private:
   void serial_menu();
   void drain_staging();
+  void drop_client();
 
   std::unique_ptr<std::thread> myThread;
   std::atomic_bool myThreadDead{false};
   bool StopThread = false;
   bool breakHit = false;
-  bool acceptingSocket = false;
   const char *listenAddress = nullptr;
+
+  /// Set by write() when a send() to the client has failed, and consumed by
+  /// the I/O thread in execute().  The guest transmits from the CPU thread and
+  /// the socket is owned by this device's I/O thread, so the failure is
+  /// recorded here rather than acted on where it is detected: closing the
+  /// descriptor from the CPU thread would race the thread that is reading it.
+  std::atomic_bool txBroken{false};
 
   unsigned char
       iac_carry[8];  // Partial telnet sequence carried across recv() calls
