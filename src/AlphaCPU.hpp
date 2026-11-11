@@ -35,6 +35,9 @@
 #define INCLUDED_ALPHACPU_H
 
 #include <atomic>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
 
 #include "System.hpp"
 #include "SystemComponent.hpp"
@@ -128,11 +131,31 @@ public:
   virtual void stop_threads();
   void ResetForSystemReset();
 
+  void idle_wake(); // host idle: wake the CPU thread if it is idle-sleeping
+
 private:
   std::unique_ptr<std::thread> myThread;
   std::atomic_bool myThreadDead{false};
   CSemaphore mySemaphore;
   bool StopThread;
+
+  // ---- Host idle (cpu config `idle_detect`, default "off"; see idle_point()
+  // in AlphaCPU.cpp). Not part of the saved state. While the guest sits in the
+  // OpenVMS idle loop, the CPU thread sleeps until the next interval timer
+  // tick is due or an interrupt is raised (irq_h() wakes it).
+  int idle_mode = 0;               // 0 = off, 1 = vms
+  int idle_ipl = 3;                // the idle-loop IPL (idle_detect.ipl)
+  u64 idle_max_sleep_ns = 1000000; // never sleep longer than this per sleep
+  int idle_streak = 0;             // consecutive quiet batch boundaries
+  int idle_need = 4;               // quiet boundaries required before a sleep
+  u64 idle_irq_count = 0;          // interrupt deliveries (execute())
+  u64 idle_irq_last = 0;           // idle_irq_count at the previous boundary
+  std::mutex idle_mtx;
+  std::condition_variable idle_cv;
+  std::atomic<bool> idle_sleeping{false};
+  void idle_init();
+  void idle_point(); // CPU thread, between execute() batches
+  void idle_sleep();
 
   int get_icache(u64 address, u32 *data);
   int FindTBEntry(u64 virt, int flags);
@@ -801,6 +824,11 @@ inline void CAlphaCPU::irq_h(int number, bool assert, int delay) {
       state.eir |= (U64(0x1) << number);
       state.check_int = true;
     }
+    // Host idle: the flags above are seq_cst atomics stored before this
+    // seq_cst load, and the sleeper publishes idle_sleeping before it
+    // re-checks them, so either it sees the interrupt or we see it asleep.
+    if (idle_sleeping.load())
+      idle_wake();
 
     return;
   }

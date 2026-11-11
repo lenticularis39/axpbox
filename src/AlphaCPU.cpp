@@ -74,6 +74,22 @@ void CAlphaCPU::run() {
     }
     printf("*** CPU%d *** STARTING ***\n", get_cpuid());
 
+    // Idle detection is single-CPU only. On SMP, OpenVMS can hand work to an
+    // idle CPU with a memory store and no interrupt, which a sleeping CPU
+    // would not see until its sleep ends. Checked here, not in idle_init(),
+    // because every CPU is registered by the time the threads start.
+    if (idle_mode && cSystem->get_cpu_num() > 1) {
+      printf("%%CPU-W-IDLE: cpu%d: idle detection supports one CPU only "
+             "(%d configured); idle detection is off\n",
+             get_cpuid(), cSystem->get_cpu_num());
+      idle_mode = 0;
+    }
+    if (idle_mode)
+      printf("%%CPU-I-IDLE: cpu%d host idle detection: vms (IPL %d, max "
+             "sleep %llu us)\n",
+             get_cpuid(), idle_ipl,
+             (unsigned long long)(idle_max_sleep_ns / 1000));
+
 #if defined(_M_X64) || defined(__x86_64__)
     // Pin host SSE state for the JIT FP path: round-nearest, exceptions masked,
     // FTZ/DAZ off (denormal results must materialize to hit the interp-bail).
@@ -100,8 +116,15 @@ void CAlphaCPU::run() {
 #ifdef ES40_JIT
       jit_run(2000);
 #else
-      for (int i = 0; i < 2000; i++)
-        execute();
+      if (idle_mode) {
+        for (int i = 0; i < 2000; i++) {
+          execute();
+          idle_point();
+        }
+      } else {
+        for (int i = 0; i < 2000; i++)
+          execute();
+      }
 #endif
       if (cSystem && cSystem->IsSystemResetRequested()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -140,6 +163,8 @@ void CAlphaCPU::init() {
 #endif
 
   state.iProcNum = cSystem->RegisterCPU(this);
+
+  idle_init();
 
 #ifdef ES40_JIT
   if (!m_jit)
@@ -304,7 +329,11 @@ void CAlphaCPU::start_threads() {
 
 void CAlphaCPU::stop_threads() {
   char buffer[5];
-  StopThread = true;
+  {
+    std::lock_guard<std::mutex> lk(idle_mtx);
+    StopThread = true;
+  }
+  idle_cv.notify_all(); // an idle-sleeping CPU thread must see StopThread now
   if (myThread) {
     mySemaphore.set();
     sprintf(buffer, "cpu%d", state.iProcNum);
@@ -314,6 +343,137 @@ void CAlphaCPU::stop_threads() {
   }
 
   mySemaphore.tryWait(1);
+}
+
+// ============================================================================
+//
+// Host idle detection (cpu config `idle_detect`, default "off").
+//
+// An idle OpenVMS guest spins in its idle loop, which costs a whole host core.
+// With `idle_detect = "vms"`, the CPU thread checks between execute() batches
+// (every <= 512 instructions) whether the guest is sitting in its idle loop,
+// and if so sleeps until the interval timer is next due or an interrupt
+// arrives.
+//
+// "Idle" = VMS PALcode loaded (PAL_BASE 0x8000), kernel mode, not PALmode,
+// IPL = `idle_detect.ipl` (the OpenVMS idle loop's IPL, 3 = IPL$_RESCHED), no
+// software interrupt requested, nothing pending or deliverable, and no
+// interrupt delivered -- sustained over 4 consecutive batch boundaries.
+// The idle loop leaves when interrupt-level code makes a process computable;
+// every interrupt wakes the sleeper and resets the streak, so the guest gets
+// to run its idle loop again before the next sleep.
+//
+// Measured on OpenVMS Alpha V7.2-1, V7.3-2, V8.4 and VSI V8.4-2L2: an idle
+// system spends 99.7-99.8% of its batch boundaries in kernel mode at IPL 3.
+// The idle loop is not a pure poll (it sets and clears flags, bumps a counter
+// and calls a queue-scan routine each pass), so it cannot be recognised by an
+// unchanged state; the IPL is the signature.
+//
+// Guest time is unaffected: RPCC (state.cc) and the Cchip interval timer are
+// wall-clock paced at each batch top, so the batch after a sleep advances
+// RPCC by the real time slept and fires the due tick. The sleep deadline is
+// the moment the next tick is due (CPU 0), so ticks are not delayed beyond
+// host wake-up latency; the timer's count-preserving schedule repays any
+// lateness. irq_h() wakes a sleeping CPU at once (device, console, NIC, IPI).
+//
+// ============================================================================
+
+void CAlphaCPU::idle_init() {
+  const char *m = myCfg->get_text_value("idle_detect", "off");
+  idle_mode = 0;
+  if (m && !strcasecmp(m, "vms"))
+    idle_mode = 1;
+  else if (m && strcasecmp(m, "off"))
+    printf("%%CPU-W-IDLE: unknown idle_detect mode \"%s\" (use \"off\" or "
+           "\"vms\"); idle detection is off\n",
+           m);
+
+  u64 us = myCfg->get_num_value("idle_detect.max_sleep_us", false, 1000);
+  if (us < 50)
+    us = 50;
+  if (us > 100000)
+    us = 100000;
+  idle_max_sleep_ns = us * 1000;
+
+  // OpenVMS Alpha idles in kernel mode at IPL 3 (see the comment above
+  // idle_init).
+  u64 ipl = myCfg->get_num_value("idle_detect.ipl", false, 3);
+  if (ipl > 31)
+    ipl = 3;
+  idle_ipl = (int)ipl;
+
+#ifdef ES40_JIT
+  // Not wired into jit_run() yet.
+  if (idle_mode) {
+    printf("%%CPU-W-IDLE: idle detection is not supported in JIT builds; "
+           "idle detection is off\n");
+    idle_mode = 0;
+  }
+#endif
+
+  idle_streak = 0;
+}
+
+void CAlphaCPU::idle_wake() {
+  // Taking the mutex orders this notify after a sleeper that has checked its
+  // predicate but not yet blocked (it holds the mutex until it blocks).
+  { std::lock_guard<std::mutex> lk(idle_mtx); }
+  idle_cv.notify_all();
+}
+
+void CAlphaCPU::idle_point() {
+  const u64 pc = state.pc;
+  const int ipl = (int)((state.r[32 + 22] >> 8) & 0x1f); // VMS PAL: PS in p22
+  const bool kern = !(pc & 1) && state.cm == 0;
+
+  // Idle = sustained presence in kernel mode at the VMS idle-loop IPL, with
+  // no interrupt delivered and none requested, pending or deliverable, for
+  // idle_need consecutive batch boundaries (>= 4 x 512 instructions, several
+  // passes of the idle loop). The OpenVMS Alpha idle loop runs at IPL 3
+  // (IPL$_RESCHED); real IPL-3 work (the reschedule path) is short and is
+  // entered by a software interrupt, which resets the streak.
+  const bool quiet = kern && state.pal_base == U64(0x8000) && ipl == idle_ipl &&
+                     idle_irq_count == idle_irq_last && !state.sir &&
+                     !state.check_int && !state.check_timers &&
+                     !(state.eir & state.eien);
+  idle_irq_last = idle_irq_count;
+  idle_streak = quiet ? idle_streak + 1 : 0;
+  if (idle_streak >= idle_need)
+    idle_sleep();
+}
+
+// Sleep until the next interval-timer tick is due (CPU 0), an interrupt is
+// raised, the thread is stopped, or idle_max_sleep_ns has passed.
+void CAlphaCPU::idle_sleep() {
+  const auto now = std::chrono::steady_clock::now();
+  auto deadline = now + std::chrono::nanoseconds(idle_max_sleep_ns);
+  if (state.iProcNum == 0) {
+    // When the interval timer is next due: execute()'s batch-top test is
+    // now >= next_timer_fire and now - tick_last_fire >= period/2.
+    const u64 period_ns = theAli ? theAli->get_interval_period_ns() : 0;
+    auto due = next_timer_fire;
+    if (period_ns) {
+      const auto paced =
+          tick_last_fire + std::chrono::nanoseconds(period_ns / 2);
+      if (paced > due)
+        due = paced;
+    }
+    if (due < deadline)
+      deadline = due;
+  }
+  if (deadline <= now + std::chrono::microseconds(20))
+    return;
+
+  {
+    std::unique_lock<std::mutex> lk(idle_mtx);
+    idle_sleeping.store(true);
+    idle_cv.wait_until(lk, deadline, [this] {
+      return StopThread || state.check_int || state.check_timers ||
+             (state.eir & state.eien);
+    });
+    idle_sleeping.store(false);
+  }
+  idle_streak = 0; // re-prove idleness before sleeping again
 }
 
 // ============================================================================
@@ -2526,6 +2686,10 @@ _next_instruction:
 
         // irq<1>=device, irq<2>=timer, irq<3>=IPI. (Was 0x6 = device+timer
         // only, which stranded incoming IPIs under VMS PALcode -> CPUSPINWAIT.)
+        if ((state.eir & state.eien & 0xe) || (state.sir & state.sien) ||
+            (state.asten &&
+             (state.aster & state.astrr & ((1 << (state.cm + 1)) - 1))))
+          idle_irq_count++; // host idle: an interrupt is being delivered
         if (state.eir & state.eien & 0xe)
           if (vmspal_ent_ext_int(state.eir & state.eien & 0xe))
             return;
@@ -2557,6 +2721,7 @@ _next_instruction:
         if ((state.eien & state.eir) || (state.sien & state.sir) ||
             (state.asten &&
              (state.aster & state.astrr & ((1 << (state.cm + 1)) - 1)))) {
+          idle_irq_count++; // host idle: an interrupt is being delivered
           GO_PAL(INTERRUPT);
           seq_remaining = 0;
 #ifndef ES40_JIT
