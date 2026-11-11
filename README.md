@@ -113,6 +113,30 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release -DES40_DISABLE_ASMJIT=OFF
 cmake --build build
 ```
 
+### Host idle detection (OpenVMS)
+
+An idle guest normally keeps one host core at 100%, because the emulated CPU
+never stops executing. With `idle_detect = "vms"` in the `cpu0` section, the
+CPU thread sleeps while OpenVMS sits in its idle loop (kernel mode at IPL 3,
+nothing pending) and wakes for the next clock tick or any interrupt:
+
+```
+  cpu0 = ev68cb
+  {
+    speed = 800M;
+    idle_detect = "vms";
+  }
+```
+
+Measured on idle OpenVMS Alpha V7.2-1, V7.3-2, V8.4 and VSI V8.4-2L2 guests,
+host CPU fell from 100% to about 2% of a core (about 3% on V8.4-2L2 with
+DECnet and TCP/IP running). The guest's 1024 Hz clock tick and console
+response were unchanged. On V8.4-2L2, boot time, telnet logins, FTP
+throughput, a CPU and disk benchmark, and shutdown and reboot were unchanged
+too. The default is `"off"`. It works with the interpreter and a single CPU; JIT builds and
+multi-CPU configurations print a warning and run with it off. See the sample
+`es40.cfg` for `idle_detect.ipl` and `idle_detect.max_sleep_us`.
+
 ### S3 Trio64 graphics / ARC / Windows NT
 
 The S3 Trio64 emulation (ported from [ES40-Emu/es40](https://github.com/ES40-Emu/es40) uses the real S3 VGA BIOS; obtain `86c764x1.bin` from the [86Box ROM set](https://github.com/86Box/roms/tree/master/video/s3) and point the s3 config section at it (see the sample es40.cfg). This is required for the ARC/AlphaBIOS console and Windows NT-family guests: flash AlphaBIOS from the Alpha Systems Firmware v7.3 CD, then enter `arc` at the SRM prompt.
