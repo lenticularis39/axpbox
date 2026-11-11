@@ -180,6 +180,7 @@ window or display server.
 | `AXPBOX_AUTOMOUSE=<sec>` | Starting `<sec>` seconds in, inject synthetic PS/2 mouse motion (a repeating square pattern plus a periodic left click) directly into the guest, bypassing host input entirely. If the guest cursor moves with this but not with your real mouse, the problem is host-side SDL event delivery, not the emulated hardware. |
 | `AXPBOX_MOUSE_DEBUG=1` | Trace every host mouse-motion event, grab/focus transition, and relative-mouse-mode failure to stderr (`MOUSEDBG ...` lines). |
 | `AXPBOX_PC_SAMPLE=1` | Print the guest program counter on every CPU state poll (~100 ms) — identifies where a guest is stuck on headless runs. |
+| `AXPBOX_IDLE_PROBE=<sec>` | Every `<sec>` seconds, print to stderr what host idle detection sees (`IDLEPROBE ...` lines): time spent in PALcode, kernel and other modes, the kernel IPL histogram, the hottest kernel PCs and code, sleeps taken and time slept, and interval-timer ticks against the nominal rate. Works with `idle_detect` off too, so it can be used to find a guest's idle loop. Interpreter builds only. |
 
 Key names for `AXPBOX_KEYSCRIPT`/`AXPBOX_KEYPIPE`: `a`–`z`, `0`–`9`,
 `enter`, `esc`, `tab`, `space`, `up`, `down`, `left`, `right`, `del`, `ins`,

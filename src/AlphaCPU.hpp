@@ -153,9 +153,13 @@ private:
   std::mutex idle_mtx;
   std::condition_variable idle_cv;
   std::atomic<bool> idle_sleeping{false};
+  struct CIdleProbe *idle_probe = nullptr; // AXPBOX_IDLE_PROBE diagnostics
   void idle_init();
   void idle_point(); // CPU thread, between execute() batches
   void idle_sleep();
+  void idle_probe_report(std::chrono::steady_clock::time_point now);
+  void idle_probe_tick(std::chrono::steady_clock::time_point now,
+                       u64 period_ns);
 
   int get_icache(u64 address, u32 *data);
   int FindTBEntry(u64 virt, int flags);
