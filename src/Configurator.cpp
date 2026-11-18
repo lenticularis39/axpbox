@@ -577,8 +577,13 @@ static const char *const kv_none[] = {0};
 static const char *const kv_tsunami[] = {
     "memory.bits",      "rom.srm", "rom.flash",       "rom.dpr",
     "rom.decompressed", "time",    "arc_year_compat", 0};
-static const char *const kv_ev68cb[] = {"speed", "palcode.vms.nohle",
-                                        "skip_memtest_hack", 0};
+static const char *const kv_ev68cb[] = {"speed",
+                                        "palcode.vms.nohle",
+                                        "skip_memtest_hack",
+                                        "idle_detect",
+                                        "idle_detect.ipl",
+                                        "idle_detect.max_sleep_us",
+                                        0};
 static const char *const kv_serial[] = {
     "port", "action", "address", "disabled", "raw_mode", "null_attach", 0};
 static const char *const kv_ali[] = {"vga_console", "lpt.outfile", "timezone",

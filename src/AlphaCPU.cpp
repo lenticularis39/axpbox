@@ -52,6 +52,10 @@
 #include "cpu_vax.hpp"
 #include "diag_rpcc.hpp"
 #include "lockstep.hpp"
+
+#include <algorithm>
+#include <unordered_map>
+#include <vector>
 #if defined(_M_X64) || defined(__x86_64__)
 #include <xmmintrin.h> // _mm_setcsr: pin host MXCSR for the JIT SSE FP path
 #endif
@@ -73,6 +77,22 @@ void CAlphaCPU::run() {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     printf("*** CPU%d *** STARTING ***\n", get_cpuid());
+
+    // Idle detection is single-CPU only. On SMP, OpenVMS can hand work to an
+    // idle CPU with a memory store and no interrupt, which a sleeping CPU
+    // would not see until its sleep ends. Checked here, not in idle_init(),
+    // because every CPU is registered by the time the threads start.
+    if (idle_mode && cSystem->get_cpu_num() > 1) {
+      printf("%%CPU-W-IDLE: cpu%d: idle detection supports one CPU only "
+             "(%d configured); idle detection is off\n",
+             get_cpuid(), cSystem->get_cpu_num());
+      idle_mode = 0;
+    }
+    if (idle_mode)
+      printf("%%CPU-I-IDLE: cpu%d host idle detection: vms (IPL %d, max "
+             "sleep %llu us)\n",
+             get_cpuid(), idle_ipl,
+             (unsigned long long)(idle_max_sleep_ns / 1000));
 
 #if defined(_M_X64) || defined(__x86_64__)
     // Pin host SSE state for the JIT FP path: round-nearest, exceptions masked,
@@ -100,8 +120,15 @@ void CAlphaCPU::run() {
 #ifdef ES40_JIT
       jit_run(2000);
 #else
-      for (int i = 0; i < 2000; i++)
-        execute();
+      if (idle_mode || idle_probe) {
+        for (int i = 0; i < 2000; i++) {
+          execute();
+          idle_point();
+        }
+      } else {
+        for (int i = 0; i < 2000; i++)
+          execute();
+      }
 #endif
       if (cSystem && cSystem->IsSystemResetRequested()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -140,6 +167,8 @@ void CAlphaCPU::init() {
 #endif
 
   state.iProcNum = cSystem->RegisterCPU(this);
+
+  idle_init();
 
 #ifdef ES40_JIT
   if (!m_jit)
@@ -304,7 +333,11 @@ void CAlphaCPU::start_threads() {
 
 void CAlphaCPU::stop_threads() {
   char buffer[5];
-  StopThread = true;
+  {
+    std::lock_guard<std::mutex> lk(idle_mtx);
+    StopThread = true;
+  }
+  idle_cv.notify_all(); // an idle-sleeping CPU thread must see StopThread now
   if (myThread) {
     mySemaphore.set();
     sprintf(buffer, "cpu%d", state.iProcNum);
@@ -314,6 +347,320 @@ void CAlphaCPU::stop_threads() {
   }
 
   mySemaphore.tryWait(1);
+}
+
+// ============================================================================
+//
+// Host idle detection (cpu config `idle_detect`, default "off").
+//
+// An idle OpenVMS guest spins in its idle loop, which costs a whole host core.
+// With `idle_detect = "vms"`, the CPU thread checks between execute() batches
+// (every <= 512 instructions) whether the guest is sitting in its idle loop,
+// and if so sleeps until the interval timer is next due or an interrupt
+// arrives.
+//
+// "Idle" = VMS PALcode loaded (PAL_BASE 0x8000), kernel mode, not PALmode,
+// IPL = `idle_detect.ipl` (the OpenVMS idle loop's IPL, 3 = IPL$_RESCHED), no
+// software interrupt requested, nothing pending or deliverable, and no
+// interrupt delivered -- sustained over 4 consecutive batch boundaries.
+// The idle loop leaves when interrupt-level code makes a process computable;
+// every interrupt wakes the sleeper and resets the streak, so the guest gets
+// to run its idle loop again before the next sleep.
+//
+// Measured on OpenVMS Alpha V7.2-1, V7.3-2, V8.4 and VSI V8.4-2L2: an idle
+// system spends 99.7-99.8% of its batch boundaries in kernel mode at IPL 3.
+// The idle loop is not a pure poll (it sets and clears flags, bumps a counter
+// and calls a queue-scan routine each pass), so it cannot be recognised by an
+// unchanged state; the IPL is the signature.
+//
+// Guest time is unaffected: RPCC (state.cc) and the Cchip interval timer are
+// wall-clock paced at each batch top, so the batch after a sleep advances
+// RPCC by the real time slept and fires the due tick. The sleep deadline is
+// the moment the next tick is due (CPU 0), so ticks are not delayed beyond
+// host wake-up latency; the timer's count-preserving schedule repays any
+// lateness. irq_h() wakes a sleeping CPU at once (device, console, NIC, IPI).
+//
+// AXPBOX_IDLE_PROBE=<seconds> (any mode, including off) prints a periodic
+// summary of what the detector sees to stderr; it never changes behaviour.
+//
+// ============================================================================
+
+namespace {
+struct SIdlePcStat {
+  u64 count = 0;
+  u64 p22 = 0;
+  int ipl = 0;
+};
+} // namespace
+
+struct CIdleProbe {
+  std::chrono::steady_clock::time_point last;
+  std::chrono::nanoseconds interval{std::chrono::seconds(10)};
+  u64 boundaries = 0, pal = 0, kern = 0, other = 0, eligible = 0;
+  u64 sleeps = 0, wake_irq = 0, slept_ns = 0, over_ns = 0, over_max_ns = 0;
+  u64 ipl_hist[32] = {};
+  u64 ticks = 0, period_ns = 0, lag_max_ns = 0; // interval timer (CPU 0)
+  std::unordered_map<u64, SIdlePcStat> pcs;
+  std::unordered_map<u64, u64> r26s; // return addresses (callers) at samples
+};
+
+void CAlphaCPU::idle_init() {
+  const char *m = myCfg->get_text_value("idle_detect", "off");
+  idle_mode = 0;
+  if (m && !strcasecmp(m, "vms"))
+    idle_mode = 1;
+  else if (m && strcasecmp(m, "off"))
+    printf("%%CPU-W-IDLE: unknown idle_detect mode \"%s\" (use \"off\" or "
+           "\"vms\"); idle detection is off\n",
+           m);
+
+  u64 us = myCfg->get_num_value("idle_detect.max_sleep_us", false, 1000);
+  if (us < 50)
+    us = 50;
+  if (us > 100000)
+    us = 100000;
+  idle_max_sleep_ns = us * 1000;
+
+  // OpenVMS Alpha idles in kernel mode at IPL 3 (see the comment above
+  // idle_init).
+  u64 ipl = myCfg->get_num_value("idle_detect.ipl", false, 3);
+  if (ipl > 31)
+    ipl = 3;
+  idle_ipl = (int)ipl;
+
+#ifdef ES40_JIT
+  // Not wired into jit_run() yet.
+  if (idle_mode) {
+    printf("%%CPU-W-IDLE: idle detection is not supported in JIT builds; "
+           "idle detection is off\n");
+    idle_mode = 0;
+  }
+#endif
+
+  idle_streak = 0;
+
+  const char *pe = getenv("AXPBOX_IDLE_PROBE");
+  if (pe && *pe && !idle_probe) {
+    idle_probe = new CIdleProbe;
+    double secs = atof(pe);
+    if (secs < 1)
+      secs = 10;
+    idle_probe->interval = std::chrono::nanoseconds((u64)(secs * 1e9));
+    idle_probe->last = std::chrono::steady_clock::now();
+  }
+}
+
+void CAlphaCPU::idle_wake() {
+  // Taking the mutex orders this notify after a sleeper that has checked its
+  // predicate but not yet blocked (it holds the mutex until it blocks).
+  { std::lock_guard<std::mutex> lk(idle_mtx); }
+  idle_cv.notify_all();
+}
+
+void CAlphaCPU::idle_point() {
+  const u64 pc = state.pc;
+  const int ipl = (int)((state.r[32 + 22] >> 8) & 0x1f); // VMS PAL: PS in p22
+  const bool kern = !(pc & 1) && state.cm == 0;
+
+  // Idle = sustained presence in kernel mode at the VMS idle-loop IPL, with
+  // no interrupt delivered and none requested, pending or deliverable, for
+  // idle_need consecutive batch boundaries (>= 4 x 512 instructions, several
+  // passes of the idle loop). The OpenVMS Alpha idle loop runs at IPL 3
+  // (IPL$_RESCHED); real IPL-3 work (the reschedule path) is short and is
+  // entered by a software interrupt, which resets the streak.
+  const bool quiet = kern && state.pal_base == U64(0x8000) && ipl == idle_ipl &&
+                     idle_irq_count == idle_irq_last && !state.sir &&
+                     !state.check_int && !state.check_timers &&
+                     !(state.eir & state.eien);
+  idle_irq_last = idle_irq_count;
+  idle_streak = quiet ? idle_streak + 1 : 0;
+  const bool eligible = idle_streak >= idle_need;
+
+  CIdleProbe *pr = idle_probe;
+  if (pr) {
+    pr->boundaries++;
+    if (pc & 1)
+      pr->pal++;
+    else if (kern) {
+      pr->kern++;
+      pr->ipl_hist[ipl]++;
+      pr->r26s[state.r[26]]++;
+      SIdlePcStat &ps = pr->pcs[pc];
+      ps.count++;
+      ps.ipl = ipl;
+      ps.p22 = state.r[32 + 22];
+    } else
+      pr->other++;
+    if (eligible)
+      pr->eligible++;
+  }
+
+  if (idle_mode && eligible)
+    idle_sleep();
+
+  if (pr && (pr->boundaries & 255) == 0) {
+    const auto now = std::chrono::steady_clock::now();
+    if (now - pr->last >= pr->interval)
+      idle_probe_report(now);
+  }
+}
+
+// Sleep until the next interval-timer tick is due (CPU 0), an interrupt is
+// raised, the thread is stopped, or idle_max_sleep_ns has passed.
+void CAlphaCPU::idle_sleep() {
+  const auto now = std::chrono::steady_clock::now();
+  auto deadline = now + std::chrono::nanoseconds(idle_max_sleep_ns);
+  if (state.iProcNum == 0) {
+    // When the interval timer is next due: execute()'s batch-top test is
+    // now >= next_timer_fire and now - tick_last_fire >= period/2.
+    const u64 period_ns = theAli ? theAli->get_interval_period_ns() : 0;
+    auto due = next_timer_fire;
+    if (period_ns) {
+      const auto paced =
+          tick_last_fire + std::chrono::nanoseconds(period_ns / 2);
+      if (paced > due)
+        due = paced;
+    }
+    if (due < deadline)
+      deadline = due;
+  }
+  if (deadline <= now + std::chrono::microseconds(20))
+    return;
+
+  bool woke_by_event;
+  {
+    std::unique_lock<std::mutex> lk(idle_mtx);
+    idle_sleeping.store(true);
+    woke_by_event = idle_cv.wait_until(lk, deadline, [this] {
+      return StopThread || state.check_int || state.check_timers ||
+             (state.eir & state.eien);
+    });
+    idle_sleeping.store(false);
+  }
+  idle_streak = 0; // re-prove idleness before sleeping again
+
+  CIdleProbe *pr = idle_probe;
+  if (pr) {
+    const auto after = std::chrono::steady_clock::now();
+    pr->sleeps++;
+    pr->slept_ns +=
+        (u64)std::chrono::duration_cast<std::chrono::nanoseconds>(after - now)
+            .count();
+    if (woke_by_event)
+      pr->wake_irq++;
+    else if (after > deadline) {
+      const u64 o = (u64)std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        after - deadline)
+                        .count();
+      pr->over_ns += o;
+      if (o > pr->over_max_ns)
+        pr->over_max_ns = o;
+    }
+  }
+}
+
+// Interval-timer accounting for the probe (interpreter lane, CPU 0): VMS
+// keeps time by counting these ticks, so ticks fired vs the nominal rate and
+// the schedule backlog show whether idle sleeping can make the guest clock
+// drift.
+void CAlphaCPU::idle_probe_tick(std::chrono::steady_clock::time_point now,
+                                u64 period_ns) {
+  CIdleProbe *pr = idle_probe;
+  pr->ticks++;
+  pr->period_ns = period_ns;
+  const s64 lag = (s64)std::chrono::duration_cast<std::chrono::nanoseconds>(
+                      now - next_timer_fire)
+                      .count();
+  if (lag > (s64)pr->lag_max_ns)
+    pr->lag_max_ns = (u64)lag;
+}
+
+void CAlphaCPU::idle_probe_report(std::chrono::steady_clock::time_point now) {
+  CIdleProbe *pr = idle_probe;
+  const double secs =
+      std::chrono::duration_cast<std::chrono::duration<double>>(now - pr->last)
+          .count();
+  const double b = pr->boundaries ? (double)pr->boundaries : 1.0;
+  const u64 timed = pr->sleeps - pr->wake_irq;
+  fprintf(stderr,
+          "IDLEPROBE cpu%d %.1fs mode=%s pal_base=%llx batches=%llu "
+          "pal=%.1f%% kern=%.1f%% other=%.1f%% eligible=%.1f%% "
+          "sleeps=%llu (irq-woken %llu) slept=%.1f%% overshoot avg=%.0fus "
+          "max=%.0fus\n",
+          state.iProcNum, secs, idle_mode ? "vms" : "off",
+          (unsigned long long)state.pal_base,
+          (unsigned long long)pr->boundaries, 100.0 * pr->pal / b,
+          100.0 * pr->kern / b, 100.0 * pr->other / b, 100.0 * pr->eligible / b,
+          (unsigned long long)pr->sleeps, (unsigned long long)pr->wake_irq,
+          100.0 * pr->slept_ns / (secs * 1e9),
+          timed ? pr->over_ns / 1e3 / timed : 0.0, pr->over_max_ns / 1e3);
+  if (pr->period_ns)
+    fprintf(stderr,
+            "IDLEPROBE cpu%d  ticks=%llu = %.2f Hz (nominal %.2f Hz) max "
+            "lag=%.0fus backlog now=%.0fus\n",
+            state.iProcNum, (unsigned long long)pr->ticks, pr->ticks / secs,
+            1e9 / pr->period_ns, pr->lag_max_ns / 1e3,
+            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                now - next_timer_fire)
+                    .count() /
+                1e3);
+  fprintf(stderr, "IDLEPROBE cpu%d  kernel IPL histogram:", state.iProcNum);
+  for (int i = 0; i < 32; i++)
+    if (pr->ipl_hist[i])
+      fprintf(stderr, " %d:%.1f%%", i, 100.0 * pr->ipl_hist[i] / b);
+  fprintf(stderr, "\n");
+
+  std::vector<std::pair<u64, SIdlePcStat>> v(pr->pcs.begin(), pr->pcs.end());
+  std::sort(v.begin(), v.end(), [](const auto &x, const auto &y) {
+    return x.second.count > y.second.count;
+  });
+  for (size_t i = 0; i < v.size() && i < 8; i++)
+    fprintf(stderr, "IDLEPROBE cpu%d  pc=%016llx %.1f%% ipl=%d p22=%016llx\n",
+            state.iProcNum, (unsigned long long)v[i].first,
+            100.0 * v[i].second.count / b, v[i].second.ipl,
+            (unsigned long long)v[i].second.p22);
+  // 256-byte regions (loop bodies / routines) and their code, for
+  // disassembly by hand.
+  std::unordered_map<u64, u64> regions;
+  for (const auto &e : pr->pcs)
+    regions[e.first & ~U64(0xff)] += e.second.count;
+  std::vector<std::pair<u64, u64>> rv(regions.begin(), regions.end());
+  std::sort(rv.begin(), rv.end(),
+            [](const auto &x, const auto &y) { return x.second > y.second; });
+  fprintf(stderr, "IDLEPROBE cpu%d  %zu distinct kernel PCs; top regions:",
+          state.iProcNum, pr->pcs.size());
+  for (size_t i = 0; i < rv.size() && i < 12; i++)
+    fprintf(stderr, " %llx:%.1f%%", (unsigned long long)rv[i].first,
+            100.0 * rv[i].second / b);
+  fprintf(stderr, "\n");
+  std::vector<std::pair<u64, u64>> cv(pr->r26s.begin(), pr->r26s.end());
+  std::sort(cv.begin(), cv.end(),
+            [](const auto &x, const auto &y) { return x.second > y.second; });
+  fprintf(stderr, "IDLEPROBE cpu%d  top r26:", state.iProcNum);
+  for (size_t i = 0; i < cv.size() && i < 10; i++)
+    fprintf(stderr, " %llx:%.1f%%", (unsigned long long)cv[i].first,
+            100.0 * cv[i].second / b);
+  fprintf(stderr, "\n");
+  for (size_t r = 0; r < rv.size() && r < 4; r++) {
+    const u64 base = rv[r].first;
+    fprintf(stderr, "IDLEPROBE cpu%d  code@%016llx:", state.iProcNum,
+            (unsigned long long)base);
+    for (int i = 0; i < 64; i++) {
+      u64 phys;
+      bool asm_bit;
+      if (virt2phys(base + 4 * i, &phys, ACCESS_EXEC | FAKE, &asm_bit, 0)) {
+        fprintf(stderr, " --------");
+        continue;
+      }
+      fprintf(stderr, " %08x", (u32)cSystem->ReadMem(phys, 32, this));
+    }
+    fprintf(stderr, "\n");
+  }
+
+  CIdleProbe fresh;
+  fresh.interval = pr->interval;
+  fresh.last = now;
+  *pr = std::move(fresh);
 }
 
 // ============================================================================
@@ -372,7 +719,10 @@ void CAlphaCPU::write_fpcr_arch(u64 arch_val) {
 /**
  * Destructor.
  **/
-CAlphaCPU::~CAlphaCPU() { stop_threads(); }
+CAlphaCPU::~CAlphaCPU() {
+  stop_threads();
+  delete idle_probe;
+}
 
 #if defined(IDB)
 char dbg_string[1000];
@@ -2328,6 +2678,8 @@ void CAlphaCPU::execute() {
           // RPCC-vs-tick calibrations). Backlog beyond 1s (debugger pause, host
           // sleep) is dropped.
           if (now - tick_last_fire >= std::chrono::nanoseconds(period_ns / 2)) {
+            if (idle_probe)
+              idle_probe_tick(now, period_ns);
             cSystem->interrupt(-1, true);
             tick_last_fire = now;
             next_timer_fire += std::chrono::nanoseconds(period_ns);
@@ -2526,6 +2878,10 @@ _next_instruction:
 
         // irq<1>=device, irq<2>=timer, irq<3>=IPI. (Was 0x6 = device+timer
         // only, which stranded incoming IPIs under VMS PALcode -> CPUSPINWAIT.)
+        if ((state.eir & state.eien & 0xe) || (state.sir & state.sien) ||
+            (state.asten &&
+             (state.aster & state.astrr & ((1 << (state.cm + 1)) - 1))))
+          idle_irq_count++; // host idle: an interrupt is being delivered
         if (state.eir & state.eien & 0xe)
           if (vmspal_ent_ext_int(state.eir & state.eien & 0xe))
             return;
@@ -2557,6 +2913,7 @@ _next_instruction:
         if ((state.eien & state.eir) || (state.sien & state.sir) ||
             (state.asten &&
              (state.aster & state.astrr & ((1 << (state.cm + 1)) - 1)))) {
+          idle_irq_count++; // host idle: an interrupt is being delivered
           GO_PAL(INTERRUPT);
           seq_remaining = 0;
 #ifndef ES40_JIT
